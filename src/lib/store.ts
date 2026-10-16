@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { create } from 'zustand'
 import { persist, createJSONStorage, type StateStorage } from 'zustand/middleware'
 import { get, set, del } from 'idb-keyval'
@@ -136,6 +137,16 @@ export const useStore = create<ProgressState & Actions>()(
     },
   ),
 )
+
+/** True once saved progress has loaded from IndexedDB. */
+export function useHydrated(): boolean {
+  const [h, setH] = useState(() => useStore.persist.hasHydrated())
+  useEffect(() => {
+    if (useStore.persist.hasHydrated()) setH(true)
+    return useStore.persist.onFinishHydration(() => setH(true))
+  }, [])
+  return h
+}
 
 export function newId(prefix = 'id'): string {
   return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`
