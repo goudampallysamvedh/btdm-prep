@@ -193,6 +193,10 @@
   .prose-app ol { list-style: decimal; padding-left: 1.3em; display: grid; gap: 0.35em; }
   .prose-app strong { font-weight: 700; }
   .prose-app mark { background: linear-gradient(transparent 40%, var(--marker-soft) 40%, var(--marker-soft) 90%, transparent 90%); color: inherit; padding: 0 0.1em; }
+  .prose-app table { width: 100%; border-collapse: collapse; font-size: 0.92rem; margin: 0.5em 0; }
+  .prose-app th, .prose-app td { text-align: left; vertical-align: top; padding: 0.45em 0.6em; border-bottom: 1px solid var(--line); }
+  .prose-app thead th { font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+  .prose-app h3 { font-size: 1.15rem; margin: 1em 0 0.3em; }
   .scroll-x { overflow-x: auto; scrollbar-width: thin; }
   .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
   .safe-top { padding-top: env(safe-area-inset-top, 0px); }

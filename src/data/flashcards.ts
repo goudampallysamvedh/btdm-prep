@@ -1,4 +1,5 @@
 import type { AreaCode, Flashcard } from '@/types'
+import { TREND_CARDS } from './trends'
 
 type Row = [AreaCode, string, string, string]
 
@@ -260,6 +261,7 @@ export const FLASHCARDS: Flashcard[] = [
   ...build(KIT, 'k', 'kit'),
   ...build(EXAM_NEW, 'x', 'kit'),
   ...build(MERCH, 'm', 'merch'),
+  ...TREND_CARDS,
 ]
 
 export const KIT_CARD_COUNT = KIT.length

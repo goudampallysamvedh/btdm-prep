@@ -18,7 +18,8 @@ export function drawMock(tests: TestRecord[], r: () => number = Math.random): Qu
   const seen = lastSeen(tests)
   const picked: Question[] = []
   for (const a of AREAS) {
-    const pool = QUESTIONS.filter((q) => q.area === a.code)
+    // Trend questions cover current events, not the exam blueprint, so mocks skip them.
+    const pool = QUESTIONS.filter((q) => q.area === a.code && q.topic !== 'T.trends')
     picked.push(...freshest(pool, a.weight, seen, r))
   }
   return shuffle(picked, r)
