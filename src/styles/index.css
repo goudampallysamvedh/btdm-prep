@@ -1,0 +1,220 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/archivo/wdth.css';
+@import '@fontsource/atkinson-hyperlegible/latin-400.css';
+@import '@fontsource/atkinson-hyperlegible/latin-700.css';
+@import '@fontsource/atkinson-hyperlegible/latin-400-italic.css';
+@import '@fontsource/jetbrains-mono/latin-500.css';
+@import '@fontsource/jetbrains-mono/latin-700.css';
+
+/*
+  Sell-Through design system.
+  Identity: the merchandise floor. Receipt-paper surfaces, navy ink, a tag-orange accent,
+  price-tag chips, and mono numerals like a register tape.
+*/
+
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+:root {
+  --paper: #f6f3ec;
+  --paper-2: #efeadf;
+  --card: #fffdf8;
+  --ink: #14213d;
+  --ink-2: #2b3a5c;
+  --muted: #5b6275;
+  --line: #e2dccd;
+  --line-2: #cfc7b4;
+  --accent: #c2410c;
+  --accent-ink: #ffffff;
+  --accent-soft: #fde6d8;
+  --tag: #e85d2a;
+  --marker: #ffd34d;
+  --marker-soft: rgba(255, 211, 77, 0.45);
+  --good: #146c4f;
+  --good-bg: #dcf1e7;
+  --bad: #b42318;
+  --bad-bg: #fbe4e1;
+  --warn: #935a06;
+  --warn-bg: #fbefd5;
+  --info: #1d4ed8;
+  --info-bg: #e2e9fb;
+  --shadow: 0 1px 0 rgba(20, 33, 61, 0.04), 0 8px 24px -12px rgba(20, 33, 61, 0.18);
+  color-scheme: light;
+}
+
+[data-theme='dark'] {
+  --paper: #0f1524;
+  --paper-2: #131b2e;
+  --card: #172036;
+  --ink: #eef1f7;
+  --ink-2: #c9d1e3;
+  --muted: #9aa3b8;
+  --line: #27314a;
+  --line-2: #354262;
+  --accent: #ff8a5c;
+  --accent-ink: #1a0f08;
+  --accent-soft: #3a2218;
+  --tag: #ff8a5c;
+  --marker: #ffd34d;
+  --marker-soft: rgba(255, 211, 77, 0.22);
+  --good: #5fd3a1;
+  --good-bg: #133227;
+  --bad: #ff8b80;
+  --bad-bg: #3b1a1c;
+  --warn: #f3c164;
+  --warn-bg: #352a13;
+  --info: #8fb0ff;
+  --info-bg: #1a2546;
+  --shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 10px 30px -14px rgba(0, 0, 0, 0.6);
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-card: var(--card);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-line-2: var(--line-2);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-tag: var(--tag);
+  --color-marker: var(--marker);
+  --color-good: var(--good);
+  --color-good-bg: var(--good-bg);
+  --color-bad: var(--bad);
+  --color-bad-bg: var(--bad-bg);
+  --color-warn: var(--warn);
+  --color-warn-bg: var(--warn-bg);
+  --color-info: var(--info);
+  --color-info-bg: var(--info-bg);
+  --font-display: 'Archivo Variable', 'Arial Narrow', system-ui, sans-serif;
+  --font-body: 'Atkinson Hyperlegible', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+  --shadow-card: var(--shadow);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.55;
+    min-height: 100dvh;
+  }
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    font-stretch: 112%;
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+  :focus-visible {
+    outline: 2.5px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+  button { cursor: pointer; }
+  button:disabled { cursor: default; }
+  ::selection { background: var(--marker-soft); }
+  input, select, textarea { font: inherit; color: inherit; }
+}
+
+@layer components {
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+  }
+  /* Receipt edge: a zigzag tear along the bottom of a card. */
+  .receipt {
+    position: relative;
+    padding-bottom: 22px;
+    -webkit-mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / 14px 100%;
+    mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / 14px 100%;
+  }
+  /* Price-tag chip with a punched hole. */
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    line-height: 1;
+    padding: 0.38em 0.6em 0.38em 1.15em;
+    border-radius: 3px 6px 6px 3px;
+    clip-path: polygon(0.55em 0, 100% 0, 100% 100%, 0.55em 100%, 0 50%);
+    background: var(--paper-2);
+    color: var(--ink-2);
+    position: relative;
+    white-space: nowrap;
+  }
+  .tag::before {
+    content: '';
+    position: absolute;
+    left: 0.48em;
+    top: 50%;
+    width: 0.32em;
+    height: 0.32em;
+    margin-top: -0.16em;
+    border-radius: 50%;
+    background: var(--card);
+  }
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+  .marker {
+    background: linear-gradient(transparent 40%, var(--marker-soft) 40%, var(--marker-soft) 90%, transparent 90%);
+    padding: 0 0.1em;
+  }
+  .prose-app p + p { margin-top: 0.75em; }
+  .prose-app ul { list-style: disc; padding-left: 1.2em; display: grid; gap: 0.35em; }
+  .prose-app ol { list-style: decimal; padding-left: 1.3em; display: grid; gap: 0.35em; }
+  .prose-app strong { font-weight: 700; }
+  .prose-app mark { background: linear-gradient(transparent 40%, var(--marker-soft) 40%, var(--marker-soft) 90%, transparent 90%); color: inherit; padding: 0 0.1em; }
+  .scroll-x { overflow-x: auto; scrollbar-width: thin; }
+  .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .safe-top { padding-top: env(safe-area-inset-top, 0px); }
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes pop {
+  0% { transform: scale(0.96); }
+  60% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+.animate-rise { animation: rise 0.28s ease-out both; }
+.animate-pop { animation: pop 0.3s ease-out both; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

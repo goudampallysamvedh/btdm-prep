@@ -1,0 +1,43 @@
+{
+  "name": "btdm-prep",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Offline study app for DECA Buying and Merchandising Team Decision Making (BTDM).",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "e2e": "playwright test",
+    "icons": "pwa-assets-generator",
+    "check:content": "vitest run src/data"
+  },
+  "dependencies": {
+    "@fontsource-variable/archivo": "^5.2.5",
+    "@fontsource/atkinson-hyperlegible": "^5.2.5",
+    "@fontsource/jetbrains-mono": "^5.2.5",
+    "idb-keyval": "^6.2.1",
+    "lucide-react": "^0.511.0",
+    "lz-string": "^1.5.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^7.6.0",
+    "zustand": "^5.0.5"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.52.0",
+    "@tailwindcss/vite": "^4.1.7",
+    "@types/node": "^22.15.18",
+    "@types/react": "^19.1.4",
+    "@types/react-dom": "^19.1.5",
+    "@vite-pwa/assets-generator": "^1.0.0",
+    "@vitejs/plugin-react": "^4.4.1",
+    "tailwindcss": "^4.1.7",
+    "typescript": "~5.8.3",
+    "vite": "^6.3.5",
+    "vite-plugin-pwa": "^1.0.0",
+    "vitest": "^3.1.3"
+  }
+}
