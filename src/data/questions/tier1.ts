@@ -7,7 +7,7 @@ export const TIER1 = [
     'Screening', ['Idea generation', 'Commercialization', 'Test marketing'],
     'Screening filters out weak or poorly fitting ideas early, before money is spent developing them. Commercialization is the full launch at the end.'),
   Q('PM-02', 'PM:003', 'PM.mix', 'A sporting goods store that sells tents and sleeping bags adds a new line of camping stoves. The store has increased its product mix',
-    'width.', ['depth.', 'consistency.', 'length.'],
+    'width.', ['depth.', 'consistency.', 'positioning.'],
     'Adding a whole new product line increases width. Depth (or length) refers to the number of items within a single line.'),
   Q('PM-03', 'PM:003', 'PM.mix', 'A shoe store starts carrying its best-selling running shoe in 12 colors instead of 4. The store has increased the product line\'s',
     'depth.', ['width.', 'consistency.', 'positioning.'],

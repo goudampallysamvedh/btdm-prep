@@ -52,7 +52,7 @@ export function CaseView({ c, partnerA, partnerB }: { c: CaseStudy; partnerA: st
         <Card key={t.title} className="grid gap-2">
           <h3 className="text-lg">{t.title}</h3>
           <div className="scroll-x">
-            <table className="num w-full min-w-[480px] text-sm">
+            <table className={`num w-full text-sm ${t.columns.length > 3 ? 'min-w-[480px]' : ''}`}>
               <thead>
                 <tr className="text-left">
                   {t.columns.map((col, i) => <th key={i} className="border-b border-line-2 px-2 py-1.5 text-xs uppercase tracking-wide text-muted">{col}</th>)}

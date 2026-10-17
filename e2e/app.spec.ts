@@ -1,0 +1,73 @@
+import { expect, test } from '@playwright/test'
+import { mkdirSync } from 'node:fs'
+
+const ROUTES = [
+  '', 'progress', 'exam', 'exam/practice?mode=smart&count=5', 'exam/mock', 'cards', 'math', 'math/markup', 'math/six-month-plan',
+  'learn', 'learn/guide', 'learn/guide/PM', 'learn/lessons', 'learn/lessons/vendors', 'learn/visual/plc', 'learn/visual/markdown-timing',
+  'learn/trends', 'learn/trends/collabs', 'learn/videos', 'learn/playbook', 'cases', 'cases/hallway-threads', 'cases/hallway-threads?tab=plan',
+  'cases/hallway-threads?tab=score', 'cases/hallway-threads?tab=timer', 'cases/judge', 'sync', 'settings',
+]
+
+mkdirSync('screenshots', { recursive: true })
+
+for (const theme of ['light', 'dark'] as const) {
+  test.describe(`every screen (${theme})`, () => {
+    test.use({ colorScheme: theme })
+    for (const r of ROUTES) {
+      test(`/${r || 'home'}`, async ({ page }, info) => {
+        const errors: string[] = []
+        page.on('pageerror', (e) => errors.push(e.message))
+        page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()) })
+        await page.goto(`#/${r}`)
+        await expect(page.locator('main h1').first()).toBeVisible({ timeout: 15_000 })
+        // No horizontal page scroll at this width.
+        const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)
+        expect(overflow, `horizontal overflow on /${r}`).toBeLessThanOrEqual(1)
+        expect(errors, errors.join('\n')).toEqual([])
+        if (theme === 'light' || r === '' || r === 'cases/hallway-threads') {
+          await page.screenshot({ path: `screenshots/${info.project.name}-${theme}-${(r || 'home').replace(/[/?=&]/g, '_')}.png`, fullPage: true })
+        }
+      })
+    }
+  })
+}
+
+test('practice flow produces a report card', async ({ page }) => {
+  await page.goto('#/exam/practice?mode=smart&count=3')
+  for (let i = 0; i < 3; i++) {
+    await page.getByRole('radio').first().click()
+    await expect(page.getByRole('status').first()).toBeVisible()
+    const btn = i < 2 ? page.getByRole('button', { name: /next/i }) : page.getByRole('button', { name: /see my report/i })
+    await btn.click()
+  }
+  await expect(page.getByRole('heading', { name: /report/i })).toBeVisible()
+  await expect(page.getByText(/What you learned and what's next/i)).toBeVisible()
+})
+
+test('math generator checks an answer and shows steps', async ({ page }) => {
+  await page.goto('#/math/markup')
+  await page.getByRole('textbox', { name: /your answer/i }).fill('1')
+  await page.getByRole('button', { name: /^check$/i }).click()
+  await expect(page.getByText(/The answer is|Correct:/)).toBeVisible()
+  await expect(page.locator('ol li').first()).toBeVisible()
+})
+
+test('works offline after the first load', async ({ page, context }) => {
+  await page.goto('')
+  await expect(page.locator('main h1').first()).toBeVisible()
+  // Wait for the service worker to install and take control.
+  await page.evaluate(async () => {
+    await navigator.serviceWorker.ready
+  })
+  await page.reload()
+  await page.waitForFunction(() => !!navigator.serviceWorker.controller, null, { timeout: 20_000 })
+  await context.setOffline(true)
+  await page.reload()
+  await expect(page.locator('main h1').first()).toBeVisible()
+  // Lazy-loaded screens must come from the precache too.
+  for (const r of ['cards', 'cases/northline', 'math/otb', 'learn/visual/channels', 'exam']) {
+    await page.goto(`#/${r}`)
+    await expect(page.locator('main h1').first()).toBeVisible()
+  }
+  await context.setOffline(false)
+})

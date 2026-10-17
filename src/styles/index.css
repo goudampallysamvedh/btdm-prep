@@ -189,8 +189,8 @@
     padding: 0 0.1em;
   }
   .prose-app p + p { margin-top: 0.75em; }
-  .prose-app ul { list-style: disc; padding-left: 1.2em; display: grid; gap: 0.35em; }
-  .prose-app ol { list-style: decimal; padding-left: 1.3em; display: grid; gap: 0.35em; }
+  .prose-app ul, ul.prose-app { list-style: disc; padding-left: 1.2em; display: grid; gap: 0.35em; }
+  .prose-app ol, ol.prose-app { list-style: decimal; padding-left: 1.3em; display: grid; gap: 0.35em; }
   .prose-app strong { font-weight: 700; }
   .prose-app mark { background: linear-gradient(transparent 40%, var(--marker-soft) 40%, var(--marker-soft) 90%, transparent 90%); color: inherit; padding: 0 0.1em; }
   .prose-app table { width: 100%; border-collapse: collapse; font-size: 0.92rem; margin: 0.5em 0; }

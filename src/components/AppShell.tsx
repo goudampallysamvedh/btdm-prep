@@ -39,7 +39,7 @@ function SideLink({ to, label, icon: Icon, end }: { to: string; label: string; i
       end={end}
       className={({ isActive }) =>
         cx(
-          'flex min-h-10 items-center gap-3 rounded-xl px-3 text-[0.95rem] font-bold no-underline transition-colors',
+          'flex min-h-9 items-center gap-3 rounded-xl px-3 text-[0.92rem] font-bold no-underline transition-colors',
           isActive ? 'bg-ink text-paper' : 'text-ink-2 hover:bg-paper-2',
         )
       }
@@ -68,22 +68,22 @@ export function AppShell() {
 
       {/* Desktop sidebar */}
       <aside className="sticky top-0 hidden h-dvh flex-col gap-1 overflow-y-auto border-r border-line bg-paper px-3 py-5 md:flex" aria-label="Main navigation">
-        <div className="mb-4 px-2">
+        <div className="mb-3 px-2">
           <Logo />
         </div>
-        <nav className="grid gap-1" aria-label="Primary">
+        <nav className="grid gap-0.5" aria-label="Main sections">
           {primary.map((l) => (
             <SideLink key={l.to} {...l} />
           ))}
         </nav>
-        <div className="eyebrow mb-1 mt-5 px-3">Learn</div>
-        <nav className="grid gap-1" aria-label="Learn">
+        <div className="eyebrow mb-1 mt-4 px-3">Learn</div>
+        <nav className="grid gap-0.5" aria-label="Learn">
           {learn.map((l) => (
             <SideLink key={l.to} {...l} />
           ))}
         </nav>
-        <div className="eyebrow mb-1 mt-5 px-3">You</div>
-        <nav className="grid gap-1" aria-label="You">
+        <div className="eyebrow mb-1 mt-4 px-3">You</div>
+        <nav className="grid gap-0.5" aria-label="You">
           {you.map((l) => (
             <SideLink key={l.to} {...l} />
           ))}
