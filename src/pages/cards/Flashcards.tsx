@@ -16,11 +16,14 @@ const PI_COUNTS = {
   case: PI_LIST.filter((p) => p.inCase).length,
   tier2: PI_LIST.filter((p) => p.tier === 2).length,
 }
-import { Bar, Button, Disclosure, Empty, PageHeader, Segmented, Tag, cx, inputCls } from '@/components/ui'
+import { Bar, Button, Disclosure, Empty, LinkButton, PageHeader, Segmented, Tag, cx, inputCls } from '@/components/ui'
+import { DAILY_GOAL, useTodayCount } from '@/lib/today'
 
 type Deck = 'all' | 'kit' | 'merch' | 'trends' | 'pi'
 type PIFilter = 'all' | 'exam' | 'case' | 'tier2'
 const NEW_PER_SESSION = 15
+/** Keep sessions short: today's plan asks for 10; otherwise 20 at a time. */
+const SESSION_SIZE = 20
 
 export default function Flashcards() {
   const hydrated = useHydrated()
@@ -32,6 +35,8 @@ function FlashcardsInner() {
   const [params, setParams] = useSearchParams()
   const leitner = useStore((s) => s.leitner)
   const topic = params.get('topic') ?? ''
+  const daily = params.get('daily') === '1'
+  const todayCards = useTodayCount('cards')
   const [deck, setDeck] = useState<Deck>((params.get('deck') as Deck) ?? 'all')
   const [area, setArea] = useState<AreaCode | ''>((params.get('area') as AreaCode) ?? '')
   const [mode, setMode] = useState<'study' | 'browse'>('study')
@@ -54,8 +59,8 @@ function FlashcardsInner() {
     if (mode === 'browse') return shuffle(filtered)
     const due = dueCards(filtered, st)
     const fresh = newCards(filtered, st).slice(0, topic ? 50 : NEW_PER_SESSION)
-    return [...due, ...fresh]
-  }, [filtered, mode, topic])
+    return [...due, ...fresh].slice(0, daily ? DAILY_GOAL.cards : SESSION_SIZE)
+  }, [filtered, mode, topic, daily])
 
   const [queue, setQueue] = useState<Flashcard[]>(buildQueue)
   const [sessionKey, setSessionKey] = useState(0)
@@ -72,6 +77,12 @@ function FlashcardsInner() {
   return (
     <>
       <PageHeader title="Flashcards">Swipe right if you knew it, left if not. Cards you know come back less often.</PageHeader>
+      {daily && (
+        <div className="mb-3 flex items-center gap-3 rounded-xl bg-accent-soft px-4 py-3 text-sm">
+          <span className="font-bold">Today's goal: {Math.min(todayCards, DAILY_GOAL.cards)} of {DAILY_GOAL.cards} cards</span>
+          <Bar value={todayCards / DAILY_GOAL.cards} tone={todayCards >= DAILY_GOAL.cards ? 'good' : 'accent'} label="Today's flashcard goal" />
+        </div>
+      )}
 
       <div className="mb-4 grid gap-3">
         <div className="scroll-x -mx-1 px-1">
@@ -148,12 +159,12 @@ function FlashcardsInner() {
         </Disclosure>
       </div>
 
-      <Session key={sessionKey} queue={queue} mode={mode} onRestart={() => { setQueue(buildQueue()); setSessionKey((k) => k + 1) }} filteredCount={filtered.length} />
+      <Session key={sessionKey} queue={queue} mode={mode} daily={daily} onRestart={() => { setQueue(buildQueue()); setSessionKey((k) => k + 1) }} filteredCount={filtered.length} />
     </>
   )
 }
 
-function Session({ queue: initial, mode, onRestart, filteredCount }: { queue: Flashcard[]; mode: 'study' | 'browse'; onRestart: () => void; filteredCount: number }) {
+function Session({ queue: initial, mode, daily, onRestart, filteredCount }: { queue: Flashcard[]; mode: 'study' | 'browse'; daily: boolean; onRestart: () => void; filteredCount: number }) {
   const [queue, setQueue] = useState(initial)
   const [flipped, setFlipped] = useState(false)
   const [done, setDone] = useState({ known: 0, again: 0 })
@@ -170,6 +181,7 @@ function Session({ queue: initial, mode, onRestart, filteredCount }: { queue: Fl
       const prev = st.leitner[card.id]
       st.setLeitner(card.id, review(prev, known))
       st.logActivity()
+      st.bumpDaily('cards')
       setHistory((h) => [...h, { card, prev, known }])
       setDone((d) => ({ known: d.known + (known ? 1 : 0), again: d.again + (known ? 0 : 1) }))
       setFlipped(false)
@@ -215,11 +227,12 @@ function Session({ queue: initial, mode, onRestart, filteredCount }: { queue: Fl
   if (!card) {
     return (
       <Empty
-        title={done.known + done.again ? 'Session complete' : filteredCount ? 'Nothing due right now' : 'No cards match'}
+        title={daily && done.known + done.again ? 'Done for today!' : done.known + done.again ? 'Session complete' : filteredCount ? 'Nothing due right now' : 'No cards match'}
         action={
           <div className="flex flex-wrap justify-center gap-2">
-            <Button onClick={onRestart} icon={<RotateCcw size={16} aria-hidden />}>
-              {done.known + done.again ? 'Study more' : 'Check again'}
+            {daily && <LinkButton to="/">Back to today's plan</LinkButton>}
+            <Button variant={daily ? 'ghost' : 'primary'} onClick={onRestart} icon={<RotateCcw size={16} aria-hidden />}>
+              {done.known + done.again ? (daily ? 'Keep going (optional)' : 'Study 20 more') : 'Check again'}
             </Button>
           </div>
         }

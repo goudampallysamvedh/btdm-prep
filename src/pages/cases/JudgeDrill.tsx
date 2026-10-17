@@ -5,6 +5,7 @@ import { useStore } from '@/lib/store'
 import { shuffle } from '@/lib/random'
 import { fmtClock } from '@/lib/dates'
 import { Button, Card, PageHeader, cx, inputCls } from '@/components/ui'
+import { DailyGoal } from '@/components/DailyGoal'
 
 const ANSWER_SEC = 45
 
@@ -35,6 +36,7 @@ export default function JudgeDrill() {
   const next = () => {
     useStore.getState().markJudgeQ(q.id)
     useStore.getState().logActivity()
+    useStore.getState().bumpDaily('judge')
     setI(i + 1)
     setTip(false)
     setLeft(ANSWER_SEC)
@@ -49,6 +51,7 @@ export default function JudgeDrill() {
         One partner reads the question; the other answers out loud in under 45 seconds. Then swap.
       </PageHeader>
 
+      <DailyGoal kind="judge" />
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <label className="flex items-center gap-2 text-sm">
           <span className="font-bold">Category</span>

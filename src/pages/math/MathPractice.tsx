@@ -45,6 +45,7 @@ export function MathPractice({ kinds, title = 'Endless practice' }: { kinds?: st
     const st = useStore.getState()
     st.recordMath(GENERATOR_BY_KIND[p.kind]?.label ?? p.kind, ok)
     st.logActivity()
+    st.bumpDaily('math')
     setTimeout(() => nextRef.current?.focus(), 30)
   }
 

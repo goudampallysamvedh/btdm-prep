@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { TOOLS } from './tools'
 import { MathPractice } from './MathPractice'
+import { DailyGoal } from '@/components/DailyGoal'
 import { PageHeader, SectionTitle } from '@/components/ui'
 
 export default function MathLab() {
@@ -11,6 +12,7 @@ export default function MathLab() {
         Practice problems with step-by-step answers, plus calculators for every formula.
       </PageHeader>
 
+      <DailyGoal kind="math" />
       <MathPractice />
 
       <p className="mt-3 text-sm text-muted">Tip: BTDM cases need little math. One number (a margin or a sell-through goal) is enough to back up your idea.</p>

@@ -74,6 +74,7 @@ function PracticeRun() {
     next[i] = orig
     setAnswers(next)
     useStore.getState().logActivity()
+    useStore.getState().bumpDaily('questions')
     setTimeout(() => nextRef.current?.focus(), 50)
   }
 

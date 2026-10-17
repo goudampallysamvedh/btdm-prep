@@ -28,6 +28,8 @@ export interface Settings {
   dailyGoal: number
 }
 
+export type DailyKind = 'cards' | 'questions' | 'math' | 'judge'
+
 export interface PartnerSummary {
   name: string
   projected: number
@@ -53,6 +55,8 @@ export interface ProgressState {
   partner: PartnerSummary | null
   /** dayKey -> number of study actions that day. */
   activity: Record<string, number>
+  /** dayKey -> small counters for Today's plan (cards, questions, math, judge). */
+  daily: Record<string, Partial<Record<DailyKind, number>>>
   tests: TestRecord[]
   leitner: Record<string, LeitnerState>
   caseAttempts: CaseAttempt[]
@@ -67,6 +71,7 @@ export interface ProgressState {
 interface Actions {
   setSettings: (s: Partial<Settings>) => void
   logActivity: (n?: number) => void
+  bumpDaily: (kind: DailyKind) => void
   addTest: (t: TestRecord) => void
   deleteTest: (id: string) => void
   setLeitner: (id: string, s: LeitnerState) => void
@@ -99,6 +104,7 @@ export const emptyProgress: ProgressState = {
   officialScores: [],
   partner: null,
   activity: {},
+  daily: {},
   tests: [],
   leitner: {},
   caseAttempts: [],
@@ -125,6 +131,14 @@ export const useStore = create<ProgressState & Actions>()(
         setState((st) => {
           const k = dayKey(new Date())
           return { activity: { ...st.activity, [k]: (st.activity[k] ?? 0) + n } }
+        }),
+      bumpDaily: (kind) =>
+        setState((st) => {
+          const k = dayKey(new Date())
+          const day = st.daily[k] ?? {}
+          // Keep only the last 14 days.
+          const keep = Object.fromEntries(Object.entries(st.daily).filter(([d]) => d >= dayKey(new Date(Date.now() - 14 * 86_400_000))))
+          return { daily: { ...keep, [k]: { ...day, [kind]: (day[kind] ?? 0) + 1 } } }
         }),
       addTest: (t) => setState((st) => ({ tests: [...st.tests, t] })),
       deleteTest: (id) => setState((st) => ({ tests: st.tests.filter((t) => t.id !== id) })),

@@ -3,30 +3,19 @@ import { Link } from 'react-router-dom'
 import { ArrowRight, CalendarDays, Check, Flame, Target } from 'lucide-react'
 import { useStore } from '@/lib/store'
 import { areaReadiness, projectedScore, scoreOf } from '@/lib/mastery'
-import { dueCards } from '@/lib/srs'
-import { daysUntil, streak } from '@/lib/dates'
+import { buildPlan } from '@/lib/today'
+import { dayKey, daysUntil, streak } from '@/lib/dates'
 import { AREAS, AREA_BY_CODE } from '@/data/areas'
-import { FLASHCARDS } from '@/data/flashcards'
-import { LESSONS } from '@/data/lessons'
 import { Bar, Card, Disclosure, LinkButton, Tag, cx, toneFor } from '@/components/ui'
-
-interface Step {
-  title: string
-  sub: string
-  to: string
-  done: boolean
-}
 
 export default function Dashboard() {
   const settings = useStore((s) => s.settings)
   const tests = useStore((s) => s.tests)
   const activity = useStore((s) => s.activity)
-  const leitner = useStore((s) => s.leitner)
   const activeMock = useStore((s) => s.activeMock)
   const partner = useStore((s) => s.partner)
-  const caseAttempts = useStore((s) => s.caseAttempts)
   const lessonsDone = useStore((s) => s.lessonsDone)
-  const mathStats = useStore((s) => s.mathStats)
+  const trendsRead = useStore((s) => s.trendsRead)
 
   const ready = useMemo(() => areaReadiness(tests), [tests])
   const projected = projectedScore(ready)
@@ -36,44 +25,11 @@ export default function Dashboard() {
   const last = [...tests].sort((a, b) => b.finishedAt - a.finishedAt)[0]
   const name = settings.me === 'A' ? settings.partnerA : settings.partnerB
 
-  // ----- Today's plan: three steps, the third rotates through the week -----
-  const startOfDay = new Date(new Date().setHours(0, 0, 0, 0)).getTime()
-  const due = dueCards(FLASHCARDS.filter((c) => c.deck !== 'pi'), leitner).length
-  const cardsToday = Object.values(leitner).filter((s) => (s.last ?? 0) >= startOfDay).length
-  const testsToday = tests.filter((t) => t.finishedAt >= startOfDay)
-  const weakest = AREA_BY_CODE[focus[0].area]
-  const nextLesson = LESSONS.find((l) => !lessonsDone[l.id])
-
-  const steps: Step[] = [
-    {
-      title: 'Review flashcards',
-      sub: cardsToday ? `${cardsToday} reviewed today` : due ? `${due} cards due` : 'Learn a few new cards',
-      to: '/cards',
-      done: cardsToday >= 10 || (cardsToday > 0 && due === 0),
-    },
-    {
-      title: 'Practice 10 exam questions',
-      sub: `Focus: ${weakest.name}`,
-      to: `/exam/practice?mode=area&area=${weakest.code}&count=10`,
-      done: testsToday.length > 0,
-    },
-    thirdStep(),
-  ]
+  // ----- Today's plan: three small steps, about 10 minutes -----
+  const counts = useStore((s) => s.daily[dayKey(new Date())]) ?? {}
+  const steps = buildPlan({ counts, focusArea: focus[0].area, lessonsDone, trendsRead })
   const nextStep = steps.find((s) => !s.done)
   const doneCount = steps.filter((s) => s.done).length
-
-  function thirdStep(): Step {
-    const dow = new Date().getDay()
-    if (dow === 0 || dow === 3)
-      return { title: 'Run a case with your partner', sub: '30-minute prep + 15-minute presentation', to: '/cases', done: caseAttempts.some((a) => a.at >= startOfDay) }
-    if (dow === 2 || dow === 5)
-      return { title: 'Retail math warm-up', sub: 'Five quick problems', to: '/math', done: Object.values(mathStats).some((m) => (m.last ?? 0) >= startOfDay) }
-    if (dow === 6)
-      return { title: 'Take a timed mock exam', sub: '100 questions, like the real thing', to: '/exam/mock', done: testsToday.some((t) => t.kind === 'mock') }
-    return nextLesson
-      ? { title: `Lesson: ${nextLesson.title}`, sub: `${nextLesson.minutes} minutes`, to: `/learn/lessons/${nextLesson.id}`, done: Object.values(lessonsDone).some((t) => t >= startOfDay) }
-      : { title: 'Drill judge questions', sub: 'Answer five out loud', to: '/cases/judge', done: false }
-  }
 
   return (
     <>
@@ -110,12 +66,12 @@ export default function Dashboard() {
         </Card>
       )}
 
-      <Card className="receipt grid gap-4">
+      <Card className="receipt grid grid-cols-1 gap-4">
         <div className="flex items-baseline justify-between gap-2">
           <h2 className="text-xl">Today's plan</h2>
-          <span className="num text-sm text-muted">{doneCount}/3 done</span>
+          <span className="num text-sm text-muted">{doneCount}/3 · about 10 min</span>
         </div>
-        <ol className="grid gap-2">
+        <ol className="grid grid-cols-1 gap-2">
           {steps.map((s, i) => (
             <li key={s.title}>
               <Link
@@ -133,7 +89,7 @@ export default function Dashboard() {
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className={cx('block font-bold', s.done && 'text-muted line-through')}>{s.title}</span>
-                  <span className="block truncate text-sm text-muted">{s.sub}</span>
+                  <span className="block truncate text-sm text-muted">{s.progress && !s.done && s.progress.have > 0 ? `${s.progress.have} of ${s.progress.need} done` : s.sub}</span>
                 </span>
                 <ArrowRight size={18} className="shrink-0 text-muted" aria-hidden />
                 <span className="sr-only">{s.done ? '(done)' : ''}</span>
@@ -146,7 +102,10 @@ export default function Dashboard() {
             Start step {steps.indexOf(nextStep) + 1}
           </LinkButton>
         ) : (
-          <p className="rounded-xl bg-good-bg px-4 py-3 text-center font-bold text-good">All done for today. Nice work! 🎉</p>
+          <div className="grid gap-1 rounded-xl bg-good-bg px-4 py-3 text-center">
+            <p className="font-bold text-good">All done for today. Nice work! 🎉</p>
+            <p className="text-sm text-muted">Want more? Try a <Link to="/cases" className="font-bold">case with your partner</Link> or a <Link to="/exam/mock" className="font-bold">mock exam</Link> on a free day.</p>
+          </div>
         )}
       </Card>
 
