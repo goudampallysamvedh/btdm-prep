@@ -9,13 +9,13 @@ export function emptyPlan(c: CaseStudy): CasePlan {
   return {
     caseId: c.id,
     updatedAt: Date.now(),
-    owners: Object.fromEntries(c.pis.map((p, i) => [i, p.fits === 0 ? 'A' : 'B'])) as Record<number, 'A' | 'B'>,
+    owners: {},
     points: {},
     handoffs: {},
     opener: '',
     closer: '',
     solution: '',
-    judgeQs: c.judgeQuestions.map((q, i) => ({ q, by: (i === 0 ? 'A' : 'B') as 'A' | 'B' })),
+    judgeQs: c.judgeQuestions.map((q) => ({ q, by: '' as const })),
     notes: '',
   }
 }
@@ -27,12 +27,13 @@ export interface PlanCheck {
 
 export function planChecks(c: CaseStudy, p: CasePlan): PlanCheck[] {
   const a = c.pis.filter((_, i) => p.owners[i] === 'A').length
-  const b = c.pis.length - a
+  const b = c.pis.filter((_, i) => p.owners[i] === 'B').length
   const order = c.pis.map((_, i) => i)
-  const switches = order.slice(0, -1).filter((i) => p.owners[i] !== p.owners[i + 1])
+  const switches = order.slice(0, -1).filter((i) => p.owners[i] && p.owners[i + 1] && p.owners[i] !== p.owners[i + 1])
   return [
-    { ok: a >= 2 && b >= 2, label: `PIs are balanced (A: ${a}, B: ${b}; each partner owns at least 2)` },
-    { ok: p.judgeQs.some((q) => q.by === 'A') && p.judgeQs.some((q) => q.by === 'B'), label: 'Each partner will field at least one judge question' },
+    { ok: a + b === c.pis.length, label: 'You decided who covers each PI' },
+    { ok: a >= 1 && b >= 1, label: 'Both partners present part of the plan' },
+    { ok: p.judgeQs.some((q) => q.by === 'A') && p.judgeQs.some((q) => q.by === 'B'), label: 'Both partners plan to answer at least one judge question (DECA expects this)' },
     { ok: c.pis.every((_, i) => (p.points[i] ?? '').trim().length >= 10), label: 'Every PI has talking points (define → explain → apply)' },
     { ok: switches.every((i) => (p.handoffs[i] ?? '').trim().length >= 5), label: `Handoff lines written at every switch (${switches.length})` },
     { ok: p.opener.trim().length >= 10 && p.closer.trim().length >= 10, label: 'Opener and close are written' },
@@ -83,27 +84,27 @@ export function CasePlanner({ c, partnerA, partnerB }: { c: CaseStudy; partnerA:
       <Card className="grid gap-2">
         <label className="grid gap-1">
           <span className="font-bold">Opener (both partners introduce themselves and the challenge)</span>
-          <textarea className={inputCls + ' min-h-20'} value={plan.opener} onChange={(e) => update({ opener: e.target.value })} placeholder={`"Good afternoon! I'm ${partnerA}, ${c.roles[0]}, and this is ${partnerB}, ${c.roles[1]}. Thank you for meeting with us. You asked us to…"`} />
+          <textarea className={inputCls + ' min-h-20'} value={plan.opener} onChange={(e) => update({ opener: e.target.value })} placeholder={`"Good afternoon! I'm [name], the [role], and this is [name], the [role]. Thank you for meeting with us. You asked us to…"`} />
         </label>
       </Card>
 
       <ol className="grid gap-3">
         {c.pis.map((p, i) => {
-          const owner = plan.owners[i] ?? 'A'
+          const owner = plan.owners[i] ?? ''
           const next = c.pis[i + 1]
-          const switchNext = next && (plan.owners[i + 1] ?? 'A') !== owner
+          const nextOwner = next ? plan.owners[i + 1] ?? '' : ''
+          const switchNext = !!next && !!owner && !!nextOwner && nextOwner !== owner
           return (
             <li key={p.code}>
-              <Card className={cx('grid gap-2 border-l-4', owner === 'A' ? 'border-l-accent' : 'border-l-info')}>
+              <Card className={cx('grid gap-2 border-l-4', owner === 'A' ? 'border-l-accent' : owner === 'B' ? 'border-l-info' : 'border-l-line')}>
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="flex min-w-0 items-center gap-2">
                     <span className="num text-sm font-bold text-muted">{i + 1}</span>
                     <Tag>{p.code}</Tag>
                     <span className="text-sm font-bold">{p.text}</span>
                   </span>
-                  <Segmented<'A' | 'B'> label={`Who presents ${p.code}`} value={owner} onChange={(v) => update({ owners: { ...plan.owners, [i]: v } })} options={[{ value: 'A', label: partnerA }, { value: 'B', label: partnerB }]} />
+                  <Segmented<'A' | 'B' | ''> label={`Who presents ${p.code}`} value={owner} onChange={(v) => update({ owners: { ...plan.owners, [i]: v as 'A' | 'B' } })} options={[{ value: 'A', label: partnerA }, { value: 'B', label: partnerB }]} />
                 </div>
-                <p className="text-xs text-muted">Best fit: the {c.roles[p.fits]}</p>
                 <textarea
                   aria-label={`Talking points for ${p.code}`}
                   className={inputCls + ' min-h-24'}
@@ -113,8 +114,8 @@ export function CasePlanner({ c, partnerA, partnerB }: { c: CaseStudy; partnerA:
                 />
                 {switchNext && (
                   <label className="grid gap-1 rounded-xl bg-paper-2 p-2">
-                    <span className="text-xs font-bold">Handoff: {name(owner)} → {name(plan.owners[i + 1] ?? 'A')}</span>
-                    <input className={inputCls} value={plan.handoffs[i] ?? ''} onChange={(e) => update({ handoffs: { ...plan.handoffs, [i]: e.target.value } })} placeholder={`"…and that's how we'll position it. ${name(plan.owners[i + 1] ?? 'A')} will explain how we…"`} />
+                    <span className="text-xs font-bold">Handoff: {name(owner)} → {name(nextOwner)}</span>
+                    <input className={inputCls} value={plan.handoffs[i] ?? ''} onChange={(e) => update({ handoffs: { ...plan.handoffs, [i]: e.target.value } })} placeholder={`"…and that's how we'll position it. ${name(nextOwner)} will explain how we…"`} />
                   </label>
                 )}
               </Card>

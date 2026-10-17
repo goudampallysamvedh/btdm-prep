@@ -80,7 +80,7 @@ export const CASE_RESEARCH = {
     { year: 2023, setting: 'Video game retail chain', roles: 'Director of merchandising + director of marketing', area: 'Market Planning', pis: 'Generate product ideas; product mix; positioning; marketing planning; market identification; marketing strategies; situation analysis' },
   ],
   takeaways: [
-    'Expect two named roles (merchandising + branding/marketing/customer relations). Split PIs to fit the roles.',
+    'Expect two named roles (merchandising + branding/marketing/customer relations). Decide together how to split the PIs.',
     'Most-used areas: Product/Service Management (branding, positioning, product mix, product ideas), Selling, Market Planning, Economics, Customer Relations, and Operations (vendors).',
     'The judge asks every team the same two standard questions (one usually about promotion), then may ask clarifying ones.',
     'Retail math won\'t be required, but one well-placed number (a margin, a sell-through goal, a break-even) makes your solution "effective" and shows critical thinking.',
@@ -112,9 +112,9 @@ export const PI_FORMULA = {
 }
 
 export const PREP_PHASES = [
-  { id: 'read', label: 'Read & split PIs', minutes: 5, tips: ['Both partners read everything once, underlining numbers and every task the judge wants.', 'Match the 5 PIs to the tasks. Assign each PI to the partner whose role fits it.'] },
+  { id: 'read', label: 'Read & split PIs', minutes: 5, tips: ['Both partners read everything once, underlining numbers and every task the judge wants.', 'Match the 5 PIs to the tasks, then decide together who covers each one.'] },
   { id: 'plan', label: 'Build the plan', minutes: 12, tips: ['Agree on ONE solution first, then each partner outlines their PIs with define → explain → apply.', 'Add one number to make it effective (budget, margin, sell-through goal, timeline).', 'Decide what makes it unique: a fresh idea the judge hasn\'t heard all day.'] },
-  { id: 'assign', label: 'Assign speaking parts', minutes: 8, tips: ['Write the opener, the order of PIs, and each handoff line.', 'Predict 3 judge questions and decide who takes each. Both of you must answer at least one.', 'Plan a strong close: recap benefits, then invite questions.'] },
+  { id: 'assign', label: 'Assign speaking parts', minutes: 8, tips: ['Write the opener, the order of PIs, and each handoff line.', 'Predict 3 judge questions. DECA expects each partner to answer at least one.', 'Plan a strong close: recap benefits, then invite questions.'] },
   { id: 'rehearse', label: 'Rehearse handoffs', minutes: 5, tips: ['Whisper through the opener and every handoff once.', 'Check timing: aim for 8–10 minutes of presenting, leaving room for questions.', 'Organize notes so either partner can find any point quickly.'] },
 ]
 
@@ -131,6 +131,5 @@ export const TEAM_TIPS = [
   'Collaboration shows: nod and look at your partner while they speak; add to their answer only to strengthen it ("To build on that…").',
   'Handoffs should pass the topic, not just the turn: "…and that\'s why the price point works. Jordan will explain how we\'ll get teens into the store."',
   'Never contradict your partner in front of the judge. If they misspeak, add a correction gently in your next point.',
-  'Split judge questions by role: merchandising questions to the merchandising manager, brand/promotion questions to the branding manager.',
   'If you finish early, use the time: a quick risk-and-backup plan or a 30/60/90-day timeline.',
 ]

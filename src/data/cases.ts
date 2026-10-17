@@ -20,6 +20,10 @@ export interface CaseStudy {
   id: string
   title: string
   company: string
+  /** Two-sentence summary used for judge-question practice. */
+  brief: string
+  /** An example plan to defend when the team hasn't written its own. */
+  examplePlan: string
   /** Instructional area printed on the case cover. */
   area: string
   roles: [string, string]
@@ -45,6 +49,8 @@ export interface CaseStudy {
 export const CASES: CaseStudy[] = [
   {
     id: 'hallway-threads',
+    brief: "HALLWAY THREADS, a 140-store teen apparel chain, lost sales last back-to-school season. The VP of merchandising wants one store-exclusive product that gets teens talking and coming back.",
+    examplePlan: "A creator-designed capsule of graphic tees and accessories under $25, released in three drops starting mid-July, with early access for loyalty members.",
     title: 'A back-to-school exclusive for teens',
     company: 'HALLWAY THREADS',
     area: 'Product/Service Management',
@@ -80,6 +86,8 @@ export const CASES: CaseStudy[] = [
   },
   {
     id: 'northline',
+    brief: "NORTHLINE OUTDOOR is launching its first private-label jacket at $129 and must pick one of three vendors (Vietnam, Mexico, or the USA). Jackets must arrive by August 15.",
+    examplePlan: "Choose the Mexican vendor for its on-time record and low defects, earn about a 62% markup at $129, and review the vendor every quarter.",
     title: 'Choosing a vendor for a private-label jacket',
     company: 'NORTHLINE OUTDOOR',
     area: 'Operations',
@@ -114,6 +122,8 @@ export const CASES: CaseStudy[] = [
   },
   {
     id: 'freshcart',
+    brief: "FRESHCART MARKET wants store brands to grow from 14% to 20% of snack and beverage sales. It can't afford to lose the national brands that fund its promotions.",
+    examplePlan: "Add a premium store-brand tier, take shelf space only from slow national items, and run joint promotions with the top national vendors.",
     title: 'Growing store brands without losing national brands',
     company: 'FRESHCART MARKET',
     area: 'Channel Management',
@@ -149,6 +159,8 @@ export const CASES: CaseStudy[] = [
   },
   {
     id: 'glow',
+    brief: "GLOW & CO., a teen beauty chain, has too much slow-selling skin care while newer clean products sell out. The holidays start in seven weeks.",
+    examplePlan: "Mark down the slow viral items now, reorder the clean products, and check sell-through every week.",
     title: 'Too much inventory, falling sell-through',
     company: 'GLOW & CO.',
     area: 'Pricing',
@@ -183,6 +195,8 @@ export const CASES: CaseStudy[] = [
   },
   {
     id: 'bayside',
+    brief: "BAYSIDE HOME's stores and website run separately. Online returns are high and shoppers can't see what's in stock nearby.",
+    examplePlan: "Launch buy online, pick up in store with real-time stock, one price everywhere, and returns at any store.",
     title: 'Connecting stores and online',
     company: 'BAYSIDE HOME',
     area: 'Customer Relations',
@@ -218,6 +232,8 @@ export const CASES: CaseStudy[] = [
   },
   {
     id: 'playvault',
+    brief: "PLAYVAULT, a toy chain, has a limited supply of the hot holiday toy BYTEBOTS. Last year it ran out early and then marked down leftovers.",
+    examplePlan: "Allocate by store sales with a warehouse reserve, limit two per customer, and reorder only if week-one sell-through is strong.",
     title: 'Planning the holiday season for a hot toy',
     company: 'PLAYVAULT',
     area: 'Market Planning',
@@ -253,6 +269,8 @@ export const CASES: CaseStudy[] = [
   },
   {
     id: 'stride',
+    brief: "STRIDE ATHLETIC's sneaker shoppers buy once and rarely come back. Only 15% of loyalty members buy twice a year.",
+    examplePlan: "Fit-first selling, a 30-day fit guarantee, and a sneaker trade-in for store credit to bring teens back.",
     title: 'Building a loyal clientele for sneakers',
     company: 'STRIDE ATHLETIC',
     area: 'Selling',
@@ -287,6 +305,8 @@ export const CASES: CaseStudy[] = [
   },
   {
     id: 'valumax',
+    brief: "VALUMAX, a big-box discounter, is deciding whether to shrink its falling electronics department to grow beauty and wellness.",
+    examplePlan: "Test moving 3,000 square feet to beauty in 50 stores, keep electronics accessories, and expand only if sales per square foot rise.",
     title: 'Which category deserves the space?',
     company: 'VALUMAX',
     area: 'Economics',

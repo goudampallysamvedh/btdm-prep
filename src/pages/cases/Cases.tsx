@@ -36,7 +36,7 @@ export default function Cases() {
                 <span className="flex flex-wrap gap-1">{c.pis.map((p) => <Tag key={p.code}>{p.code}</Tag>)}</span>
                 <span className="mt-auto flex flex-wrap gap-2 pt-1">
                   {best !== null ? <Pill tone="good">Best {best}/100 · {mine.length} run{mine.length > 1 ? 's' : ''}</Pill> : <Pill>Not tried</Pill>}
-                  {plan && <Pill tone="info">Plan {ready}/6</Pill>}
+                  {plan && <Pill tone="info">Plan {ready}/{planChecks(c, plan).length}</Pill>}
                 </span>
               </Link>
             </li>
@@ -47,7 +47,7 @@ export default function Cases() {
       <Card className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <span className="flex items-center gap-3">
           <MessagesSquare size={22} className="text-accent" aria-hidden />
-          <span><b>Judge question drill</b><span className="block text-sm text-muted">120 follow-up questions with what a strong answer includes</span></span>
+          <span><b>Judge question drill</b><span className="block text-sm text-muted">80 follow-up questions, practiced against a case</span></span>
         </span>
         <LinkButton to="/cases/judge">Drill now</LinkButton>
       </Card>

@@ -44,7 +44,7 @@ function Sim({ c }: { c: CaseStudy }) {
         <ArrowLeft size={16} aria-hidden /> All cases
       </Link>
       <PageHeader eyebrow={`${c.company} · ${c.area}`} title={c.title}>
-        Roles: <b>{c.roles[0]}</b> ({settings.partnerA}) and <b>{c.roles[1]}</b> ({settings.partnerB}). Judge: {c.judge}.
+        Your roles: <b>{c.roles[0]}</b> and <b>{c.roles[1]}</b>. Judge: {c.judge}.
       </PageHeader>
 
       <div className="sticky top-[57px] z-10 -mx-4 mb-4 bg-paper/95 px-4 py-2 backdrop-blur md:top-0 md:mx-0 md:px-0">
@@ -67,7 +67,7 @@ function Sim({ c }: { c: CaseStudy }) {
       <div role="tabpanel">
         {tab === 'case' && (
           <>
-            <CaseView c={c} partnerA={settings.partnerA} partnerB={settings.partnerB} />
+            <CaseView c={c} />
             <div className="mt-4 flex flex-wrap gap-2">
               <Button onClick={() => setTab('timer')}>Start the 30-minute prep</Button>
               <Button variant="ghost" onClick={() => setTab('plan')}>Open the partner planner</Button>
@@ -88,7 +88,7 @@ function Sim({ c }: { c: CaseStudy }) {
           </div>
         )}
         {tab === 'plan' && <CasePlanner c={c} partnerA={settings.partnerA} partnerB={settings.partnerB} />}
-        {tab === 'questions' && <CaseQuestions c={c} partnerA={settings.partnerA} partnerB={settings.partnerB} />}
+        {tab === 'questions' && <CaseQuestions c={c} />}
         {tab === 'score' && (
           <>
             {activeProviders().length > 1 && <p className="mb-3 text-sm text-muted">An AI judge is configured on this build; self-scoring is shown below.</p>}
@@ -101,7 +101,7 @@ function Sim({ c }: { c: CaseStudy }) {
   )
 }
 
-function CaseQuestions({ c, partnerA, partnerB }: { c: CaseStudy; partnerA: string; partnerB: string }) {
+function CaseQuestions({ c }: { c: CaseStudy }) {
   const [seed, setSeed] = useState(0)
   const extra = useMemo(() => shuffle(JUDGE_QUESTIONS).slice(0, 6), [seed])
   const [shown, setShown] = useState<Record<string, boolean>>({})
@@ -109,7 +109,7 @@ function CaseQuestions({ c, partnerA, partnerB }: { c: CaseStudy; partnerA: stri
     <div className="grid gap-4">
       <Card className="grid gap-3">
         <h2 className="text-lg">The judge's standard questions</h2>
-        <p className="text-sm text-muted">The judge asks every team these. Decide now who answers each: both {partnerA} and {partnerB} should answer at least one.</p>
+        <p className="text-sm text-muted">The judge asks every team these. DECA expects each partner to answer at least one judge question.</p>
         <ol className="grid gap-2">
           {c.judgeQuestions.map((q) => <li key={q} className="rounded-xl border-l-4 border-accent bg-accent-soft/50 px-3 py-2 italic">"{q}"</li>)}
         </ol>
@@ -119,12 +119,12 @@ function CaseQuestions({ c, partnerA, partnerB }: { c: CaseStudy; partnerA: stri
           <h2 className="text-lg">Practice follow-ups</h2>
           <Button size="sm" variant="ghost" onClick={() => setSeed(seed + 1)}>New set</Button>
         </div>
-        <p className="text-sm text-muted">Answer out loud in 30–45 seconds: pause, restate, answer in 2–3 sentences, tie it back to your plan. Alternate partners.</p>
+        <p className="text-sm text-muted">Answer out loud in 30–45 seconds: pause, restate, answer in 2–3 sentences, and tie it back to your plan.</p>
         <ol className="grid gap-2">
-          {extra.map((q, i) => (
+          {extra.map((q) => (
             <li key={q.id} className="rounded-xl border border-line p-3">
               <div className="flex items-start justify-between gap-3">
-                <span><span className="text-xs font-bold text-muted">{i % 2 === 0 ? partnerA : partnerB} · {q.cat}</span><br />{q.q}</span>
+                <span><span className="text-xs font-bold text-muted">{q.cat}</span><br />{q.q}</span>
                 <Button size="sm" variant="quiet" onClick={() => { setShown({ ...shown, [q.id]: !shown[q.id] }); useStore.getState().markJudgeQ(q.id) }} aria-expanded={!!shown[q.id]}>
                   {shown[q.id] ? 'Hide' : 'Tip'}
                 </Button>
@@ -133,7 +133,7 @@ function CaseQuestions({ c, partnerA, partnerB }: { c: CaseStudy; partnerA: stri
             </li>
           ))}
         </ol>
-        <LinkButton variant="ghost" to="/cases/judge">Full judge question drill →</LinkButton>
+        <LinkButton variant="ghost" to={`/cases/judge?case=${c.id}`}>Judge question drill for this case →</LinkButton>
       </Card>
     </div>
   )

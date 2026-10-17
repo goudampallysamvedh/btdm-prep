@@ -3,7 +3,7 @@ import { COMPETENCIES, SOLUTION_CRITERIA } from '@/data/playbook'
 import { Card, Tag } from '@/components/ui'
 
 /** The case as competitors would read it: cover sheet + situation + data. */
-export function CaseView({ c, partnerA, partnerB }: { c: CaseStudy; partnerA: string; partnerB: string }) {
+export function CaseView({ c }: { c: CaseStudy }) {
   return (
     <div className="grid gap-4">
       <Card className="grid gap-3">
@@ -36,7 +36,7 @@ export function CaseView({ c, partnerA, partnerB }: { c: CaseStudy; partnerA: st
       <Card className="grid gap-3">
         <h2 className="text-xl">Case study situation</h2>
         <p>
-          You are to assume the roles of the <b>{c.roles[0]}</b> ({partnerA}) and the <b>{c.roles[1]}</b> ({partnerB}) for <b>{c.company}</b>. The {c.judge} (judge) wants your team's recommendations.
+          Your team plays the <b>{c.roles[0]}</b> and the <b>{c.roles[1]}</b> for <b>{c.company}</b>. Decide together who takes which role. The {c.judge} (judge) wants your team's recommendations.
         </p>
         {c.situation.map((p, i) => <p key={i}>{p}</p>)}
         <div>

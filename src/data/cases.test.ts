@@ -12,6 +12,8 @@ describe('case studies', () => {
     expect(new Set(CASES.map((c) => c.id)).size).toBe(CASES.length)
   })
   it.each(CASES.map((c) => [c.id, c] as const))('%s follows the BTDM format', (_id, c) => {
+    expect(c.brief.length).toBeGreaterThan(40)
+    expect(c.examplePlan.length).toBeGreaterThan(30)
     expect(c.pis).toHaveLength(5)
     for (const p of c.pis) {
       expect(p.code).toMatch(/^[A-Z]{2}:\d{3}$/)
@@ -58,6 +60,9 @@ describe('partner planner checks', () => {
     const c = CASES[0]
     const p = emptyPlan(c)
     expect(planChecks(c, p).every((x) => x.ok)).toBe(false)
+    // Nothing is pre-assigned to a partner.
+    expect(Object.keys(p.owners)).toHaveLength(0)
+    expect(p.judgeQs.every((q) => q.by === '')).toBe(true)
     const full = {
       ...p,
       owners: { 0: 'A', 1: 'B', 2: 'A', 3: 'B', 4: 'B' } as Record<number, 'A' | 'B'>,
@@ -66,14 +71,16 @@ describe('partner planner checks', () => {
       opener: 'Hello, thank you for meeting us',
       closer: 'To recap, questions?',
       solution: 'Launch three drops, July 15, 65% sell-through goal',
+      judgeQs: c.judgeQuestions.map((q, i) => ({ q, by: (i === 0 ? 'A' : 'B') as 'A' | 'B' })),
     }
     expect(planChecks(c, full).every((x) => x.ok)).toBe(true)
   })
 })
 
 describe('judge questions and warm-ups', () => {
-  it('has 100+ unique judge questions with tips', () => {
-    expect(JUDGE_QUESTIONS.length).toBeGreaterThanOrEqual(100)
+  it('has a learnable set of 60–100 unique judge questions with tips', () => {
+    expect(JUDGE_QUESTIONS.length).toBeGreaterThanOrEqual(60)
+    expect(JUDGE_QUESTIONS.length).toBeLessThanOrEqual(100)
     expect(new Set(JUDGE_QUESTIONS.map((q) => q.q)).size).toBe(JUDGE_QUESTIONS.length)
     for (const q of JUDGE_QUESTIONS) expect(q.tip.length).toBeGreaterThan(10)
   })
