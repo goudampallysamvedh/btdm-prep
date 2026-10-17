@@ -12,7 +12,8 @@
     "test:watch": "vitest",
     "e2e": "playwright test",
     "icons": "pwa-assets-generator",
-    "check:content": "vitest run src/data"
+    "check:content": "vitest run src/data",
+    "check:videos": "node scripts/check-videos.mjs"
   },
   "dependencies": {
     "@fontsource-variable/archivo": "^5.2.5",

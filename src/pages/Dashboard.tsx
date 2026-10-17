@@ -18,6 +18,7 @@ export default function Dashboard() {
   const activity = useStore((s) => s.activity)
   const leitner = useStore((s) => s.leitner)
   const activeMock = useStore((s) => s.activeMock)
+  const partner = useStore((s) => s.partner)
 
   const ready = useMemo(() => areaReadiness(tests), [tests])
   const projected = projectedScore(ready)
@@ -74,6 +75,11 @@ export default function Dashboard() {
             <span className="eyebrow inline-flex items-center gap-1.5"><Target size={14} aria-hidden /> Exam readiness</span>
             <span className="text-muted">Projected score out of 100, weighted by the blueprint.</span>
             <span className="num text-xs text-muted">{answeredTotal} answers so far</span>
+            {partner && (
+              <Link to="/sync" className="num text-xs font-bold">
+                Team avg with {partner.name}: {Math.round((projected + partner.projected) / 2)}
+              </Link>
+            )}
           </div>
         </Card>
       </div>

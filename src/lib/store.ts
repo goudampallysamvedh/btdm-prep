@@ -28,8 +28,19 @@ export interface Settings {
   dailyGoal: number
 }
 
+export interface PartnerSummary {
+  name: string
+  projected: number
+  /** Area code -> estimated accuracy 0..1 (only areas with answers). */
+  areas: Record<string, number>
+  answered: number
+  at: number
+}
+
 export interface ProgressState {
   settings: Settings
+  /** Latest exam summary received from your partner (for the team exam estimate). */
+  partner: PartnerSummary | null
   /** dayKey -> number of study actions that day. */
   activity: Record<string, number>
   tests: TestRecord[]
@@ -73,6 +84,7 @@ export const defaultSettings: Settings = {
 
 export const emptyProgress: ProgressState = {
   settings: defaultSettings,
+  partner: null,
   activity: {},
   tests: [],
   leitner: {},
