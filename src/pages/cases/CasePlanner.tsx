@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { CheckCircle2, Circle, Plus, Trash2 } from 'lucide-react'
 import type { CasePlan } from '@/types'
 import type { CaseStudy } from '@/data/cases'
@@ -128,6 +129,10 @@ export function CasePlanner({ c, partnerA, partnerB }: { c: CaseStudy; partnerA:
         <label className="grid gap-1">
           <span className="font-bold">The solution (unique, practical, effective)</span>
           <textarea className={inputCls + ' min-h-24'} value={plan.solution} onChange={(e) => update({ solution: e.target.value })} placeholder="What exactly we'll do, by when, what it costs, and 2–3 success metrics." />
+          <span className="text-xs text-muted">
+            Back it up: your point, a number from the case, what it means, then the action. Name one risk and your backup plan.{' '}
+            <Link to="/learn/lessons/data-arguments" className="font-bold">Using data</Link> · <Link to="/learn/lessons/risk" className="font-bold">Planning for risk</Link>
+          </span>
         </label>
         <label className="grid gap-1">
           <span className="font-bold">Close</span>

@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, Check, Lightbulb, X } from 'lucide-react'
 import { LESSONS, LESSON_BY_ID, type Lesson as L } from '@/data/lessons'
 import { TOPIC_BY_ID } from '@/data/topics'
 import { useStore } from '@/lib/store'
+import { shuffle } from '@/lib/random'
 import { TopicLinks } from '@/components/TopicLinks'
 import { Button, Card, Empty, Html, LinkButton, PageHeader, SectionTitle, Tag, cx } from '@/components/ui'
 
@@ -26,7 +27,7 @@ function LessonPage({ l }: { l: L }) {
       <Link to="/learn/lessons" className="mb-3 inline-flex items-center gap-1 text-sm font-bold no-underline">
         <ArrowLeft size={16} aria-hidden /> All lessons
       </Link>
-      <PageHeader eyebrow={`Lesson ${idx + 1} · ${l.minutes} min`} title={l.title}>
+      <PageHeader eyebrow={`${l.group === 'case' ? 'Case skills' : 'Buying & merch'} · ${l.minutes} min`} title={l.title}>
         {l.hook}
       </PageHeader>
       <div className="mb-4 flex flex-wrap gap-1.5">
@@ -96,6 +97,8 @@ function LessonPage({ l }: { l: L }) {
 
 function Checks({ l }: { l: L }) {
   const [picked, setPicked] = useState<(number | null)[]>(() => l.checks.map(() => null))
+  // Show options in a fresh order each visit so the right answer's position never gives it away.
+  const [orders] = useState(() => l.checks.map((c) => shuffle(c.options.map((_, i) => i))))
   const all = picked.every((p) => p !== null)
   const right = picked.filter((p, i) => p === l.checks[i].answer).length
 
@@ -116,7 +119,8 @@ function Checks({ l }: { l: L }) {
         <Card key={qi} className="grid gap-2">
           <p className="font-bold">{c.q}</p>
           <div className="grid gap-1.5 sm:grid-cols-2">
-            {c.options.map((o, oi) => {
+            {orders[qi].map((oi) => {
+              const o = c.options[oi]
               const p = picked[qi]
               const state = p === null ? 'idle' : oi === c.answer ? 'right' : oi === p ? 'wrong' : 'idle'
               return (

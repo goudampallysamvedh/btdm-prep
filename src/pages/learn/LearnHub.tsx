@@ -18,7 +18,7 @@ export default function LearnHub() {
       items: [
         { to: '/learn/guide', icon: Library, title: 'Exam study guide', sub: 'The 20 exam areas, most-tested first' },
         { to: '/learn/pis', icon: ListChecks, title: 'PI guide', sub: 'All 450 performance indicators, explained' },
-        { to: '/learn/lessons', icon: BookOpen, title: 'Buying & merch lessons', sub: `${Object.keys(done).length} of ${LESSONS.length} done` },
+        { to: '/learn/lessons', icon: BookOpen, title: 'Lessons', sub: `Case skills and buying & merch · ${Object.keys(done).length} of ${LESSONS.length} done` },
         { to: '/learn/visual', icon: Shapes, title: 'Diagrams', sub: 'Tap-through visuals of key ideas' },
       ],
     },

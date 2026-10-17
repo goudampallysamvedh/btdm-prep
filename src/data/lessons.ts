@@ -1,4 +1,7 @@
-/** Buying & merchandising lessons. Each ends with a quick check and BTDM case moves. */
+/**
+ * Buying & merchandising lessons plus case-skills lessons (research, customers, goals, risk, data).
+ * Each ends with a quick check and BTDM case moves. All wording is original.
+ */
 export interface LessonCheck {
   q: string
   options: string[]
@@ -12,6 +15,8 @@ export interface Lesson {
   topic: string
   pis: string[]
   minutes: number
+  /** 'case' = case skills; default = buying & merchandising. */
+  group?: 'case'
   hook: string
   sections: { h: string; html: string }[]
   caseMoves: string[]
@@ -219,6 +224,103 @@ export const LESSONS: Lesson[] = [
     checks: [
       { q: 'Which KPI best shows how fast a new item is selling?', options: ['Sell-through', 'Shrink %', 'Comparable sales', 'Exchange rate'], answer: 0, why: 'Sell-through compares units sold with units available.' },
       { q: 'GMROI compares gross margin with', options: ['net sales', 'average inventory at cost', 'number of stores', 'markdowns'], answer: 1, why: 'GMROI = gross margin $ ÷ average inventory at cost.' },
+    ],
+  },
+
+  // ---------------- Case skills ----------------
+  {
+    id: 'data-arguments', group: 'case', title: 'Use the case data to win', topic: 'S.data', pis: ['NF:216', 'NF:093', 'NF:278', 'CO:061', 'CO:204'], minutes: 6,
+    hook: 'BTDM cases give you numbers on purpose. Judges reward teams that turn a number into a reason, not teams that read the table aloud.',
+    sections: [
+      { h: 'Sum up the data before you plan', html: '<ol><li><b>Sort it.</b> Group the case numbers by store, month, product, or age group so patterns show.</li><li><b>Compare.</b> What is up, what is down, and what doesn\'t fit? An <mark>outlier</mark> (one store or month far from the rest) is worth a sentence.</li><li><b>Keep two or three.</b> Use only the findings that change your decision. Skip the rest.</li><li><b>Ask why.</b> Does the number back up what the company assumed, or prove it wrong?</li></ol>' },
+      { h: 'Claim, number, meaning, action', html: '<p>Say your point first, then prove it:</p><ul><li><b>Claim:</b> "Teens are our fastest-growing shoppers."</li><li><b>Number:</b> "Sales to 14- to 18-year-olds grew 22% while total sales grew 4%."</li><li><b>Meaning:</b> "Most of our growth is coming from them."</li><li><b>Action:</b> "So the launch budget goes to short video, not print."</li></ul><p>An <mark>if-then</mark> line works too: "If most of our buyers start on their phones, then we launch in the app first."</p>' },
+      { h: 'Make numbers easy to hear', html: '<ul><li>One or two numbers per point. Round them: "about 75%," not "74.6%."</li><li>Before and after beats a long list: "Returns fell from 12% to 7%."</li><li>Words are fine when exact numbers don\'t matter: "most shoppers."</li><li>Don\'t <mark>cherry-pick</mark>. If a number hurts your plan, name it and answer it.</li></ul><p>Picking a visual: <b>bar</b> compares groups, <b>line</b> shows change over time, <b>pie</b> shows parts of a whole, a <b>table</b> gives exact values.</p>' },
+      { h: 'Answer pushback with data', html: '<ol><li>Restate the other view fairly: "Discounts do bring people in."</li><li>Give the number that changes the picture.</li><li>Say what it means.</li><li>Offer the stronger option: "So we\'ll put the money into faster pickup instead of a bigger discount."</li></ol>' },
+    ],
+    caseMoves: [
+      'Open your solution with the case\'s own number: "Online sales grew 30% while stores stayed flat, so…"',
+      'End each PI with a "so": number, what it means, what we\'ll do.',
+      'If the judge asks "Why should I trust your numbers?", say where they came from and offer to test small first.',
+    ],
+    checks: [
+      { q: 'What is the strongest way to use data in your presentation?', options: ['State your point, give one key number, and explain what it means', 'Read every number in the case table', 'Show numbers and let the judge decide what they mean', 'Avoid numbers so the judge isn\'t confused'], answer: 0, why: 'Claim first, then the number, then what it means for the plan.' },
+      { q: 'Which line is easiest for a judge to follow?', options: ['Returns fell from about 12% to 7% after we added size charts.', 'Returns were 12.3%, 11.8%, 10.4%, 9.1%, 8.2%, then 7.0%.', 'Returns changed a lot.', 'Returns are a KPI.'], answer: 0, why: 'One rounded before-and-after comparison, tied to a cause.' },
+      { q: 'You want to show how website visits changed over six months. Which visual fits best?', options: ['Line graph', 'Pie chart', 'A single number', 'Organization chart'], answer: 0, why: 'Line graphs show change over time.' },
+    ],
+  },
+  {
+    id: 'research', group: 'case', title: 'Research, competitors & benchmarks', topic: 'S.research', pis: ['IM:281', 'IM:428', 'IM:292', 'EC:012', 'NF:015'], minutes: 7, visual: 'research',
+    hook: 'Every strong plan answers "How do you know?" Show the judge you\'d check the facts and the competition before spending money.',
+    sections: [
+      { h: 'Primary vs. secondary data', html: '<table><thead><tr><th></th><th>Primary</th><th>Secondary</th></tr></thead><tbody><tr><td>What it is</td><td>You collect it now, for this question</td><td>Already collected by someone, for another purpose</td></tr><tr><td>Examples</td><td>Surveys, interviews, focus groups, observation, store tests</td><td>Census data, trade groups like the NRF, industry reports, news, competitors\' annual reports, your own past sales records</td></tr><tr><td>Good</td><td>Specific and current</td><td><mark>Fast and cheap</mark></td></tr><tr><td>Watch out</td><td>Costs time and money</td><td>May be old or not quite fit</td></tr></tbody></table><p><b>Check primary data:</b> does the sample look like the real customers, and are the questions neutral (no <mark>leading questions</mark>)? <b>Check secondary data:</b> who published it, how recent it is, why it was collected, and whether another source agrees.</p>' },
+      { h: 'Competitor research', html: '<p>Three kinds of competitors:</p><ul><li><b>Direct:</b> same kind of product, same customers (two sneaker brands).</li><li><b>Indirect:</b> a different product that meets the same need (a bookstore vs. an audiobook app).</li><li><b>New entrants:</b> startups and brands moving into your space.</li></ul><p>Compare them on four things: <mark>price strategy</mark>, how they win customers (social, loyalty, referrals, ads), how their product is different (quality, tech, customization, sustainability, service), and their <mark>positioning</mark> (cheapest, best quality, most innovative, best experience, most responsible). Sources: their sites and apps, reviews, public ad libraries, their emails, and visiting their stores (mystery shopping).</p>' },
+      { h: 'Benchmarking', html: '<p><mark>Benchmarking</mark> compares your numbers with a standard to find the gap.</p><ul><li><b>Competitive:</b> against a direct rival.</li><li><b>Industry:</b> against the industry average.</li><li><b>Internal:</b> your stores or departments against each other.</li><li><b>Best practice:</b> against a leader in any industry.</li></ul><p>Steps: pick the KPI, find the benchmark, measure the gap, set a target, act, then measure again. Example: "Our stores average 1.6 units per transaction; our top stores average 2.3. Better cross-merchandising can close part of that gap."</p>' },
+    ],
+    caseMoves: [
+      'Name a research step: "Before the full launch, we\'ll survey 500 loyalty members and test in 10 stores."',
+      'Benchmark out loud: "Teens are 9% of our sales but about 20% of our closest competitor\'s. That\'s the gap we\'re closing."',
+      'Name the real competitor: "Our biggest rival isn\'t the store next door. It\'s the shopping app on their phone."',
+    ],
+    checks: [
+      { q: 'A retailer looks up Census data on household income in a new city. This is', options: ['secondary data', 'primary data', 'a focus group', 'an experiment'], answer: 0, why: 'The government collected it for another purpose; the retailer is reusing it.' },
+      { q: 'For a bookstore, an audiobook app is', options: ['an indirect competitor', 'a direct competitor', 'a vendor', 'a channel member'], answer: 0, why: 'A different product that meets the same need.' },
+      { q: 'Comparing each store\'s sales per square foot with the chain\'s top stores is', options: ['internal benchmarking', 'primary research', 'price fixing', 'psychographic segmentation'], answer: 0, why: 'Benchmarking inside the same company is internal.' },
+    ],
+  },
+  {
+    id: 'segments', group: 'case', title: 'Target customers & personas', topic: 'S.segment', pis: ['MP:003', 'MP:001', 'CO:084', 'MK:019'], minutes: 6, visual: 'segmentation',
+    hook: '"Who exactly is the customer?" comes up in almost every case. A sharp answer names a segment, describes one person, and ties every choice back to them.',
+    sections: [
+      { h: 'Four ways to divide a market', html: '<ul><li><mark>Demographic</mark>: who they are (age, income, gender, family, job).</li><li><mark>Geographic</mark>: where they are (region, climate, city or rural).</li><li><mark>Psychographic</mark>: how they think (values, interests, lifestyle, personality).</li><li><mark>Behavioral</mark>: what they do (how often they buy, loyalty, benefits wanted, occasions, price sensitivity).</li></ul><p>Exam tip: "rate of use" and "loyalty" are behavioral; "lifestyle" and "values" are psychographic.</p>' },
+      { h: 'Why people buy', html: '<ul><li><b>Emotions:</b> excitement, belonging, and fear of missing out drive many purchases.</li><li><b>Other people:</b> friends, family, creators, and reviews. Seeing others buy is <mark>social proof</mark>.</li><li><b>Culture and subculture:</b> shape tastes and what feels "normal" to buy.</li><li><b>Technology:</b> personal recommendations, virtual try-on, and social shopping change how people find products.</li></ul>' },
+      { h: 'Build a persona', html: '<p>A <mark>persona</mark> is one realistic, named customer built from at least two kinds of segmentation. Example: <i>"Maya, 16, lives in a suburb, spends birthday and job money, buys what her friends post, browses on her phone, then picks up in store."</i> Add one need, one frustration, and where to reach her. Update it as real data comes in.</p>' },
+      { h: 'Tie every decision to the customer', html: '<p>Use four beats: <b>decision</b> → <b>because</b> (customer trait) → <b>proof</b> (a number) → <b>result</b>.</p><p><i>"We\'ll launch on short video, because our core shopper is 14 to 18. The case shows most of their visits start on mobile, so we expect 5,000 new loyalty sign-ups in the first month."</i></p>' },
+    ],
+    caseMoves: [
+      'Describe your customer in one breath: age, where they shop, what they care about, and what they want from this store.',
+      'Use "decision, because, proof, result" for every big choice.',
+    ],
+    checks: [
+      { q: 'Grouping customers by how often they buy and how loyal they are is', options: ['behavioral segmentation', 'demographic segmentation', 'geographic segmentation', 'psychographic segmentation'], answer: 0, why: 'Usage rate and loyalty describe what people do.' },
+      { q: 'Which is a psychographic trait?', options: ['Cares about sustainability and the outdoors', 'Lives in Denver', 'Is 35 to 44 years old', 'Buys twice a month'], answer: 0, why: 'Values and lifestyle are psychographic.' },
+      { q: 'A persona is most useful when it', options: ['combines several traits into one realistic customer', 'lists every customer the store has', 'uses only age', 'never changes'], answer: 0, why: 'Combining traits makes the customer specific enough to plan for.' },
+    ],
+  },
+  {
+    id: 'goals', group: 'case', title: 'Objectives, actions & metrics', topic: 'S.goals', pis: ['MP:006', 'PD:254', 'FI:065', 'MK:019'], minutes: 6,
+    hook: 'A plan the judge can picture has a clear goal, the steps to reach it, a date for each step, and a number that proves it worked.',
+    sections: [
+      { h: 'Write a SMART objective', html: '<p><mark>SMART</mark>: specific, measurable, attainable, relevant (or results-oriented), and time-bound.</p><ul><li><b>Weak:</b> "Get more teen customers."</li><li><b>Strong:</b> "Grow loyalty members ages 14 to 18 from 40,000 to 55,000 by June 30."</li></ul>' },
+      { h: 'Turn the goal into actions', html: '<p>Each action starts with a verb and has a <b>department or role</b> at the company that owns it, a <b>deadline</b>, and something you can <b>count</b>.</p><ul><li>Marketing starts a creator campaign by March 1. <i>Measure: sign-ups per post.</i></li><li>Stores add a QR sign-up at checkout by February 15. <i>Measure: sign-ups per store.</i></li><li>Buying adds two members-only drops. <i>Measure: sell-through.</i></li></ul><p>If an action doesn\'t move the objective, cut it.</p>' },
+      { h: 'Milestones and measures', html: '<p><mark>Milestones</mark> are checkpoints, like a 30-60-90 day plan. Use both kinds of measures:</p><ul><li><b>Quantitative</b> (numbers): sales, sell-through, new members.</li><li><b>Qualitative</b> (opinions): survey comments, reviews, staff feedback.</li></ul><p>Decide ahead of time what you\'ll change if a checkpoint is missed: switch channels, retrain staff, or adjust the price.</p>' },
+    ],
+    caseMoves: [
+      'Say one SMART objective early so the judge knows the finish line.',
+      'Give a 30-60-90 day timeline, one sentence each.',
+      'Close with the two or three numbers you\'ll check, and when.',
+    ],
+    checks: [
+      { q: 'Which objective is SMART?', options: ['Raise online sales of the exclusive 15% by December 31', 'Do better online', 'Become the best store anywhere', 'Sell more soon'], answer: 0, why: 'It is specific, measurable, and has a deadline.' },
+      { q: 'A milestone is', options: ['a checkpoint that shows progress toward a goal', 'the final budget', 'a kind of competitor', 'a markdown'], answer: 0, why: 'Milestones break a timeline into checkpoints.' },
+      { q: 'Which is a qualitative measure?', options: ['What customers write in survey comments', 'Units sold', 'Sell-through %', 'Number of new members'], answer: 0, why: 'Qualitative measures capture opinions and feelings, not counts.' },
+    ],
+  },
+  {
+    id: 'risk', group: 'case', title: 'Risk: plan for what could go wrong', topic: 'S.risk', pis: ['SM:075', 'SM:076', 'EC:011'], minutes: 6,
+    hook: '"What\'s the biggest risk in your plan?" is one of the most common judge questions. Teams with a ready answer look prepared, not surprised.',
+    sections: [
+      { h: 'Spot the risks', html: '<ul><li><b>Financial:</b> costs run over, sales fall short.</li><li><b>Operational:</b> a vendor ships late, stores run out.</li><li><b>Market:</b> a competitor copies you, the trend fades.</li><li><b>Legal:</b> ad claims, privacy, product safety.</li><li><b>Reputation:</b> backlash or a creator partnership gone wrong.</li><li><b>Technology:</b> a data breach or a site crash on launch day.</li><li><b>Natural:</b> storms and disasters.</li></ul><p>Exam tip: business risks are often grouped as <mark>economic, natural, and human</mark>.</p>' },
+      { h: 'Rank them: likelihood × impact', html: '<table><thead><tr><th>Likelihood ↓ / Impact →</th><th>Low</th><th>Medium</th><th>High</th></tr></thead><tbody><tr><td><b>High</b></td><td>Watch closely</td><td>Act</td><td><mark>Act now</mark></td></tr><tr><td><b>Medium</b></td><td>Watch</td><td>Reduce it</td><td>Manage actively</td></tr><tr><td><b>Low</b></td><td>Accept</td><td>Watch</td><td>Have a backup plan</td></tr></tbody></table><p>Spend your effort on the top-right corner first.</p>' },
+      { h: 'Four ways to respond', html: '<ul><li><mark>Avoid</mark>: don\'t do the risky thing (drop an unsafe product).</li><li><mark>Reduce</mark>: lower the chance or the damage (test small, quality checks, safety stock).</li><li><mark>Transfer</mark>: shift the cost to someone else (insurance, a vendor contract with late-delivery penalties).</li><li><mark>Accept</mark>: live with small risks and keep watching.</li></ul><p>A <b>contingency plan</b> says what you\'ll do if the risk happens, and a <b>trigger</b> tells you when to switch to it. Review risks regularly; they change.</p>' },
+    ],
+    caseMoves: [
+      'Name one real risk and its fix: "The biggest risk is late delivery. We\'ll hold 10% safety stock and keep a second vendor approved."',
+      'Give a trigger: "If sell-through is under 30% by week 3, we switch to plan B."',
+    ],
+    checks: [
+      { q: 'Buying insurance against storm damage is which risk response?', options: ['Transfer', 'Avoid', 'Accept', 'Reduce'], answer: 0, why: 'Insurance shifts the cost of the loss to the insurer.' },
+      { q: 'A risk that is likely and would do major damage should be', options: ['handled right away', 'ignored', 'accepted with no plan', 'reviewed next year'], answer: 0, why: 'High likelihood plus high impact is the top priority.' },
+      { q: 'Approving a second vendor in case the first one ships late is', options: ['a contingency plan', 'price fixing', 'a product recall', 'secondary data'], answer: 0, why: 'It is a ready backup if the risk happens.' },
     ],
   },
 ]

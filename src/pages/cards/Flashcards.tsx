@@ -94,7 +94,7 @@ function FlashcardsInner() {
             options={[
               { value: 'all', label: 'Study topics' },
               { value: 'pi', label: 'PIs' },
-              { value: 'merch', label: 'Buying & merch' },
+              { value: 'merch', label: 'Merch & case skills' },
               { value: 'kit', label: 'Exam terms' },
               { value: 'trends', label: 'Trends' },
             ]}

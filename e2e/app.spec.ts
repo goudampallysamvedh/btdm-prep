@@ -3,7 +3,7 @@ import { mkdirSync } from 'node:fs'
 
 const ROUTES = [
   '', 'progress', 'exam', 'exam/practice?mode=smart&count=5', 'exam/mock', 'cards', 'math', 'math/markup', 'math/six-month-plan',
-  'learn', 'learn/guide', 'learn/guide/PM', 'learn/lessons', 'learn/lessons/vendors', 'learn/visual/plc', 'learn/visual/markdown-timing',
+  'learn', 'learn/guide', 'learn/guide/PM', 'learn/lessons', 'learn/lessons/vendors', 'learn/lessons/risk', 'learn/visual/plc', 'learn/visual/markdown-timing',
   'learn/trends', 'learn/trends/collabs', 'learn/videos', 'learn/playbook', 'learn/pis', 'cards?deck=pi&pif=case', 'cases', 'cases/hallway-threads', 'cases/hallway-threads?tab=plan',
   'cases/hallway-threads?tab=score', 'cases/hallway-threads?tab=timer', 'cases/judge', 'sync', 'settings',
 ]

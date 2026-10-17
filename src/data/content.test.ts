@@ -78,3 +78,19 @@ describe('flashcards', () => {
     }
   })
 })
+
+describe('lessons', () => {
+  it('have unique ids, known topics, and valid quick checks', async () => {
+    const { LESSONS } = await import('./lessons')
+    expect(new Set(LESSONS.map((l) => l.id)).size).toBe(LESSONS.length)
+    for (const l of LESSONS) {
+      expect(TOPIC_BY_ID[l.topic], `${l.id} topic ${l.topic}`).toBeDefined()
+      expect(l.sections.length).toBeGreaterThanOrEqual(2)
+      for (const c of l.checks) {
+        expect(c.options[c.answer], `${l.id}: ${c.q}`).toBeDefined()
+        expect(new Set(c.options).size).toBe(c.options.length)
+      }
+    }
+    expect(LESSONS.filter((l) => l.group === 'case').length).toBeGreaterThanOrEqual(5)
+  })
+})

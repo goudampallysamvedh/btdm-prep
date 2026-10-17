@@ -17,6 +17,11 @@ const MERCH: Topic[] = [
   { id: 'M.markdown', area: 'PI', name: 'Markdown strategy', links: [{ kind: 'lesson', id: 'markdowns' }, { kind: 'visual', id: 'markdown-timing' }, { kind: 'math', id: 'markdown' }] },
   { id: 'M.kpi', area: 'FI', name: 'Retail KPIs', links: [{ kind: 'lesson', id: 'kpis' }, { kind: 'math', id: 'turnover' }] },
   { id: 'M.math', area: 'PI', name: 'Retail math formulas', links: [{ kind: 'math', id: 'markup' }] },
+  { id: 'S.data', area: 'NF', name: 'Using data in your case', links: [{ kind: 'lesson', id: 'data-arguments' }] },
+  { id: 'S.research', area: 'IM', name: 'Research, competitors & benchmarks', links: [{ kind: 'lesson', id: 'research' }, { kind: 'visual', id: 'research' }] },
+  { id: 'S.segment', area: 'MP', name: 'Target customers & personas', links: [{ kind: 'lesson', id: 'segments' }, { kind: 'visual', id: 'segmentation' }] },
+  { id: 'S.goals', area: 'MP', name: 'Objectives, actions & metrics', links: [{ kind: 'lesson', id: 'goals' }] },
+  { id: 'S.risk', area: 'SM', name: 'Risk assessment & mitigation', links: [{ kind: 'lesson', id: 'risk' }] },
   { id: 'T.trends', area: 'MK', name: 'Industry trends', links: [{ kind: 'trend', id: '' }] },
 ]
 
