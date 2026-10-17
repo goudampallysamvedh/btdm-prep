@@ -8,8 +8,8 @@ export default function Lessons() {
   const done = useStore((s) => s.lessonsDone)
   return (
     <>
-      <PageHeader eyebrow="Buying & merchandising" title="Lessons">
-        Short, interactive lessons on what buyers actually do. Each ends with a quick check and moves you can use in a BTDM case.
+      <PageHeader title="Buying & merch lessons">
+        Short lessons on what buyers do, each with a quick check.
       </PageHeader>
       <ol className="grid gap-3 sm:grid-cols-2">
         {LESSONS.map((l, i) => (

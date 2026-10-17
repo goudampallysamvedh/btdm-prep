@@ -77,12 +77,6 @@ export function AppShell() {
             <SideLink key={l.to} {...l} />
           ))}
         </nav>
-        <div className="eyebrow mb-1 mt-4 px-3">Learn</div>
-        <nav className="grid gap-0.5" aria-label="Learn">
-          {learn.map((l) => (
-            <SideLink key={l.to} {...l} />
-          ))}
-        </nav>
         <div className="eyebrow mb-1 mt-4 px-3">You</div>
         <nav className="grid gap-0.5" aria-label="You">
           {you.map((l) => (

@@ -18,7 +18,7 @@ export default function Videos() {
 
   return (
     <>
-      <PageHeader eyebrow="Learn" title="Video library">
+      <PageHeader title="Videos">
         {ALL_VIDEOS.length} videos. Links open on YouTube or Vimeo. All were checked and working on {VIDEOS_CHECKED}; the 18 from your kit are marked.
       </PageHeader>
       {!online && (

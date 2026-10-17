@@ -23,8 +23,8 @@ function Overview() {
   const tierLabel = { 1: 'Tier 1 · study first', 2: 'Tier 2 · 5–6 questions', 3: 'Tier 3 · 1–4 questions' }
   return (
     <>
-      <PageHeader eyebrow="Marketing Cluster Exam" title="Exam study guide">
-        Both sample exams (2022 test 1245 and 2025 test 1302) used <b>exactly the same number of questions in every area</b>. That's the blueprint, so expect it again. Four areas make up 40% of the test; nine make up 70%.
+      <PageHeader title="Exam study guide">
+        The 20 exam areas, most questions first. Tap an area to study it.
       </PageHeader>
 
       <Card className="grid gap-2">

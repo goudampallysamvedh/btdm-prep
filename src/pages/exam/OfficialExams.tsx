@@ -15,19 +15,15 @@ export const OFFICIAL_EXAMS = [
 
 const EXAM_NAMES = ['2026 sample (test posted Mar 2026)', '2025 sample (test 1302)', '2022 sample (test 1245)', 'Other official exam']
 
-export function OfficialExams() {
+export function OfficialExams({ bare = false }: { bare?: boolean }) {
   const scores = useStore((s) => s.officialScores)
   const [exam, setExam] = useState(EXAM_NAMES[0])
   const [score, setScore] = useState('')
   const n = Number(score)
   const valid = score !== '' && Number.isInteger(n) && n >= 0 && n <= 100
 
-  return (
-    <Card className="grid content-start gap-3">
-      <div className="flex items-center gap-2">
-        <FileText size={20} className="text-accent" aria-hidden />
-        <h2 className="text-xl">Official DECA sample exams</h2>
-      </div>
+  const body = (
+    <>
       <p className="text-sm text-muted">
         Take the real sample exam cold and timed, on paper or the PDF, with only a four-function calculator. Grade it with the key at the end of the PDF, then log your score here. The app's own questions are original, so these are your best check.
       </p>
@@ -75,6 +71,16 @@ export function OfficialExams() {
           ))}
         </ul>
       )}
+    </>
+  )
+  if (bare) return <div className="grid gap-3">{body}</div>
+  return (
+    <Card className="grid content-start gap-3">
+      <div className="flex items-center gap-2">
+        <FileText size={20} className="text-accent" aria-hidden />
+        <h2 className="text-xl">Official DECA sample exams</h2>
+      </div>
+      {body}
     </Card>
   )
 }

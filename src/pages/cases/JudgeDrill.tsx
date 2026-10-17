@@ -45,8 +45,8 @@ export default function JudgeDrill() {
 
   return (
     <>
-      <PageHeader eyebrow="Case simulator" title="Judge question drill">
-        One partner reads the question as the judge; the other answers out loud in under 45 seconds. Pause, restate it briefly, answer in two or three sentences, and tie it back to your plan. Then swap.
+      <PageHeader title="Judge question drill">
+        One partner reads the question; the other answers out loud in under 45 seconds. Then swap.
       </PageHeader>
 
       <div className="mb-4 flex flex-wrap items-center gap-3">

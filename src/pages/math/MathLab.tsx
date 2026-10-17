@@ -1,23 +1,19 @@
 import { Link } from 'react-router-dom'
 import { TOOLS } from './tools'
 import { MathPractice } from './MathPractice'
-import { Callout, PageHeader, SectionTitle } from '@/components/ui'
+import { PageHeader, SectionTitle } from '@/components/ui'
 
 export default function MathLab() {
   const groups = [...new Set(TOOLS.map((t) => t.group))]
   return (
     <>
-      <PageHeader eyebrow="Four-function calculator allowed" title="Retail math lab">
-        Calculators that show every step, plus endless practice problems. One well-placed number (a margin, a sell-through goal, a break-even) makes a case solution feel effective.
+      <PageHeader title="Retail math lab">
+        Practice problems with step-by-step answers, plus calculators for every formula.
       </PageHeader>
 
       <MathPractice />
 
-      <div className="mt-4">
-        <Callout tone="info" title="How much math is in BTDM?">
-          Recent BTDM cases are mostly strategy, with little required math, and the exam has only a handful of calculation questions. Use math here to back up your recommendation, not to fill your 15 minutes.
-        </Callout>
-      </div>
+      <p className="mt-3 text-sm text-muted">Tip: BTDM cases need little math. One number (a margin or a sell-through goal) is enough to back up your idea.</p>
 
       {groups.map((g) => (
         <section key={g}>

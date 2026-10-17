@@ -38,8 +38,8 @@ export default function Progress() {
 
   return (
     <>
-      <PageHeader eyebrow="You" title="Progress">
-        Every test adds evidence. A topic counts as <b>learned</b> once you get it right in two separate tests (or flashcard days) and your recent answers are mostly right.
+      <PageHeader title="Progress">
+        Green topics are learned. Red ones need work. Tap any topic to study it.
       </PageHeader>
 
       <div className="grid gap-4 md:grid-cols-[auto_1fr]">

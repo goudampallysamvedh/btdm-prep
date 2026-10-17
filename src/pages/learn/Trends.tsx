@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { ExternalLink, MessageSquareQuote, TriangleAlert } from 'lucide-react'
 import { TRENDS, TREND_BY_ID, TRENDS_CHECKED, type Trend } from '@/data/trends'
 import { useStore } from '@/lib/store'
-import { Callout, Card, LinkButton, PageHeader, Pill, Tag, cx } from '@/components/ui'
+import { Card, LinkButton, PageHeader, Pill, Tag, cx } from '@/components/ui'
 
 export default function Trends() {
   const { id } = useParams()
@@ -14,12 +14,10 @@ export default function Trends() {
 
   return (
     <>
-      <PageHeader eyebrow="Industry trends" title="What's happening in retail">
-        Judges are business executives. One current, specific trend makes your solution feel <b>unique</b> and shows <b>critical thinking</b>. Each card has sources, a date, the PIs it connects to, and a line you can say in a case.
+      <PageHeader title="Industry trends">
+        One current trend makes your case solution stand out. Each has a line you can say to the judge.
       </PageHeader>
-      <Callout tone="info" title={`Facts last checked ${new Date(TRENDS_CHECKED + 'T12:00:00').toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}`}>
-        Updated weekly. Numbers change, so quote them as "about" and name the source ("PLMA reported…"). Forecasts are labeled as forecasts.
-      </Callout>
+      <p className="text-sm text-muted">Updated weekly · last checked {new Date(TRENDS_CHECKED + 'T12:00:00').toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}. Say numbers as "about" and name the source.</p>
       <div className="mt-3 flex flex-wrap gap-2">
         <LinkButton size="sm" variant="ghost" to="/cards?deck=trends">Trend flashcards</LinkButton>
         <LinkButton size="sm" variant="ghost" to="/exam/practice?mode=topic&topic=T.trends&count=8">Trend quiz</LinkButton>

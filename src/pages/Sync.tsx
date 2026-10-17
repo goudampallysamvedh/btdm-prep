@@ -84,8 +84,8 @@ export default function Sync() {
 
   return (
     <>
-      <PageHeader eyebrow="No server needed" title="Partner sync">
-        You and your partner each keep progress on your own phone. Swap a <b>code</b> (paste it in any message) or a <b>file</b> to share case plans, case scores, and exam estimates.
+      <PageHeader title="Partner sync">
+        Share case plans and exam scores with your partner using a code or a file.
       </PageHeader>
 
       <Card className="grid gap-3">

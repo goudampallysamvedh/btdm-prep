@@ -172,9 +172,22 @@ function MockRun({ mock }: { mock: ActiveMock }) {
           </ol>
         </Card>
         <div className="flex flex-wrap justify-between gap-2">
-          <Button variant="ghost" onClick={() => setReview(false)}>
-            <ArrowLeft size={18} aria-hidden /> Back to questions
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="ghost" onClick={() => setReview(false)}>
+              <ArrowLeft size={18} aria-hidden /> Back to questions
+            </Button>
+            <Button
+              variant="danger"
+              onClick={() => {
+                if (confirm('Quit and discard this mock exam? Your answers will not be saved.')) {
+                  setActive(null)
+                  nav('/exam')
+                }
+              }}
+            >
+              Discard exam
+            </Button>
+          </div>
           <Button
             onClick={() => {
               if (confirm(unanswered.length ? `${unanswered.length} questions are blank. Submit anyway?` : 'Submit your exam?')) submit()

@@ -6,7 +6,7 @@ import { AREAS, AREA_BY_CODE } from '@/data/areas'
 import { QUESTIONS } from '@/data/questions'
 import { useStore } from '@/lib/store'
 import type { AreaCode } from '@/types'
-import { Callout, Card, LinkButton, PageHeader, Pill, Segmented, Tag, cx, inputCls } from '@/components/ui'
+import { Card, Disclosure, LinkButton, PageHeader, Pill, Segmented, Tag, cx, inputCls } from '@/components/ui'
 
 type Filter = 'case' | 'exam' | 'tier2' | 'all'
 
@@ -35,18 +35,18 @@ export default function PIGuide() {
 
   return (
     <>
-      <PageHeader eyebrow="2026–27 performance indicators" title="PI guide" actions={<LinkButton size="sm" to="/cards?deck=pi&pif=case" icon={<Layers size={16} aria-hidden />}>Study as flashcards</LinkButton>}>
-        All {PI_GUIDE.length} PIs DECA can use for the BTDM exam and case studies at districts, state, and ICDC, each explained in plain words. Tap any PI to see what it means and how to use it in a case.
+      <PageHeader title="PI guide" actions={<LinkButton size="sm" to="/cards?deck=pi&pif=case" icon={<Layers size={16} aria-hidden />}>Study as flashcards</LinkButton>}>
+        All {PI_GUIDE.length} performance indicators for BTDM, in plain words. Tap one to learn it.
       </PageHeader>
 
-      <Callout tone="info" title="How to study PIs for ICDC">
-        <ol className="prose-app mt-1 text-sm">
+      <Disclosure title="How to study PIs for ICDC" hint="Which ones to learn first">
+        <ol className="prose-app text-sm">
           <li>Start with <b>In BTDM cases</b>: the PIs DECA used in recent BTDM case studies. Learn to define → explain → apply each one.</li>
           <li>Then <b>On sample exams</b>: PIs tested on the 2022, 2025, and 2026 sample exams.</li>
           <li>Then the <b>Marketing cluster</b> (Tier 2) PIs, which BTDM case studies draw on most.</li>
           <li>Prerequisite (PQ) PIs are basics; specialist (SP) PIs are the most advanced and most common in case studies.</li>
         </ol>
-      </Callout>
+      </Disclosure>
 
       <Card className="my-4 grid gap-3 md:sticky md:top-2 md:z-10">
         <label className="relative block">

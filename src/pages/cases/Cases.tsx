@@ -12,8 +12,8 @@ export default function Cases() {
   const plans = useStore((s) => s.casePlans)
   return (
     <>
-      <PageHeader eyebrow="Team mode" title="Case simulator" actions={<LinkButton variant="ghost" to="/learn/playbook">BTDM playbook</LinkButton>}>
-        Eight original BTDM-style cases. Read the case, run the 30-minute prep clock, plan who covers each PI, present for 15 minutes, then self-score with the judge's rubric.
+      <PageHeader title="Cases" actions={<LinkButton variant="ghost" to="/learn/playbook">BTDM playbook</LinkButton>}>
+        Pick a case, prep for 30 minutes, present for 15, then score yourselves.
       </PageHeader>
 
       <ul className="grid gap-3 md:grid-cols-2">

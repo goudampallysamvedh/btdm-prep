@@ -254,3 +254,33 @@ export function Html({ html, className }: { html: string; className?: string }) 
   // Content is authored in this repo (data/*.ts), never user input.
   return <span className={className} dangerouslySetInnerHTML={{ __html: html }} />
 }
+
+/** A collapsible section: keeps advanced options one tap away instead of on screen. */
+export function Disclosure({
+  title,
+  hint,
+  children,
+  defaultOpen = false,
+  className,
+}: {
+  title: ReactNode
+  hint?: ReactNode
+  children: ReactNode
+  defaultOpen?: boolean
+  className?: string
+}) {
+  return (
+    <details className={cx('card group overflow-hidden', className)} open={defaultOpen || undefined}>
+      <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 px-4 py-3 [&::-webkit-details-marker]:hidden">
+        <span className="min-w-0 flex-1">
+          <span className="block font-bold">{title}</span>
+          {hint && <span className="block text-sm text-muted">{hint}</span>}
+        </span>
+        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden className="shrink-0 text-muted transition-transform group-open:rotate-180">
+          <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </summary>
+      <div className="border-t border-line px-4 py-4">{children}</div>
+    </details>
+  )
+}

@@ -16,7 +16,7 @@ const PI_COUNTS = {
   case: PI_LIST.filter((p) => p.inCase).length,
   tier2: PI_LIST.filter((p) => p.tier === 2).length,
 }
-import { Bar, Button, Card, Empty, PageHeader, Segmented, Tag, cx, inputCls } from '@/components/ui'
+import { Bar, Button, Disclosure, Empty, PageHeader, Segmented, Tag, cx, inputCls } from '@/components/ui'
 
 type Deck = 'all' | 'kit' | 'merch' | 'trends' | 'pi'
 type PIFilter = 'all' | 'exam' | 'case' | 'tier2'
@@ -71,54 +71,36 @@ function FlashcardsInner() {
 
   return (
     <>
-      <PageHeader eyebrow="Spaced repetition" title="Flashcards">
-        Swipe right (or press →) if you knew it, left (←) if you're still learning. Known cards move up a box and come back less often: same day, 1, 3, 7, then 14 days.
-      </PageHeader>
+      <PageHeader title="Flashcards">Swipe right if you knew it, left if not. Cards you know come back less often.</PageHeader>
 
-      <Card className="mb-4 grid gap-3">
-        <div className="flex flex-wrap items-center gap-3">
+      <div className="mb-4 grid gap-3">
+        <div className="scroll-x -mx-1 px-1">
           <Segmented<Deck>
             label="Deck"
             value={deck}
             onChange={setDeck}
+            className="!flex-nowrap"
             options={[
-              { value: 'all', label: 'All' },
-              { value: 'kit', label: 'Exam' },
-              { value: 'merch', label: 'Buying & merch' },
-              { value: 'trends', label: 'Trends' },
+              { value: 'all', label: 'Study topics' },
               { value: 'pi', label: 'PIs' },
+              { value: 'merch', label: 'Buying & merch' },
+              { value: 'kit', label: 'Exam terms' },
+              { value: 'trends', label: 'Trends' },
             ]}
           />
-          <label className="flex items-center gap-2 text-sm">
-            <span className="font-bold">Area</span>
-            <select className={inputCls + ' !min-h-10 !w-auto max-w-56'} value={area} onChange={(e) => setArea(e.target.value as AreaCode | '')}>
-              <option value="">All areas</option>
-              {AREAS.filter((a) => FLASHCARDS.some((c) => c.area === a.code)).map((a) => (
-                <option key={a.code} value={a.code}>
-                  {a.code} · {a.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <Segmented label="Mode" value={mode} onChange={setMode} options={[{ value: 'study', label: 'Due & new' }, { value: 'browse', label: 'Browse all' }]} />
         </div>
         {deck === 'pi' && (
-          <div className="grid gap-2">
-            <Segmented<PIFilter>
-              label="Which PIs"
-              value={piFilter}
-              onChange={setPiFilter}
-              options={[
-                { value: 'case', label: `In BTDM cases (${PI_COUNTS.case})` },
-                { value: 'exam', label: `On sample exams (${PI_COUNTS.exam})` },
-                { value: 'tier2', label: `Marketing cluster (${PI_COUNTS.tier2})` },
-                { value: 'all', label: `All ${PI_COUNTS.all}` },
-              ]}
-            />
-            <p className="text-xs text-muted">
-              Every 2026–27 PI DECA can use for the BTDM exam and cases (Tier 1 business core + Tier 2 marketing cluster). Start with the ones in BTDM cases, then the ones on sample exams. <Link to="/learn/pis" className="font-bold">Open the PI guide →</Link>
-            </p>
-          </div>
+          <Segmented<PIFilter>
+            label="Which PIs"
+            value={piFilter}
+            onChange={setPiFilter}
+            options={[
+              { value: 'case', label: `In BTDM cases (${PI_COUNTS.case})` },
+              { value: 'exam', label: `On exams (${PI_COUNTS.exam})` },
+              { value: 'tier2', label: `Marketing (${PI_COUNTS.tier2})` },
+              { value: 'all', label: `All ${PI_COUNTS.all}` },
+            ]}
+          />
         )}
         {topic && (
           <div className="flex items-center gap-2 text-sm">
@@ -128,19 +110,43 @@ function FlashcardsInner() {
             </Button>
           </div>
         )}
-        <div className="grid grid-cols-5 gap-2" aria-label="Cards in each Leitner box">
-          {boxCounts.map((n, i) => (
-            <div key={i} className="rounded-xl bg-paper-2 px-2 py-1.5 text-center">
-              <div className="num text-lg font-bold">{n}</div>
-              <div className="text-[0.68rem] leading-tight text-muted">Box {i + 1}<br />{i > 0 ? `${BOX_DAYS[i + 1]}d` : 'today'}</div>
-            </div>
-          ))}
-        </div>
         <div className="flex items-center gap-3 text-sm">
           <Bar value={filtered.length ? mastered / filtered.length : 0} tone="good" label="Cards mastered (box 4+)" />
           <span className="num shrink-0 text-muted">{mastered}/{filtered.length} mastered</span>
         </div>
-      </Card>
+        <Disclosure title="More options" hint={area ? `Area: ${areaName(area)}` : mode === 'browse' ? 'Browsing all cards' : 'Filter by area, browse all, see your boxes'}>
+          <div className="grid gap-4">
+            <label className="grid gap-1 text-sm">
+              <span className="font-bold">Area</span>
+              <select className={inputCls} value={area} onChange={(e) => setArea(e.target.value as AreaCode | '')}>
+                <option value="">All areas</option>
+                {AREAS.filter((a) => FLASHCARDS.some((c) => c.area === a.code)).map((a) => (
+                  <option key={a.code} value={a.code}>
+                    {a.code} · {a.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <div className="grid gap-1 text-sm">
+              <span className="font-bold">Which cards</span>
+              <Segmented label="Mode" value={mode} onChange={setMode} options={[{ value: 'study', label: 'Due & new' }, { value: 'browse', label: 'Browse all' }]} />
+            </div>
+            <div className="grid gap-1 text-sm">
+              <span className="font-bold">Your boxes</span>
+              <div className="grid grid-cols-5 gap-2" aria-label="Cards in each Leitner box">
+                {boxCounts.map((n, i) => (
+                  <div key={i} className="rounded-xl bg-paper-2 px-2 py-1.5 text-center">
+                    <div className="num text-lg font-bold">{n}</div>
+                    <div className="text-[0.68rem] leading-tight text-muted">Box {i + 1}<br />{i > 0 ? `${BOX_DAYS[i + 1]}d` : 'today'}</div>
+                  </div>
+                ))}
+              </div>
+              <span className="text-xs text-muted">Box 1 cards come back today; box 5 cards come back in 14 days.</span>
+            </div>
+            {deck === 'pi' && <Link to="/learn/pis" className="text-sm font-bold">Open the PI guide to read all 450 →</Link>}
+          </div>
+        </Disclosure>
+      </div>
 
       <Session key={sessionKey} queue={queue} mode={mode} onRestart={() => { setQueue(buildQueue()); setSessionKey((k) => k + 1) }} filteredCount={filtered.length} />
     </>
