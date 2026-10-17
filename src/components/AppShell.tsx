@@ -2,7 +2,7 @@ import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useEffect, useRef } from 'react'
 import {
   Home, ClipboardCheck, Layers, Briefcase, GraduationCap, Calculator, BookOpen, Shapes,
-  TrendingUp, PlayCircle, LineChart, ArrowLeftRight, Settings as SettingsIcon, Library, MessagesSquare,
+  TrendingUp, PlayCircle, LineChart, ListChecks, ArrowLeftRight, Settings as SettingsIcon, Library, MessagesSquare,
 } from 'lucide-react'
 import { cx } from './ui'
 import { Logo } from './Logo'
@@ -19,6 +19,7 @@ const primary = [
 const learn = [
   { to: '/math', label: 'Retail math lab', icon: Calculator },
   { to: '/learn/guide', label: 'Exam study guide', icon: Library },
+  { to: '/learn/pis', label: 'PI guide (all 450)', icon: ListChecks },
   { to: '/learn/lessons', label: 'Buying & merch lessons', icon: BookOpen },
   { to: '/learn/visual', label: 'Visual guide', icon: Shapes },
   { to: '/learn/trends', label: 'Industry trends', icon: TrendingUp },

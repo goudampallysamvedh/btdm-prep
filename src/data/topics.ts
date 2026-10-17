@@ -40,6 +40,9 @@ const EXTRA_LINKS: Record<string, Topic['links']> = {
   'CM.intensity': [{ kind: 'lesson', id: 'omnichannel' }],
 }
 
+/** One hidden topic per area so PI flashcards count toward that area. */
+const PI_TOPICS: Topic[] = AREAS.map((a) => ({ id: `${a.code}.pi`, area: a.code, name: `${a.name} PIs`, hidden: true, links: [{ kind: 'pi' as const, id: a.code }] }))
+
 export const TOPICS: Topic[] = [
   ...AREAS.flatMap((a) =>
     a.terms.map((t) => ({
@@ -50,6 +53,7 @@ export const TOPICS: Topic[] = [
     })),
   ),
   ...MERCH,
+  ...PI_TOPICS,
 ]
 
 export const TOPIC_BY_ID: Record<string, Topic> = Object.fromEntries(TOPICS.map((t) => [t.id, t]))

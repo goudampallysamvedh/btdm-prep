@@ -21,6 +21,7 @@ const Visual = lazy(() => import('./pages/learn/Visual'))
 const Trends = lazy(() => import('./pages/learn/Trends'))
 const Videos = lazy(() => import('./pages/learn/Videos'))
 const Playbook = lazy(() => import('./pages/learn/Playbook'))
+const PIGuide = lazy(() => import('./pages/learn/PIGuide'))
 const Cases = lazy(() => import('./pages/cases/Cases'))
 const CaseSim = lazy(() => import('./pages/cases/CaseSim'))
 const JudgeDrill = lazy(() => import('./pages/cases/JudgeDrill'))
@@ -69,6 +70,7 @@ export function App() {
           <Route path="learn/trends/:id" element={<Page><Trends /></Page>} />
           <Route path="learn/videos" element={<Page><Videos /></Page>} />
           <Route path="learn/playbook" element={<Page><Playbook /></Page>} />
+          <Route path="learn/pis" element={<Page><PIGuide /></Page>} />
           <Route path="cases" element={<Page><Cases /></Page>} />
           <Route path="cases/judge" element={<Page><JudgeDrill /></Page>} />
           <Route path="cases/:id" element={<Page><CaseSim /></Page>} />

@@ -14,13 +14,14 @@ function titleFor(mode: PracticeMode, area?: string, topic?: string): string {
     case 'smart': return 'Smart practice'
     case 'area': return `${areaName(area as AreaCode)} practice`
     case 'topic': return `${TOPIC_BY_ID[topic ?? '']?.name ?? 'Topic'} practice`
+    case 'pi': return `${topic} practice`
     case 'missed': return 'Missed-question review'
     case 'math': return 'Math practice'
     default: return 'Mixed practice'
   }
 }
 
-const kindFor: Record<PracticeMode, TestKind> = { smart: 'practice', area: 'area', topic: 'area', missed: 'missed', math: 'math', all: 'practice' }
+const kindFor: Record<PracticeMode, TestKind> = { smart: 'practice', area: 'area', topic: 'area', pi: 'area', missed: 'missed', math: 'math', all: 'practice' }
 
 export default function Practice() {
   const hydrated = useHydrated()
@@ -34,9 +35,10 @@ function PracticeRun() {
   const mode = (params.get('mode') ?? 'smart') as PracticeMode
   const area = params.get('area') ?? undefined
   const topic = params.get('topic') ?? undefined
+  const pi = params.get('pi') ?? undefined
   const count = Math.max(1, Math.min(50, Number(params.get('count') ?? 20)))
 
-  const [set] = useState<Question[]>(() => drawPractice({ mode, area: area as AreaCode, topic, count }, useStore.getState().tests))
+  const [set] = useState<Question[]>(() => drawPractice({ mode, area: area as AreaCode, topic, pi, count }, useStore.getState().tests))
   const [orders] = useState(() => set.map(() => optionOrder()))
   const [i, setI] = useState(0)
   const [answers, setAnswers] = useState<(number | null)[]>(() => set.map(() => null))
@@ -49,7 +51,7 @@ function PracticeRun() {
     shownAt.current = Date.now()
   }, [i])
 
-  const title = titleFor(mode, area, topic)
+  const title = titleFor(mode, area, mode === 'pi' ? pi : topic)
   const done = answers.filter((a) => a !== null).length
   const right = answers.filter((a, k) => a !== null && a === set[k].answer).length
 

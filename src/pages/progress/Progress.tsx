@@ -28,7 +28,7 @@ export default function Progress() {
   const statuses = useMemo(() => topicStatuses(evidence), [evidence])
   const counts = useMemo(() => {
     const c: Record<TopicStatus, number> = { learned: 0, shaky: 0, need: 0, unseen: 0 }
-    for (const t of TOPICS) c[statuses[t.id]]++
+    for (const t of TOPICS) if (!t.hidden) c[statuses[t.id]]++
     return c
   }, [statuses])
   const points: Point[] = tests.map((t) => ({ x: t.finishedAt, y: scoreOf(t), series: t.kind === 'mock' ? ('mock' as const) : ('practice' as const), label: t.title }))
@@ -77,7 +77,7 @@ export default function Progress() {
           <div className="grid gap-3">
             {AREAS.map((a) => {
               const r = ready.find((x) => x.area === a.code)!
-              const ts = TOPICS.filter((t) => t.area === a.code)
+              const ts = TOPICS.filter((t) => t.area === a.code && !t.hidden)
               return (
                 <Card key={a.code} className="grid gap-3">
                   <div className="flex flex-wrap items-center gap-3">

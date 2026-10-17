@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { Check, RotateCcw, Undo2, X } from 'lucide-react'
 import type { AreaCode, Flashcard } from '@/types'
 import { useHydrated, useStore } from '@/lib/store'
@@ -8,9 +8,18 @@ import { shuffle } from '@/lib/random'
 import { FLASHCARDS } from '@/data/flashcards'
 import { AREAS, areaName } from '@/data/areas'
 import { TOPIC_BY_ID } from '@/data/topics'
+import { PI_BY_CODE, PI_LIST } from '@/data/piList'
+
+const PI_COUNTS = {
+  all: PI_LIST.length,
+  exam: PI_LIST.filter((p) => p.onExam).length,
+  case: PI_LIST.filter((p) => p.inCase).length,
+  tier2: PI_LIST.filter((p) => p.tier === 2).length,
+}
 import { Bar, Button, Card, Empty, PageHeader, Segmented, Tag, cx, inputCls } from '@/components/ui'
 
-type Deck = 'all' | 'kit' | 'merch' | 'trends'
+type Deck = 'all' | 'kit' | 'merch' | 'trends' | 'pi'
+type PIFilter = 'all' | 'exam' | 'case' | 'tier2'
 const NEW_PER_SESSION = 15
 
 export default function Flashcards() {
@@ -26,13 +35,18 @@ function FlashcardsInner() {
   const [deck, setDeck] = useState<Deck>((params.get('deck') as Deck) ?? 'all')
   const [area, setArea] = useState<AreaCode | ''>((params.get('area') as AreaCode) ?? '')
   const [mode, setMode] = useState<'study' | 'browse'>('study')
+  const [piFilter, setPiFilter] = useState<PIFilter>((params.get('pif') as PIFilter) ?? 'all')
 
   const filtered = useMemo(
     () =>
       FLASHCARDS.filter(
-        (c) => (deck === 'all' || c.deck === deck) && (!area || c.area === area) && (!topic || c.topic === topic),
+        (c) =>
+          (deck === 'all' ? c.deck !== 'pi' : c.deck === deck) &&
+          (!area || c.area === area) &&
+          (!topic || c.topic === topic) &&
+          (deck !== 'pi' || piFilter === 'all' || (piFilter === 'exam' && c.onExam) || (piFilter === 'case' && c.inCase) || (piFilter === 'tier2' && PI_BY_CODE[c.front.slice(0, 6)]?.tier === 2)),
       ),
-    [deck, area, topic],
+    [deck, area, topic, piFilter],
   )
 
   const buildQueue = useCallback(() => {
@@ -50,7 +64,7 @@ function FlashcardsInner() {
     setSessionKey((k) => k + 1)
     // Rebuild only when the filter or mode changes, not on every review.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [deck, area, topic, mode])
+  }, [deck, area, topic, mode, piFilter])
 
   const boxCounts = [1, 2, 3, 4, 5].map((b) => filtered.filter((c) => leitner[c.id]?.box === b).length)
   const mastered = filtered.filter((c) => (leitner[c.id]?.box ?? 0) >= 4).length
@@ -72,6 +86,7 @@ function FlashcardsInner() {
               { value: 'kit', label: 'Exam' },
               { value: 'merch', label: 'Buying & merch' },
               { value: 'trends', label: 'Trends' },
+              { value: 'pi', label: 'PIs' },
             ]}
           />
           <label className="flex items-center gap-2 text-sm">
@@ -87,6 +102,24 @@ function FlashcardsInner() {
           </label>
           <Segmented label="Mode" value={mode} onChange={setMode} options={[{ value: 'study', label: 'Due & new' }, { value: 'browse', label: 'Browse all' }]} />
         </div>
+        {deck === 'pi' && (
+          <div className="grid gap-2">
+            <Segmented<PIFilter>
+              label="Which PIs"
+              value={piFilter}
+              onChange={setPiFilter}
+              options={[
+                { value: 'case', label: `In BTDM cases (${PI_COUNTS.case})` },
+                { value: 'exam', label: `On sample exams (${PI_COUNTS.exam})` },
+                { value: 'tier2', label: `Marketing cluster (${PI_COUNTS.tier2})` },
+                { value: 'all', label: `All ${PI_COUNTS.all}` },
+              ]}
+            />
+            <p className="text-xs text-muted">
+              Every 2026–27 PI DECA can use for the BTDM exam and cases (Tier 1 business core + Tier 2 marketing cluster). Start with the ones in BTDM cases, then the ones on sample exams. <Link to="/learn/pis" className="font-bold">Open the PI guide →</Link>
+            </p>
+          </div>
+        )}
         {topic && (
           <div className="flex items-center gap-2 text-sm">
             Topic: <b>{TOPIC_BY_ID[topic]?.name ?? topic}</b>
@@ -254,7 +287,10 @@ function Session({ queue: initial, mode, onRestart, filteredCount }: { queue: Fl
                 <span className="text-xs text-muted">{box ? `Box ${box}` : 'New'}</span>
               </div>
               <div className="grid flex-1 place-items-center px-2 text-center">
-                <span className="font-display text-[clamp(1.6rem,6vw,2.3rem)] font-extrabold leading-tight" style={{ fontStretch: '108%' }}>
+                <span
+                  className={cx('font-display font-extrabold leading-tight', card.front.length > 48 ? 'text-[clamp(1.15rem,4.6vw,1.6rem)]' : 'text-[clamp(1.6rem,6vw,2.3rem)]')}
+                  style={{ fontStretch: '108%' }}
+                >
                   {card.front}
                 </span>
               </div>
@@ -262,11 +298,14 @@ function Session({ queue: initial, mode, onRestart, filteredCount }: { queue: Fl
             </Face>
             <Face back>
               <div className="flex w-full items-center justify-between gap-2">
-                <span className="text-sm font-bold">{card.front}</span>
+                <span className="text-sm font-bold">{card.deck === 'pi' ? card.front.slice(0, 6) : card.front}</span>
                 <span className="text-xs text-muted">{TOPIC_BY_ID[card.topic]?.name}</span>
               </div>
-              <div className="grid flex-1 place-items-center px-2 text-center">
-                <span className="text-[1.1rem] leading-relaxed sm:text-xl">{card.back}</span>
+              <div className="grid min-h-0 flex-1 place-items-center overflow-y-auto px-2 text-center">
+                <span className="grid gap-2">
+                  <span className={cx('leading-relaxed', card.back.length > 140 || card.extra ? 'text-[1rem] sm:text-lg' : 'text-[1.1rem] sm:text-xl')}>{card.back}</span>
+                  {card.extra && <span className="text-sm italic text-ink-2">In a case: {card.extra}</span>}
+                </span>
               </div>
               <span className="text-xs text-muted">Swipe or use the buttons</span>
             </Face>

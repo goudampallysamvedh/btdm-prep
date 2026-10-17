@@ -233,7 +233,7 @@ export function projectedScore(r: AreaReadiness[]): number {
 
 /** Weakest topic in an area: need > shaky > unseen, in topic order. */
 export function weakestTopic(area: AreaCode, statuses: Record<string, TopicStatus>): string | undefined {
-  const ts = TOPICS.filter((t) => t.area === area && !t.id.startsWith('T.'))
+  const ts = TOPICS.filter((t) => t.area === area && !t.id.startsWith('T.') && !t.hidden)
   return (
     ts.find((t) => statuses[t.id] === 'need')?.id ??
     ts.find((t) => statuses[t.id] === 'shaky')?.id ??

@@ -58,7 +58,7 @@ export const LESSONS: Lesson[] = [
     ],
   },
   {
-    id: 'vendors', title: 'Vendor selection & negotiation', topic: 'M.vendor', pis: ['OP:161', 'OP:162', 'OP:039', 'EI:062'], minutes: 7,
+    id: 'vendors', title: 'Vendor selection & negotiation', topic: 'M.vendor', pis: ['OP:161', 'OP:162', 'OP:160', 'EI:062'], minutes: 7,
     hook: 'Great buyers don\'t just pick products; they pick partners. The 2025 BTDM case asked teams to choose a vendor.',
     sections: [
       { h: 'Choosing a vendor', html: '<p>Compare vendors on more than price:</p><ul><li><b>Quality</b> and consistency</li><li><b>Price and terms</b>: discounts, payment terms, freight (FOB)</li><li><b>Reliability</b>: on-time delivery, fill rate, lead time</li><li><b>Service</b>: returns, markdown money, co-op ad funds, training</li><li><b>Fit</b>: brand image, exclusivity, ethics and sustainability</li></ul><p>A <mark>weighted scorecard</mark> makes the decision objective: rate each vendor 1–5 on each factor, multiply by the factor\'s weight, and add.</p>' },

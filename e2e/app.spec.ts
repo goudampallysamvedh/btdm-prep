@@ -4,7 +4,7 @@ import { mkdirSync } from 'node:fs'
 const ROUTES = [
   '', 'progress', 'exam', 'exam/practice?mode=smart&count=5', 'exam/mock', 'cards', 'math', 'math/markup', 'math/six-month-plan',
   'learn', 'learn/guide', 'learn/guide/PM', 'learn/lessons', 'learn/lessons/vendors', 'learn/visual/plc', 'learn/visual/markdown-timing',
-  'learn/trends', 'learn/trends/collabs', 'learn/videos', 'learn/playbook', 'cases', 'cases/hallway-threads', 'cases/hallway-threads?tab=plan',
+  'learn/trends', 'learn/trends/collabs', 'learn/videos', 'learn/playbook', 'learn/pis', 'cards?deck=pi&pif=case', 'cases', 'cases/hallway-threads', 'cases/hallway-threads?tab=plan',
   'cases/hallway-threads?tab=score', 'cases/hallway-threads?tab=timer', 'cases/judge', 'sync', 'settings',
 ]
 
@@ -25,7 +25,7 @@ for (const theme of ['light', 'dark'] as const) {
         expect(overflow, `horizontal overflow on /${r}`).toBeLessThanOrEqual(1)
         expect(errors, errors.join('\n')).toEqual([])
         if (theme === 'light' || r === '' || r === 'cases/hallway-threads') {
-          await page.screenshot({ path: `screenshots/${info.project.name}-${theme}-${(r || 'home').replace(/[/?=&]/g, '_')}.png`, fullPage: true })
+          await page.screenshot({ path: `screenshots/${info.project.name}-${theme}-${(r || 'home').replace(/[/?=&]/g, '_')}.png`, fullPage: !r.startsWith('learn/pis') })
         }
       })
     }

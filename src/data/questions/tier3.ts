@@ -127,7 +127,7 @@ export const TIER3 = [
   Q('BM-05', 'PM:207', 'M.privatelabel', 'A discount chain partners with a well-known designer on a limited-time collection sold only in its stores. This is a',
     'retailer-exclusive collaboration.', ['gray-market purchase.', 'national brand rollout.', 'loss leader.'],
     'Exclusive collaborations bring a known brand\'s appeal to the retailer while giving shoppers a reason to visit that store.'),
-  Q('BM-06', 'OP:039', 'M.vendor', 'A vendor\'s invoice reads "2/10, net 30" for a $5,000 order. If the retailer pays within 10 days, how much does it pay?',
+  Q('BM-06', 'OP:161', 'M.vendor', 'A vendor\'s invoice reads "2/10, net 30" for a $5,000 order. If the retailer pays within 10 days, how much does it pay?',
     '$4,900', ['$5,000', '$4,500', '$4,800'],
     'The 2% cash discount applies when paid within 10 days: $5,000 × 0.98 = $4,900. Otherwise the full $5,000 is due in 30 days.', { math: true }),
   Q('BM-07', 'OP:161', 'M.vendor', 'A buyer is comparing a domestic vendor and an overseas vendor. Which is a common advantage of the domestic vendor?',

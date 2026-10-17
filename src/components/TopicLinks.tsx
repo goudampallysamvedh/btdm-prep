@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { BookOpen, Calculator, ClipboardCheck, Layers, Library, Shapes, TrendingUp } from 'lucide-react'
+import { BookOpen, Calculator, ClipboardCheck, Layers, Library, ListChecks, Shapes, TrendingUp } from 'lucide-react'
 import { TOPIC_BY_ID } from '@/data/topics'
 import { FLASHCARDS } from '@/data/flashcards'
 import { QUESTIONS } from '@/data/questions'
@@ -39,6 +39,12 @@ export function TopicLinks({ topicId, compact = false }: { topicId: string; comp
           return (
             <Link key={i} to={`/math/${l.id}`} className={linkCls}>
               <Calculator size={15} aria-hidden /> Math lab
+            </Link>
+          )
+        if (l.kind === 'pi')
+          return (
+            <Link key={i} to={`/learn/pis?area=${l.id}`} className={linkCls}>
+              <ListChecks size={15} aria-hidden /> PI guide
             </Link>
           )
         if (l.kind === 'trend')

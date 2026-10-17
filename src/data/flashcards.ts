@@ -1,5 +1,6 @@
 import type { AreaCode, Flashcard } from '@/types'
 import { TREND_CARDS } from './trends'
+import { PI_GUIDE } from './piNotes'
 
 type Row = [AreaCode, string, string, string]
 
@@ -280,6 +281,17 @@ export const FLASHCARDS: Flashcard[] = [
   ...build(EXAM_NEW, 'x', 'kit'),
   ...build(MERCH, 'm', 'merch'),
   ...TREND_CARDS,
+  ...PI_GUIDE.map((p) => ({
+    id: `pi-${p.code.replace(':', '')}`,
+    area: p.code.slice(0, 2) as AreaCode,
+    topic: `${p.code.slice(0, 2)}.pi`,
+    front: `${p.code} · ${p.text}`,
+    back: p.plain,
+    extra: p.inCaseLine,
+    deck: 'pi' as const,
+    onExam: p.onExam,
+    inCase: p.inCase,
+  })),
 ]
 
 export const KIT_CARD_COUNT = KIT.length

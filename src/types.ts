@@ -27,7 +27,12 @@ export interface Flashcard {
   front: string
   back: string
   /** Extra decks beyond the area: buying & merchandising, trends. */
-  deck?: 'kit' | 'merch' | 'trends'
+  deck?: 'kit' | 'merch' | 'trends' | 'pi'
+  /** Optional second line on the back, e.g. how to use a PI in a case. */
+  extra?: string
+  /** For PI cards: flags used by deck filters. */
+  onExam?: boolean
+  inCase?: boolean
 }
 
 export interface Question {
@@ -52,7 +57,9 @@ export interface Topic {
   area: AreaCode
   name: string
   /** Where to study it: study-guide anchor, lesson id, or visual id. */
-  links?: { kind: 'guide' | 'lesson' | 'visual' | 'math' | 'trend'; id: string }[]
+  links?: { kind: 'guide' | 'lesson' | 'visual' | 'math' | 'trend' | 'pi'; id: string }[]
+  /** Bookkeeping topics (like an area's PI deck) that stay off the topic map. */
+  hidden?: boolean
 }
 
 // ---------- Progress records ----------

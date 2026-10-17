@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { BookOpen, Calculator, Library, MessagesSquare, PlayCircle, Shapes, TrendingUp, Trophy } from 'lucide-react'
+import { BookOpen, Calculator, Library, ListChecks, MessagesSquare, PlayCircle, Shapes, TrendingUp, Trophy } from 'lucide-react'
 import { PageHeader } from '@/components/ui'
 import { LESSONS } from '@/data/lessons'
 import { TRENDS } from '@/data/trends'
@@ -11,6 +11,7 @@ export default function LearnHub() {
   const items = [
     { to: '/learn/playbook', icon: Trophy, title: 'BTDM playbook', sub: 'Format, rubric, the PI formula, team strategy, and what DECA\'s cases test' },
     { to: '/learn/guide', icon: Library, title: 'Exam study guide', sub: '20 areas in blueprint order, with tested terms and distractor traps' },
+    { to: '/learn/pis', icon: ListChecks, title: 'PI guide', sub: 'All 450 performance indicators for BTDM in plain words, flagged by sample exams and BTDM cases' },
     { to: '/learn/lessons', icon: BookOpen, title: 'Buying & merch lessons', sub: `${Object.keys(done).length}/${LESSONS.length} completed · assortment, vendors, pricing, planning…` },
     { to: '/math', icon: Calculator, title: 'Retail math lab', sub: 'Calculators with worked steps plus endless problems' },
     { to: '/learn/visual', icon: Shapes, title: 'Visual guide', sub: 'Tap-through diagrams: life cycle, channels, promo mix, markdown timing…' },

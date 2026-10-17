@@ -25,12 +25,14 @@ export function drawMock(tests: TestRecord[], r: () => number = Math.random): Qu
   return shuffle(picked, r)
 }
 
-export type PracticeMode = 'smart' | 'area' | 'topic' | 'missed' | 'math' | 'all'
+export type PracticeMode = 'smart' | 'area' | 'topic' | 'pi' | 'missed' | 'math' | 'all'
 
 export interface PracticeSpec {
   mode: PracticeMode
   area?: AreaCode
   topic?: string
+  /** For mode 'pi': a performance indicator code like PM:042. */
+  pi?: string
   count: number
 }
 
@@ -46,6 +48,8 @@ export function drawPractice(spec: PracticeSpec, tests: TestRecord[], r: () => n
       return freshest(QUESTIONS.filter((q) => q.area === spec.area), n, seen, r)
     case 'topic':
       return freshest(QUESTIONS.filter((q) => q.topic === spec.topic), n, seen, r)
+    case 'pi':
+      return freshest(QUESTIONS.filter((q) => q.pi === spec.pi), n, seen, r)
     case 'math':
       return freshest(QUESTIONS.filter((q) => q.math), n, seen, r)
     case 'missed': {
