@@ -1,5 +1,7 @@
 # Sell-Through: BTDM Prep
 
+**Live app:** https://goudampallysamvedh.github.io/btdm-prep/
+
 An offline study app for DECA **Buying and Merchandising Team Decision Making (BTDM)**: an exam trainer with progress reports, Leitner flashcards, a retail math lab, buying & merchandising lessons, a visual guide, industry trends, a team case simulator, and partner sync. It installs to a phone's home screen and works without internet after the first load. No accounts, no server, no AI.
 
 Built with Vite, React, TypeScript, Tailwind CSS v4, and vite-plugin-pwa. Progress is saved in the browser (IndexedDB).
@@ -16,6 +18,8 @@ npm run build      # type-check + production build into dist/
 npm run e2e        # browser checks at 390px and desktop, light/dark, offline (run npm run build first)
 npm run check:videos   # confirm every video link still works (needs internet)
 ```
+
+To run the browser checks against the live site instead of a local build, set `E2E_URL` (PowerShell: `$env:E2E_URL='https://goudampallysamvedh.github.io/btdm-prep/'; npm run e2e`).
 
 The first time you run `npm run e2e`, install the test browser with `npx playwright install chromium`.
 
