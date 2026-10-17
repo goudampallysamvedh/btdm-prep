@@ -6,6 +6,7 @@ import { AREAS } from '@/data/areas'
 import { QUESTIONS } from '@/data/questions'
 import { areaReadiness, missedQuestionIds, scoreOf } from '@/lib/mastery'
 import { fmtDate } from '@/lib/dates'
+import { OfficialExams } from './OfficialExams'
 import { Bar, Button, Card, LinkButton, PageHeader, Pill, SectionTitle, Segmented, Tag, toneFor } from '@/components/ui'
 
 const kindLabel = { practice: 'Practice', mock: 'Mock exam', missed: 'Missed review', area: 'Area practice', math: 'Math practice', 'case-quiz': 'Case quiz' }
@@ -84,6 +85,10 @@ export default function ExamHub() {
             <LinkButton to="/exam/practice?mode=all&count=20" variant="ghost" icon={<Shuffle size={16} aria-hidden />}>Random 20</LinkButton>
           </div>
         </Card>
+      </div>
+
+      <div className="mt-4">
+        <OfficialExams />
       </div>
 
       <SectionTitle aside={<span className="text-sm text-muted">Tap an area to practice it</span>}>Practice by area</SectionTitle>

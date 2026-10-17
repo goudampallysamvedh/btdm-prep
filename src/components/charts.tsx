@@ -5,7 +5,7 @@ export interface Point {
   x: number // epoch ms
   y: number // 0..1
   label?: string
-  series: 'mock' | 'practice'
+  series: 'mock' | 'practice' | 'official'
 }
 
 /** Score trend over time. Hand-built SVG: two series, 70% target line, accessible table fallback. */
@@ -20,8 +20,8 @@ export function TrendChart({ points, height = 200 }: { points: Point[]; height?:
   const maxX = Math.max(...xs)
   const sx = (x: number) => (maxX === minX ? (pad.l + W - pad.r) / 2 : pad.l + ((x - minX) / (maxX - minX)) * (W - pad.l - pad.r))
   const sy = (y: number) => pad.t + (1 - y) * (H - pad.t - pad.b)
-  const series = (['practice', 'mock'] as const).map((s) => ({ s, pts: points.filter((p) => p.series === s).sort((a, b) => a.x - b.x) }))
-  const color = { practice: 'var(--muted)', mock: 'var(--accent)' }
+  const series = (['practice', 'mock', 'official'] as const).map((s) => ({ s, pts: points.filter((p) => p.series === s).sort((a, b) => a.x - b.x) }))
+  const color = { practice: 'var(--muted)', mock: 'var(--accent)', official: 'var(--good)' }
 
   return (
     <figure className="m-0">
@@ -76,6 +76,9 @@ export function TrendChart({ points, height = 200 }: { points: Point[]; height?:
         </span>
         <span className="inline-flex items-center gap-1.5">
           <i className="inline-block size-2.5 rounded-full border-2 border-muted" /> Practice sets
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <i className="inline-block size-2.5 rounded-full bg-good" /> Official DECA samples
         </span>
       </figcaption>
     </figure>

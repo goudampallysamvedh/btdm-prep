@@ -12,7 +12,7 @@ import { Button, Callout, Card, PageHeader, SectionTitle, cx, inputCls } from '@
 function snapshot(): ProgressState {
   const s = useStore.getState()
   return {
-    settings: s.settings, partner: s.partner, activity: s.activity, tests: s.tests, leitner: s.leitner,
+    settings: s.settings, officialScores: s.officialScores, partner: s.partner, activity: s.activity, tests: s.tests, leitner: s.leitner,
     caseAttempts: s.caseAttempts, casePlans: s.casePlans, mathStats: s.mathStats, lessonsDone: s.lessonsDone,
     trendsRead: s.trendsRead, judgeDrill: s.judgeDrill, activeMock: s.activeMock,
   }

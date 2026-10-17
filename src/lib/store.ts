@@ -37,8 +37,18 @@ export interface PartnerSummary {
   at: number
 }
 
+export interface OfficialScore {
+  id: string
+  exam: string
+  /** Questions right out of 100. */
+  score: number
+  at: number
+}
+
 export interface ProgressState {
   settings: Settings
+  /** Scores from DECA's official sample exams, taken on paper or PDF and logged by hand. */
+  officialScores: OfficialScore[]
   /** Latest exam summary received from your partner (for the team exam estimate). */
   partner: PartnerSummary | null
   /** dayKey -> number of study actions that day. */
@@ -69,6 +79,8 @@ interface Actions {
   markTrend: (id: string) => void
   markJudgeQ: (id: string) => void
   setActiveMock: (m: ActiveMock | null) => void
+  addOfficial: (o: OfficialScore) => void
+  deleteOfficial: (id: string) => void
   replaceAll: (s: Partial<ProgressState>) => void
 }
 
@@ -84,6 +96,7 @@ export const defaultSettings: Settings = {
 
 export const emptyProgress: ProgressState = {
   settings: defaultSettings,
+  officialScores: [],
   partner: null,
   activity: {},
   tests: [],
@@ -140,6 +153,8 @@ export const useStore = create<ProgressState & Actions>()(
       markTrend: (id) => setState((st) => ({ trendsRead: { ...st.trendsRead, [id]: Date.now() } })),
       markJudgeQ: (id) => setState((st) => ({ judgeDrill: { ...st.judgeDrill, [id]: (st.judgeDrill[id] ?? 0) + 1 } })),
       setActiveMock: (m) => setState({ activeMock: m }),
+      addOfficial: (o) => setState((st) => ({ officialScores: [...st.officialScores, o] })),
+      deleteOfficial: (id) => setState((st) => ({ officialScores: st.officialScores.filter((o) => o.id !== id) })),
       replaceAll: (s) => setState((st) => ({ ...st, ...s })),
     }),
     {

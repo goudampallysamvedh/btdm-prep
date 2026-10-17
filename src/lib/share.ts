@@ -156,6 +156,7 @@ export function mergeBackup(s: ProgressState, b: Backup): MergeResult {
       activity,
       casePlans: plans,
       caseAttempts: unionById(s.caseAttempts, d.caseAttempts ?? []),
+      officialScores: unionById(s.officialScores ?? [], d.officialScores ?? []),
       lessonsDone: { ...(d.lessonsDone ?? {}), ...s.lessonsDone },
       trendsRead: { ...(d.trendsRead ?? {}), ...s.trendsRead },
       judgeDrill: { ...(d.judgeDrill ?? {}), ...s.judgeDrill },

@@ -7,7 +7,7 @@ import { TOPICS } from '@/data/topics'
 import { FLASHCARDS } from '@/data/flashcards'
 import { CASES } from '@/data/cases'
 import { fmtDate } from '@/lib/dates'
-import { TrendChart } from '@/components/charts'
+import { TrendChart, type Point } from '@/components/charts'
 import { STATUS_STYLE, STATUS_ICON, TopicLinks } from '@/components/TopicLinks'
 import { Bar, Card, Empty, LinkButton, PageHeader, Ring, SectionTitle, Segmented, Tag, cx, toneFor } from '@/components/ui'
 
@@ -18,6 +18,7 @@ export default function Progress() {
   const leitner = useStore((s) => s.leitner)
   const attempts = useStore((s) => s.caseAttempts)
   const mathStats = useStore((s) => s.mathStats)
+  const official = useStore((s) => s.officialScores)
   const [openTopic, setOpenTopic] = useState<string | null>(null)
   const [view, setView] = useState<'map' | 'history'>('map')
 
@@ -30,7 +31,8 @@ export default function Progress() {
     for (const t of TOPICS) c[statuses[t.id]]++
     return c
   }, [statuses])
-  const points = tests.map((t) => ({ x: t.finishedAt, y: scoreOf(t), series: t.kind === 'mock' ? ('mock' as const) : ('practice' as const), label: t.title }))
+  const points: Point[] = tests.map((t) => ({ x: t.finishedAt, y: scoreOf(t), series: t.kind === 'mock' ? ('mock' as const) : ('practice' as const), label: t.title }))
+  points.push(...official.map((o) => ({ x: o.at, y: o.score / 100, series: 'official' as const, label: o.exam })))
   const boxes = [1, 2, 3, 4, 5].map((b) => Object.values(leitner).filter((s) => s.box === b).length)
   const seenCards = Object.keys(leitner).length
 

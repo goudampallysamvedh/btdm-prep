@@ -26,6 +26,7 @@ const EXPECTED: Record<string, string> = {
   'BM-23': M.money(M.openToBuy(30000, 12000)).replace('.00', ''),
   'BM-24': M.money(M.bomFromRatio(20000, 3.5)).replace('.00', ''),
   'BM-25': String(M.breakEvenUnits(6000, 25, 10)),
+  'FI-14': `Income statement; ${M.money(400000 - 360000).replace('.00', '')}`,
 }
 
 describe('calculation questions', () => {

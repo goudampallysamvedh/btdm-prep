@@ -5,6 +5,9 @@ import type { Flashcard, Question } from '@/types'
  * Industry trends. Figures were checked in October 2026 against the linked sources.
  * Forecasts are labeled as forecasts. To refresh: edit `data`, `asOf`, and `sources`, then redeploy.
  */
+/** Date the trend facts were last researched (YYYY-MM-DD). The weekly update job sets this. */
+export const TRENDS_CHECKED = '2026-10-16'
+
 export interface Trend {
   id: string
   title: string
