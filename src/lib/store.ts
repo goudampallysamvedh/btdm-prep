@@ -40,6 +40,24 @@ export interface PartnerSummary {
   areas: Record<string, number>
   answered: number
   at: number
+  // Added later; older partner codes leave these out.
+  /** Study streak in days, as of `at`. */
+  streak?: number
+  /** Days with any study in the 7 days up to `at`. */
+  activeDays7?: number
+  /** Area codes to work on most, highest priority first. */
+  focus?: string[]
+  /** Topic ids marked "need to learn" (then "still shaky"), most important first. */
+  needTopics?: string[]
+  /** Topic counts by status. */
+  topics?: { learned: number; shaky: number; need: number }
+  /** Flashcards at box 3+ vs. reviewed but not yet known. */
+  cards?: { known: number; learning: number }
+  lessonsDone?: number
+  /** Last few test scores (0..1), oldest first. */
+  trend?: number[]
+  /** Case practice: scored attempts and best total out of 100. */
+  cases?: { attempts: number; best: number }
 }
 
 export interface OfficialScore {

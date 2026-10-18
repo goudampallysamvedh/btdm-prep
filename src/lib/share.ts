@@ -1,7 +1,10 @@
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string'
 import type { CaseAttempt, CasePlan, LeitnerState, MathStat, TestRecord } from '@/types'
 import { defaultSettings, type DailyKind, type PartnerSummary, type ProgressState } from './store'
-import { areaReadiness, projectedScore } from './mastery'
+import { areaReadiness, cardEvidence, projectedScore, questionEvidence, scoreOf, topicStatuses } from './mastery'
+import { dayKey, streak } from './dates'
+import { AREA_BY_CODE } from '@/data/areas'
+import { TOPICS } from '@/data/topics'
 
 export const APP_ID = 'sell-through'
 export const FORMAT_VERSION = 1
@@ -38,7 +41,6 @@ export interface PartnerPackage {
 }
 
 export function makePartnerPackage(s: ProgressState): PartnerPackage {
-  const r = areaReadiness(s.tests)
   const me = s.settings.me === 'A' ? s.settings.partnerA : s.settings.partnerB
   return {
     app: APP_ID,
@@ -50,13 +52,37 @@ export function makePartnerPackage(s: ProgressState): PartnerPackage {
     partnerB: s.settings.partnerB,
     plans: Object.values(s.casePlans),
     attempts: s.caseAttempts,
-    summary: {
-      name: me,
-      projected: Math.round(projectedScore(r) * 10) / 10,
-      areas: Object.fromEntries(r.filter((a) => a.answered).map((a) => [a.area, Math.round(a.accuracy * 1000) / 1000])),
-      answered: s.tests.reduce((n, t) => n + t.answers.length, 0),
-      at: Date.now(),
-    },
+    summary: partnerSummary(s, me),
+  }
+}
+
+/** What a partner sees about you: scores, streak, and what you still need to work on. */
+export function partnerSummary(s: ProgressState, me: string, now = new Date()): PartnerSummary {
+  const r = areaReadiness(s.tests)
+  const ev = [...questionEvidence(s.tests), ...cardEvidence(s.leitner)].sort((a, b) => a.at - b.at)
+  const statuses = topicStatuses(ev)
+  const studyTopics = TOPICS.filter((t) => !t.hidden && !t.id.startsWith('T.'))
+  const count = (st: string) => studyTopics.filter((t) => statuses[t.id] === st).length
+  const weight = (area: string) => AREA_BY_CODE[area as keyof typeof AREA_BY_CODE]?.weight ?? 0
+  const byWeight = (st: string) => studyTopics.filter((t) => statuses[t.id] === st).sort((a, b) => weight(b.area) - weight(a.area)).map((t) => t.id)
+  const days7 = Array.from({ length: 7 }, (_, i) => dayKey(new Date(now.getFullYear(), now.getMonth(), now.getDate() - i)))
+  const cards = Object.values(s.leitner).filter((c) => c.last)
+  const finished = [...s.tests].filter((t) => t.answers.length).sort((a, b) => a.finishedAt - b.finishedAt)
+  return {
+    name: me,
+    projected: Math.round(projectedScore(r) * 10) / 10,
+    areas: Object.fromEntries(r.filter((a) => a.answered).map((a) => [a.area, Math.round(a.accuracy * 1000) / 1000])),
+    answered: s.tests.reduce((n, t) => n + t.answers.length, 0),
+    at: now.getTime(),
+    streak: streak(s.activity, now),
+    activeDays7: days7.filter((d) => s.activity[d]).length,
+    focus: [...r].sort((a, b) => b.priority - a.priority).slice(0, 3).map((a) => a.area),
+    needTopics: [...byWeight('need'), ...byWeight('shaky')].slice(0, 8),
+    topics: { learned: count('learned'), shaky: count('shaky'), need: count('need') },
+    cards: { known: cards.filter((c) => c.box >= 3).length, learning: cards.filter((c) => c.box < 3).length },
+    lessonsDone: Object.keys(s.lessonsDone).length,
+    trend: finished.slice(-8).map((t) => Math.round(scoreOf(t) * 100) / 100),
+    cases: { attempts: s.caseAttempts.length, best: s.caseAttempts.reduce((m, a) => Math.max(m, a.total), 0) },
   }
 }
 

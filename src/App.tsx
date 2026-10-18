@@ -6,6 +6,7 @@ import { Empty, LinkButton } from './components/ui'
 
 const Dashboard = lazy(() => import('./pages/Dashboard'))
 const Progress = lazy(() => import('./pages/progress/Progress'))
+const PartnerView = lazy(() => import('./pages/PartnerView'))
 const TestReport = lazy(() => import('./pages/progress/TestReport'))
 const ExamHub = lazy(() => import('./pages/exam/ExamHub'))
 const Practice = lazy(() => import('./pages/exam/Practice'))
@@ -76,6 +77,7 @@ export function App() {
           <Route path="cases/judge" element={<Page><JudgeDrill /></Page>} />
           <Route path="cases/:id" element={<Page><CaseSim /></Page>} />
           <Route path="sync" element={<Page><Sync /></Page>} />
+          <Route path="partner" element={<Page><PartnerView /></Page>} />
           <Route path="settings" element={<Page><Settings /></Page>} />
           <Route path="*" element={<NotFound />} />
         </Route>

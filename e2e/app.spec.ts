@@ -5,7 +5,7 @@ const ROUTES = [
   '', 'progress', 'exam', 'exam/practice?mode=smart&count=5', 'exam/mock', 'cards', 'math', 'math/markup', 'math/six-month-plan',
   'learn', 'learn/guide', 'learn/guide/PM', 'learn/lessons', 'learn/lessons/vendors', 'learn/lessons/risk', 'learn/visual/plc', 'learn/visual/markdown-timing',
   'learn/trends', 'learn/trends/collabs', 'learn/videos', 'learn/playbook', 'learn/pis', 'cards?deck=pi&pif=case', 'cases', 'cases/hallway-threads', 'cases/hallway-threads?tab=plan',
-  'cases/hallway-threads?tab=score', 'cases/hallway-threads?tab=timer', 'cases/judge', 'sync', 'sync?tab=me', 'settings',
+  'cases/hallway-threads?tab=score', 'cases/hallway-threads?tab=timer', 'cases/judge', 'sync', 'sync?tab=me', 'partner', 'settings',
 ]
 
 mkdirSync('screenshots', { recursive: true })
@@ -98,5 +98,37 @@ test('my-devices sync copies progress to a second device', async ({ page, browse
   await page2.waitForTimeout(500)
   await page2.reload()
   await expect(page2.getByText(/holds all your progress: 1 test,/)).toBeVisible()
+  await other.close()
+})
+
+test('partner progress shows up after swapping codes', async ({ page, browser }) => {
+  // Partner A practices, then makes a partner code.
+  await page.goto('#/exam/practice?mode=smart&count=2')
+  for (let i = 0; i < 2; i++) {
+    await page.getByRole('radio').first().click()
+    await page.getByRole('button', { name: i < 1 ? /next/i : /see my report/i }).click()
+  }
+  await expect(page.getByRole('heading', { name: /report/i })).toBeVisible()
+  await page.goto('#/sync?tab=partner')
+  await page.getByRole('button', { name: /make a partner code/i }).click()
+  const code = await page.getByLabel('Sync code', { exact: true }).inputValue()
+
+  // Partner B, on their own device, imports it.
+  const other = await browser.newContext()
+  const b = await other.newPage()
+  await b.goto(page.url().replace(/#.*$/, '#/settings'))
+  await b.getByRole('radio', { name: 'Partner B' }).click()
+  await b.goto(page.url().replace(/#.*$/, '#/sync?tab=partner'))
+  await b.getByLabel('Paste a sync code').fill(code)
+  await b.getByRole('button', { name: /check code/i }).click()
+  await b.getByRole('button', { name: /^import$/i }).click()
+  await expect(b.getByText(/exam estimate saved/)).toBeVisible()
+  await b.goto(page.url().replace(/#.*$/, '#/'))
+  await expect(b.getByRole('link', { name: /Partner A/ })).toBeVisible()
+  await b.getByRole('link', { name: /Partner A/ }).click()
+  await expect(b.getByRole('heading', { name: "Partner A's progress" })).toBeVisible()
+  await expect(b.getByText('days studied this week')).toBeVisible()
+  const overflow = await b.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)
+  expect(overflow, 'horizontal overflow on the filled partner page').toBeLessThanOrEqual(1)
   await other.close()
 })

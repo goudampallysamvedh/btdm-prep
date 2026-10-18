@@ -1,14 +1,14 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, CalendarDays, Check, Flame, Target } from 'lucide-react'
+import { ArrowRight, CalendarDays, Check, Flame, Target, Users } from 'lucide-react'
 import { useStore } from '@/lib/store'
 import { areaReadiness, projectedScore, scoreOf } from '@/lib/mastery'
 import { buildPlan } from '@/lib/today'
-import { dayKey, daysUntil, streak } from '@/lib/dates'
+import { dayKey, daysUntil, relDay, streak } from '@/lib/dates'
 import { AREAS, AREA_BY_CODE } from '@/data/areas'
 import { Bar, Card, Disclosure, LinkButton, Tag, cx, toneFor } from '@/components/ui'
 import { Confetti } from '@/components/Confetti'
-import { useCountUp } from '@/lib/motion'
+import { Stat } from '@/components/Stat'
 
 export default function Dashboard() {
   const settings = useStore((s) => s.settings)
@@ -113,6 +113,8 @@ export default function Dashboard() {
         )}
       </Card>
 
+      <PartnerCard />
+
       <h2 className="mb-2 mt-6 text-lg">Your focus areas</h2>
       <Card className="grid grid-cols-1 gap-1 p-2 sm:p-2">
         {focus.map((r) => {
@@ -148,6 +150,46 @@ export default function Dashboard() {
   )
 }
 
+/** A small card about your partner: streak, exam estimate, and what they're working on. */
+function PartnerCard() {
+  const p = useStore((s) => s.partner)
+  if (!p) {
+    return (
+      <Link to="/sync?tab=partner" className="card lift mt-4 flex items-center gap-3 px-4 py-3 text-ink no-underline hover:border-accent">
+        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-accent-soft text-accent" aria-hidden><Users size={20} /></span>
+        <span className="min-w-0 flex-1">
+          <span className="block font-bold">Team up with your partner</span>
+          <span className="block text-sm text-muted">Swap codes to see each other's streak and what to work on</span>
+        </span>
+        <ArrowRight size={18} className="shrink-0 text-muted" aria-hidden />
+      </Link>
+    )
+  }
+  const focus = (p.focus ?? Object.entries(p.areas).sort((a, b) => a[1] - b[1]).map(([a]) => a)).slice(0, 2)
+  return (
+    <Link to="/partner" className="card lift mt-4 grid gap-2 px-4 py-3 text-ink no-underline hover:border-accent">
+      <span className="flex items-center gap-3">
+        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-accent-soft text-accent" aria-hidden><Users size={20} /></span>
+        <span className="min-w-0 flex-1">
+          <span className="block font-bold">{p.name}</span>
+          <span className="block text-xs text-muted">Updated {relDay(p.at)}</span>
+        </span>
+        <ArrowRight size={18} className="shrink-0 text-muted" aria-hidden />
+      </span>
+      <span className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+        {p.streak !== undefined && <span className="inline-flex items-center gap-1 font-bold"><Flame size={15} className="text-accent" aria-hidden />{p.streak}-day streak</span>}
+        <span className="inline-flex items-center gap-1 font-bold"><Target size={15} className="text-accent" aria-hidden />{Math.round(p.projected)}/100</span>
+      </span>
+      {focus.length > 0 && (
+        <span className="text-sm text-ink-2">
+          <span className="text-muted">Needs work: </span>
+          {focus.map((a) => AREA_BY_CODE[a as keyof typeof AREA_BY_CODE]?.name ?? a).join(', ')}
+        </span>
+      )}
+    </Link>
+  )
+}
+
 /** True once per day, the first time today's plan is seen complete. */
 function useCelebrateOnce(allDone: boolean): boolean {
   const [show, setShow] = useState(false)
@@ -163,25 +205,6 @@ function useCelebrateOnce(allDone: boolean): boolean {
     setShow(true)
   }, [allDone])
   return show
-}
-
-/** A big-number tile for the top of Home. Numbers count up when the screen opens. */
-function Stat({ icon, value, unit, label, to }: { icon: ReactNode; value: number | string; unit?: string; label: string; to?: string }) {
-  const counted = useCountUp(typeof value === 'number' ? value : 0)
-  const body = (
-    <>
-      <span className="text-accent">{icon}</span>
-      <span className="mt-1 flex items-baseline gap-0.5">
-        <span className="num font-display text-[clamp(1.9rem,8vw,2.75rem)] font-extrabold leading-none">
-          {typeof value === 'number' ? <><span aria-hidden>{counted}</span><span className="sr-only">{value}</span></> : value}
-        </span>
-        {unit && <span className="num text-sm font-bold text-muted">{unit}</span>}
-      </span>
-      <span className="mt-1 text-xs font-bold leading-snug text-ink-2 sm:text-sm">{label}</span>
-    </>
-  )
-  const cls = 'card flex min-w-0 flex-col p-3 text-ink no-underline sm:p-4'
-  return to ? <Link to={to} className={cls + ' lift hover:border-accent'}>{body}</Link> : <div className={cls}>{body}</div>
 }
 
 function greeting(): string {

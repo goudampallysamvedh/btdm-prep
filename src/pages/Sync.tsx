@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { ClipboardCopy, Download, FileUp, Laptop, Send, Smartphone, Users } from 'lucide-react'
 import { useStore, type ProgressState } from '@/lib/store'
 import { makeBackup, makePartnerPackage, mergeBackup, mergePartner, ownerName, parseShared, downloadJson, teamExam, toCode, type Backup, type PartnerPackage } from '@/lib/share'
@@ -110,7 +110,8 @@ function Partner({ onSwitch }: { onSwitch: () => void }) {
         </div>
         {partner ? (
           <p className="text-sm text-muted">
-            {partner.name}'s data from {fmtDateTime(partner.at)}.{partnerAreas.length > 0 && <> Their weakest areas: {partnerAreas.map(([a, v]) => `${AREA_BY_CODE[a as AreaCode]?.name ?? a} (${Math.round(v * 100)}%)`).join(', ')}.</>}
+            {partner.name}'s data from {fmtDateTime(partner.at)}.{partnerAreas.length > 0 && <> Their weakest areas: {partnerAreas.map(([a, v]) => `${AREA_BY_CODE[a as AreaCode]?.name ?? a} (${Math.round(v * 100)}%)`).join(', ')}.</>}{' '}
+            <Link to="/partner" className="font-bold">See all of {partner.name}'s progress →</Link>
           </p>
         ) : (
           <p className="text-sm text-muted">Paste your partner's code below to see the team average.</p>
@@ -119,7 +120,7 @@ function Partner({ onSwitch }: { onSwitch: () => void }) {
 
       <Card className="grid gap-3">
         <div className="flex items-center gap-2"><Send size={20} className="text-accent" aria-hidden /><h2 className="text-lg">Send to your partner</h2></div>
-        <p className="text-sm">Shares your {planCount} case plan{planCount === 1 ? '' : 's'}, case scores, and exam estimate. Your flashcards and test history stay yours.</p>
+        <p className="text-sm">Shares your {planCount} case plan{planCount === 1 ? '' : 's'}, case scores, exam estimate, streak, and the areas and topics you need to work on. Your full test history and flashcards stay yours.</p>
         <CodeMaker make={() => toCode(makePartnerPackage(snapshot()))} label="Make a partner code" shareTitle="Sell-Through partner sync" />
       </Card>
 

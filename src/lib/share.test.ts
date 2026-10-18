@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { emptyProgress, type ProgressState } from './store'
-import { makeBackup, makePartnerPackage, mergeBackup, mergePartner, parseShared, teamExam, toCode } from './share'
+import { makeBackup, makePartnerPackage, mergeBackup, mergePartner, parseShared, partnerSummary, teamExam, toCode } from './share'
+import { helpIdeas } from './partner'
+import { areaReadiness } from './mastery'
+import { QUESTIONS } from '@/data/questions'
 import type { CaseAttempt, CasePlan } from '@/types'
 
 const plan = (caseId: string, updatedAt: number, notes = ''): CasePlan => ({
@@ -97,5 +100,52 @@ describe('merging', () => {
   it('averages team exam scores', () => {
     expect(teamExam(80, { name: 'B', projected: 70, areas: {}, answered: 0, at: 0 })).toBe(75)
     expect(teamExam(80, null)).toBeNull()
+  })
+})
+
+describe('partner progress', () => {
+  const now = new Date(2026, 9, 18, 12)
+  const day = (d: number) => `2026-10-${String(d).padStart(2, '0')}`
+  const testFor = (area: string, right: number, wrong: number, id: string) => {
+    const qs = QUESTIONS.filter((q) => q.area === area).slice(0, right + wrong)
+    return { id, kind: 'practice' as const, title: id, startedAt: 0, finishedAt: now.getTime() - 1000, answers: qs.map((q, i) => ({ qid: q.id, chosen: 0, correct: i < right, ms: 1000 })) }
+  }
+
+  it('reports streak, this week, focus areas, topics, and trend', () => {
+    const s = state({
+      activity: { [day(18)]: 3, [day(17)]: 2, [day(16)]: 1, [day(13)]: 4 },
+      tests: [testFor('PR', 1, 7, 't1'), testFor('PM', 8, 0, 't2')],
+      leitner: { 'm-001': { box: 3, due: 0, seen: 3, lapses: 0, last: 1 }, 'm-002': { box: 1, due: 0, seen: 1, lapses: 1, last: 2 } },
+      lessonsDone: { risk: 1, goals: 1 },
+      caseAttempts: [attempt('a')],
+    })
+    const p = partnerSummary(s, 'Ava', now)
+    expect(p.streak).toBe(3)
+    expect(p.activeDays7).toBe(4)
+    expect(p.focus).toHaveLength(3)
+    expect(p.focus).toContain('PR')
+    expect(p.focus).not.toContain('PM')
+    expect(p.topics!.need).toBeGreaterThan(0)
+    expect(p.needTopics!.length).toBeGreaterThan(0)
+    expect(p.cards).toEqual({ known: 1, learning: 1 })
+    expect(p.lessonsDone).toBe(2)
+    expect(p.trend).toHaveLength(2)
+    expect(p.cases).toEqual({ attempts: 1, best: 70 })
+  })
+
+  it('survives a code round trip and old codes without the new fields', () => {
+    const pkg = makePartnerPackage(state({ settings: { ...emptyProgress.settings, partnerA: 'Ava', partnerB: 'Ben', me: 'B' } }))
+    const r = parseShared(toCode(pkg))
+    expect(r.ok && r.value.kind === 'partner' && r.value.summary.streak).toBe(0)
+    const old = { name: 'Ben', projected: 60, areas: { PR: 0.4 }, answered: 10, at: 0 }
+    expect(helpIdeas(areaReadiness([]), old)).toEqual({ youHelp: [], theyHelp: [] })
+  })
+
+  it('finds where partners can coach each other', () => {
+    const mine = areaReadiness([testFor('PR', 8, 0, 'a'), testFor('PM', 1, 7, 'b')])
+    const p = { name: 'Ben', projected: 60, areas: { PR: 0.4, PM: 0.85 }, answered: 20, at: 0 }
+    const h = helpIdeas(mine, p)
+    expect(h.youHelp.map((x) => x.area)).toEqual(['PR'])
+    expect(h.theyHelp.map((x) => x.area)).toEqual(['PM'])
   })
 })

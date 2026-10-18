@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react'
 import {
   Home, ClipboardCheck, Layers, Briefcase, GraduationCap, Calculator, BookOpen, Shapes,
   TrendingUp, PlayCircle, LineChart, ListChecks, ArrowLeftRight, Settings as SettingsIcon, Library, MessagesSquare,
+  Users,
 } from 'lucide-react'
 import { cx } from './ui'
 import { Logo } from './Logo'
@@ -29,6 +30,7 @@ const learn = [
 
 const you = [
   { to: '/progress', label: 'Progress', icon: LineChart },
+  { to: '/partner', label: 'Partner', icon: Users },
   { to: '/sync', label: 'Sync', icon: ArrowLeftRight },
   { to: '/settings', label: 'Settings', icon: SettingsIcon },
 ]

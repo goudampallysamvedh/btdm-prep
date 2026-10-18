@@ -43,3 +43,17 @@ export function fmtDate(ms: number): string {
 export function fmtDateTime(ms: number): string {
   return new Date(ms).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
 }
+
+/** Whole calendar days between a past time and now (0 = today). */
+export function daysAgo(ms: number, now = new Date()): number {
+  const a = new Date(ms)
+  const d0 = new Date(a.getFullYear(), a.getMonth(), a.getDate()).getTime()
+  const d1 = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+  return Math.max(0, Math.round((d1 - d0) / 86_400_000))
+}
+
+/** "today", "yesterday", or "N days ago". */
+export function relDay(ms: number, now = new Date()): string {
+  const n = daysAgo(ms, now)
+  return n === 0 ? 'today' : n === 1 ? 'yesterday' : `${n} days ago`
+}
