@@ -20,6 +20,9 @@
         var t = JSON.parse(localStorage.getItem('st-theme') || '"system"');
         var dark = t === 'dark' || (t === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
         document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+        var m = JSON.parse(localStorage.getItem('st-motion') || '"on"');
+        var reduced = m === 'off' || (m === 'device' && matchMedia('(prefers-reduced-motion: reduce)').matches);
+        document.documentElement.dataset.motion = reduced ? 'reduced' : 'full';
       } catch (e) {}
     </script>
   </head>

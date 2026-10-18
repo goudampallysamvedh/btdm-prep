@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useStore, type Theme } from './store'
+import { useStore, type Motion, type Theme } from './store'
 
 function apply(theme: Theme) {
   const dark = theme === 'dark' || (theme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches)
@@ -22,4 +22,27 @@ export function useThemeSync() {
     mq.addEventListener('change', on)
     return () => mq.removeEventListener('change', on)
   }, [theme])
+}
+
+function applyMotion(motion: Motion) {
+  const reduced = motion === 'off' || (motion === 'device' && matchMedia('(prefers-reduced-motion: reduce)').matches)
+  document.documentElement.dataset.motion = reduced ? 'reduced' : 'full'
+  try {
+    localStorage.setItem('st-motion', JSON.stringify(motion))
+  } catch {
+    /* storage blocked: setting still applies for this visit */
+  }
+}
+
+/** Keeps <html data-motion> in sync with the Motion setting (and the device, when set to follow it). */
+export function useMotionSync() {
+  const motion = useStore((s) => s.settings.motion ?? 'on')
+  useEffect(() => {
+    applyMotion(motion)
+    if (motion !== 'device') return
+    const mq = matchMedia('(prefers-reduced-motion: reduce)')
+    const on = () => applyMotion('device')
+    mq.addEventListener('change', on)
+    return () => mq.removeEventListener('change', on)
+  }, [motion])
 }

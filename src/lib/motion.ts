@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 
+/** True when animation is turned off (see Settings → Motion; applied as <html data-motion>). */
 export function prefersReducedMotion(): boolean {
-  return typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+  return typeof document !== 'undefined' && document.documentElement.dataset.motion === 'reduced'
 }
 
 /** Counts a number up from 0 (first show) or from its last value, over about 0.7 s. */

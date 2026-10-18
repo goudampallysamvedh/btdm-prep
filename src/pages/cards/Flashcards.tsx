@@ -5,6 +5,7 @@ import type { AreaCode, Flashcard } from '@/types'
 import { useHydrated, useStore } from '@/lib/store'
 import { dueCards, newCards, review, BOX_DAYS } from '@/lib/srs'
 import { shuffle } from '@/lib/random'
+import { prefersReducedMotion } from '@/lib/motion'
 import { FLASHCARDS } from '@/data/flashcards'
 import { AREAS, areaName } from '@/data/areas'
 import { TOPIC_BY_ID } from '@/data/topics'
@@ -202,7 +203,7 @@ function Session({ queue: initial, mode, daily, onRestart, filteredCount }: { qu
   const decide = useCallback(
     (known: boolean) => {
       if (!card || leaving) return
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return answer(known)
+      if (prefersReducedMotion()) return answer(known)
       setLeaving(known ? 'right' : 'left')
       window.setTimeout(() => {
         answer(known)

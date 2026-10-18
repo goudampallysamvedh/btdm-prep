@@ -6,6 +6,8 @@ import type { CaseAttempt, CasePlan, LeitnerState, MathStat, TestRecord } from '
 import { dayKey } from './dates'
 
 export type Theme = 'system' | 'light' | 'dark'
+/** 'on' = always animate, 'device' = follow the device's reduce-motion setting, 'off' = no animation. */
+export type Motion = 'on' | 'device' | 'off'
 
 export interface ActiveMock {
   qids: string[]
@@ -19,6 +21,7 @@ export interface ActiveMock {
 
 export interface Settings {
   theme: Theme
+  motion?: Motion
   competitionDate: string // yyyy-mm-dd or ''
   competitionName: string
   partnerA: string
@@ -91,6 +94,7 @@ interface Actions {
 
 export const defaultSettings: Settings = {
   theme: 'system',
+  motion: 'on',
   competitionDate: '',
   competitionName: 'District CDC',
   partnerA: 'Partner A',

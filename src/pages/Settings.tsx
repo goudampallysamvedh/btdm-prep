@@ -1,4 +1,4 @@
-import { useStore, emptyProgress, type Theme } from '@/lib/store'
+import { useStore, emptyProgress, type Motion, type Theme } from '@/lib/store'
 import { Button, Card, Field, PageHeader, SectionTitle, Segmented, inputCls } from '@/components/ui'
 import { LinkButton } from '@/components/ui'
 
@@ -35,6 +35,11 @@ export default function Settings() {
           <div className="grid gap-1">
             <span className="text-sm font-bold">Theme</span>
             <Segmented<Theme> label="Theme" value={s.theme} onChange={(v) => set({ theme: v })} options={[{ value: 'system', label: 'System' }, { value: 'light', label: 'Light' }, { value: 'dark', label: 'Dark' }]} />
+          </div>
+          <div className="grid gap-1">
+            <span className="text-sm font-bold">Motion</span>
+            <Segmented<Motion> label="Motion" value={s.motion ?? 'on'} onChange={(v) => set({ motion: v })} options={[{ value: 'on', label: 'On' }, { value: 'device', label: 'Follow device' }, { value: 'off', label: 'Off' }]} />
+            <span className="text-xs text-muted">Card flips, answer feedback, and other small animations. "Follow device" turns them off when your device is set to reduce motion.</span>
           </div>
           <Field label="Daily goal (study actions)" hint="One action = one answered question, flashcard, or math problem.">
             {(id) => <input id={id} type="number" min={5} max={200} className={inputCls + ' max-w-32'} value={s.dailyGoal} onChange={(e) => set({ dailyGoal: Math.max(5, Number(e.target.value) || 20) })} />}
