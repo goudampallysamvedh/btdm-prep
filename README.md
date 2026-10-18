@@ -62,9 +62,13 @@ To redeploy after editing content, commit and push to `main`. Installed apps sho
 
 Open it once while online. After that it works offline.
 
-## Partner sync
+## Sync
 
-Each partner's progress stays on their own device. In **Partner sync**, make a share code (paste it into any message) or share a file. It carries case plans, case scores, and an exam estimate, so both partners see the team exam average. **Back up** saves everything for moving to a new phone.
+Progress stays on each device and moves with copy-and-paste codes (nothing is uploaded). **Sync → My devices** copies all of your progress to your other devices and combines it without losing anything. **Sync → Partner** shares case plans, case scores, your exam estimate, streak, and what you need to work on; the **Partner** page shows your partner's progress. A backup file is under My devices.
+
+## Study helper (no AI)
+
+The **study helper** (the question-mark icon on phones, **Ask for help** on larger screens) answers DECA and BTDM questions from the app's own content: the study guide, PI guide, flashcards, lessons, math tools, diagrams, trends, and BTDM rules (`src/lib/helper.ts`). Replies can include a flip card, a diagram, a mini calculator, a three-question quiz, a progress chart, and links to the full page. It declines off-topic questions, won't pick answers to pasted test questions, and is hidden on the mock exam and practice screens.
 
 ## Optional AI judge (not enabled)
 

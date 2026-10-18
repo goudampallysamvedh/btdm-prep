@@ -132,3 +132,27 @@ test('partner progress shows up after swapping codes', async ({ page, browser })
   expect(overflow, 'horizontal overflow on the filled partner page').toBeLessThanOrEqual(1)
   await other.close()
 })
+
+test('study helper answers from the app and stays out of exams', async ({ page, isMobile }, info) => {
+  const phone = info.project.name === 'phone' || isMobile
+  await page.goto('#/learn')
+  await page.getByRole('button', { name: phone ? 'Open the study helper' : /ask for help/i }).click()
+  const box = page.getByRole('dialog', { name: 'Study helper' })
+  await expect(box.getByText(/I explain DECA and BTDM topics/)).toBeVisible()
+  for (const [q, expected] of [
+    ['what should I study', /Your progress/],
+    ['markup on cost', /Try it/],
+    ['quiz me on promotion', /Three quick Promotion questions/],
+    ['who won the super bowl', /only help with DECA and BTDM/],
+  ] as const) {
+    await box.getByLabel('Ask the study helper').fill(q)
+    await box.getByLabel('Ask the study helper').press('Enter')
+    await expect(box.getByText(expected).last()).toBeVisible()
+  }
+  const overflow = await box.locator('.overflow-y-auto').evaluate((el) => el.scrollWidth - el.clientWidth)
+  expect(overflow, 'study helper content wider than the panel').toBeLessThanOrEqual(1)
+  await page.goto('#/exam/practice?mode=smart&count=3')
+  await expect(page.getByRole('radio').first()).toBeVisible()
+  await expect(page.getByRole('dialog', { name: 'Study helper' })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: /study helper|ask for help/i })).toHaveCount(0)
+})

@@ -8,6 +8,7 @@ import {
 import { cx } from './ui'
 import { Logo } from './Logo'
 import { UpdatePrompt } from './UpdatePrompt'
+import { Helper, HelperButton } from './helper/Helper'
 
 const primary = [
   { to: '/', label: 'Home', icon: Home, end: true },
@@ -93,6 +94,7 @@ export function AppShell() {
         <header className="safe-top sticky top-0 z-20 flex items-center justify-between border-b border-line bg-paper/90 px-4 py-2 backdrop-blur md:hidden">
           <Logo compact />
           <div className="flex items-center gap-1">
+            <HelperButton variant="header" />
             <NavLink to="/progress" aria-label="Progress" className="grid size-11 place-items-center rounded-xl text-ink-2 hover:bg-paper-2">
               <LineChart size={20} />
             </NavLink>
@@ -138,6 +140,8 @@ export function AppShell() {
           ))}
         </ul>
       </nav>
+      <HelperButton variant="float" />
+      <Helper />
       <UpdatePrompt />
     </div>
   )

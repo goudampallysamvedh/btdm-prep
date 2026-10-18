@@ -382,7 +382,7 @@ function InventoryFlow() {
   )
 }
 
-const DIAGRAMS: DiagramDef[] = [
+export const DIAGRAMS: DiagramDef[] = [
   { id: 'plc', title: 'Product life cycle', blurb: 'Know the pricing and promotion move for each stage. The exam asks it both ways.', render: () => <PlcDiagram /> },
   { id: 'business-cycle', title: 'Business cycle', blurb: 'Four phases. Recession and depression happen inside contraction.', render: () => <BusinessCycle /> },
   { id: 'channels', title: 'Channels of distribution', blurb: 'The path from producer to user. Tap each member to see its role.', render: () => <Channels /> },
