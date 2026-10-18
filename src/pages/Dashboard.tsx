@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { ArrowRight, CalendarDays, Check, Flame, Target, Users } from 'lucide-react'
 import { useStore } from '@/lib/store'
 import { areaReadiness, projectedScore, scoreOf } from '@/lib/mastery'
-import { buildPlan } from '@/lib/today'
+import { buildPlan, PLAN_MINUTES } from '@/lib/today'
 import { dayKey, daysUntil, relDay, streak } from '@/lib/dates'
 import { AREAS, AREA_BY_CODE } from '@/data/areas'
 import { Bar, Card, Disclosure, LinkButton, Tag, cx, toneFor } from '@/components/ui'
@@ -13,7 +13,7 @@ import { Stat } from '@/components/Stat'
 export default function Dashboard() {
   const settings = useStore((s) => s.settings)
   const tests = useStore((s) => s.tests)
-  const activity = useStore((s) => s.activity)
+  const planDone = useStore((s) => s.planDone)
   const activeMock = useStore((s) => s.activeMock)
   const partner = useStore((s) => s.partner)
   const lessonsDone = useStore((s) => s.lessonsDone)
@@ -23,11 +23,12 @@ export default function Dashboard() {
   const projected = projectedScore(ready)
   const focus = [...ready].sort((a, b) => b.priority - a.priority).slice(0, 3)
   const days = daysUntil(settings.competitionDate)
-  const st = streak(activity)
+  const st = streak(planDone)
+  const doneToday = !!planDone[dayKey(new Date())]
   const last = [...tests].sort((a, b) => b.finishedAt - a.finishedAt)[0]
   const name = settings.me === 'A' ? settings.partnerA : settings.partnerB
 
-  // ----- Today's plan: three small steps, about 10 minutes -----
+  // ----- Today's plan: three steps, about 15 minutes. Finishing it grows the streak. -----
   const counts = useStore((s) => s.daily[dayKey(new Date())]) ?? {}
   const steps = buildPlan({ counts, focusArea: focus[0].area, lessonsDone, trendsRead })
   const nextStep = steps.find((s) => !s.done)
@@ -51,7 +52,7 @@ export default function Dashboard() {
               label={days === 0 ? `${settings.competitionName}!` : `day${days === 1 ? '' : 's'} to ${settings.competitionName}`}
             />
           )}
-          <Stat icon={<Flame size={18} className={st > 0 ? 'animate-wiggle' : undefined} aria-hidden />} value={st} label="day streak" />
+          <Stat icon={<Flame size={18} className={st > 0 ? 'animate-wiggle' : undefined} aria-hidden />} value={st} label={doneToday ? 'day streak' : st > 0 ? 'day streak · finish today to keep it' : 'day streak · finish today to start'} />
           <Stat
             to="/progress"
             icon={<Target size={18} aria-hidden />}
@@ -73,8 +74,14 @@ export default function Dashboard() {
         {celebrate && <Confetti />}
         <div className="flex items-baseline justify-between gap-2">
           <h2 className="text-xl">Today's plan</h2>
-          <span className="num text-sm text-muted">{doneCount}/3 · about 10 min</span>
+          <span className="num text-sm text-muted">{doneCount}/3 · about {PLAN_MINUTES} min</span>
         </div>
+        {nextStep && (
+          <p className="-mt-2 flex items-center gap-1.5 text-sm text-ink-2">
+            <Flame size={15} className="shrink-0 text-accent" aria-hidden />
+            Finish all three to {st > 0 ? `make your streak ${st + 1} days` : 'start your streak'}.
+          </p>
+        )}
         <ol className="grid grid-cols-1 gap-2">
           {steps.map((s, i) => (
             <li key={s.title}>
@@ -107,7 +114,7 @@ export default function Dashboard() {
           </LinkButton>
         ) : (
           <div className="grid gap-1 rounded-xl bg-good-bg px-4 py-3 text-center animate-pop">
-            <p className="font-bold text-good">All done for today. Nice work! 🎉</p>
+            <p className="font-bold text-good">All done for today. Your streak is {st} day{st === 1 ? '' : 's'}! 🔥</p>
             <p className="text-sm text-muted">Want more? Try a <Link to="/cases" className="font-bold">case with your partner</Link> or a <Link to="/exam/mock" className="font-bold">mock exam</Link> on a free day.</p>
           </div>
         )}

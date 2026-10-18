@@ -78,6 +78,8 @@ export interface ProgressState {
   activity: Record<string, number>
   /** dayKey -> small counters for Today's plan (cards, questions, math, judge). */
   daily: Record<string, Partial<Record<DailyKind, number>>>
+  /** dayKey -> when every step of that day's plan was finished. The streak counts these days. */
+  planDone: Record<string, number>
   tests: TestRecord[]
   leitner: Record<string, LeitnerState>
   caseAttempts: CaseAttempt[]
@@ -93,6 +95,7 @@ interface Actions {
   setSettings: (s: Partial<Settings>) => void
   logActivity: (n?: number) => void
   bumpDaily: (kind: DailyKind) => void
+  markPlanDone: (day: string) => void
   addTest: (t: TestRecord) => void
   deleteTest: (id: string) => void
   setLeitner: (id: string, s: LeitnerState) => void
@@ -127,6 +130,7 @@ export const emptyProgress: ProgressState = {
   partner: null,
   activity: {},
   daily: {},
+  planDone: {},
   tests: [],
   leitner: {},
   caseAttempts: [],
@@ -162,6 +166,7 @@ export const useStore = create<ProgressState & Actions>()(
           const keep = Object.fromEntries(Object.entries(st.daily).filter(([d]) => d >= dayKey(new Date(Date.now() - 14 * 86_400_000))))
           return { daily: { ...keep, [k]: { ...day, [kind]: (day[kind] ?? 0) + 1 } } }
         }),
+      markPlanDone: (day) => setState((st) => (st.planDone[day] ? {} : { planDone: { ...st.planDone, [day]: Date.now() } })),
       addTest: (t) => setState((st) => ({ tests: [...st.tests, t] })),
       deleteTest: (id) => setState((st) => ({ tests: st.tests.filter((t) => t.id !== id) })),
       setLeitner: (id, s) => setState((st) => ({ leitner: { ...st.leitner, [id]: s } })),

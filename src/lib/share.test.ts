@@ -114,6 +114,7 @@ describe('partner progress', () => {
   it('reports streak, this week, focus areas, topics, and trend', () => {
     const s = state({
       activity: { [day(18)]: 3, [day(17)]: 2, [day(16)]: 1, [day(13)]: 4 },
+      planDone: { [day(18)]: 1, [day(17)]: 1, [day(16)]: 1, [day(13)]: 1 },
       tests: [testFor('PR', 1, 7, 't1'), testFor('PM', 8, 0, 't2')],
       leitner: { 'm-001': { box: 3, due: 0, seen: 3, lapses: 0, last: 1 }, 'm-002': { box: 1, due: 0, seen: 1, lapses: 1, last: 2 } },
       lessonsDone: { risk: 1, goals: 1 },

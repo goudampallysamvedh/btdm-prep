@@ -2,6 +2,7 @@ import { lazy, Suspense, type ReactNode } from 'react'
 import { HashRouter, Route, Routes } from 'react-router-dom'
 import { AppShell } from './components/AppShell'
 import { useMotionSync, useThemeSync } from './lib/theme'
+import { usePlanTracker } from './lib/today'
 import { Empty, LinkButton } from './components/ui'
 
 const Dashboard = lazy(() => import('./pages/Dashboard'))
@@ -48,6 +49,7 @@ function NotFound() {
 export function App() {
   useThemeSync()
   useMotionSync()
+  usePlanTracker()
   return (
     <HashRouter>
       <Routes>
