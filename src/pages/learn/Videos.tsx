@@ -33,7 +33,7 @@ export default function Videos() {
           <ul className="grid gap-2 md:grid-cols-2">
             {g.videos.map((v) => (
               <li key={v.url}>
-                <a href={v.url} target="_blank" rel="noopener noreferrer" className="card flex h-full items-start gap-3 p-3 text-ink no-underline transition-colors hover:border-accent">
+                <a href={v.url} target="_blank" rel="noopener noreferrer" className="card flex h-full items-start gap-3 p-3 text-ink no-underline lift hover:border-accent">
                   <span className="grid size-11 shrink-0 place-items-center rounded-full bg-accent text-accent-ink" aria-hidden>
                     <Play size={18} className="ml-0.5" />
                   </span>

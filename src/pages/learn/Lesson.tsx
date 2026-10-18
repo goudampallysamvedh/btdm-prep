@@ -133,7 +133,8 @@ function Checks({ l }: { l: L }) {
                     'flex min-h-11 items-center gap-2 rounded-xl border px-3 py-2 text-left',
                     state === 'idle' && 'border-line hover:border-accent',
                     state === 'right' && 'border-good bg-good-bg',
-                    state === 'wrong' && 'border-bad bg-bad-bg',
+                    state === 'right' && oi === p && 'animate-pop',
+                    state === 'wrong' && 'border-bad bg-bad-bg animate-shake',
                   )}
                 >
                   {state === 'right' ? <Check size={16} className="text-good" aria-label="correct" /> : state === 'wrong' ? <X size={16} className="text-bad" aria-label="incorrect" /> : null}

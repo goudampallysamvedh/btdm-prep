@@ -23,7 +23,7 @@ export default function MathLab() {
           <ul className="grid gap-3 sm:grid-cols-2">
             {TOOLS.filter((t) => t.group === g).map((t) => (
               <li key={t.id}>
-                <Link to={`/math/${t.id}`} className="card grid h-full gap-2 p-4 text-ink no-underline transition-colors hover:border-accent">
+                <Link to={`/math/${t.id}`} className="card grid h-full gap-2 p-4 text-ink no-underline lift hover:border-accent">
                   <span className="font-display text-lg font-extrabold" style={{ fontStretch: '108%' }}>{t.title}</span>
                   <span className="text-sm text-muted">{t.blurb}</span>
                   <span className="num mt-1 text-xs text-ink-2">{t.formulas[0].name} = {t.formulas[0].f}</span>

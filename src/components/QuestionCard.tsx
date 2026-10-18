@@ -99,7 +99,8 @@ export function QuestionCard({
                 state === 'idle' && 'border-line bg-card hover:border-accent',
                 state === 'chosen' && 'border-accent bg-accent-soft',
                 state === 'right' && 'border-good bg-good-bg',
-                state === 'wrong' && 'border-bad bg-bad-bg',
+                state === 'wrong' && 'border-bad bg-bad-bg animate-shake',
+                state === 'right' && isChosen && 'animate-pop',
                 locked && 'cursor-default',
               )}
             >

@@ -1,4 +1,4 @@
-import { useMemo, type ReactNode } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight, CalendarDays, Check, Flame, Target } from 'lucide-react'
 import { useStore } from '@/lib/store'
@@ -7,6 +7,8 @@ import { buildPlan } from '@/lib/today'
 import { dayKey, daysUntil, streak } from '@/lib/dates'
 import { AREAS, AREA_BY_CODE } from '@/data/areas'
 import { Bar, Card, Disclosure, LinkButton, Tag, cx, toneFor } from '@/components/ui'
+import { Confetti } from '@/components/Confetti'
+import { useCountUp } from '@/lib/motion'
 
 export default function Dashboard() {
   const settings = useStore((s) => s.settings)
@@ -30,6 +32,7 @@ export default function Dashboard() {
   const steps = buildPlan({ counts, focusArea: focus[0].area, lessonsDone, trendsRead })
   const nextStep = steps.find((s) => !s.done)
   const doneCount = steps.filter((s) => s.done).length
+  const celebrate = useCelebrateOnce(!nextStep)
 
   return (
     <>
@@ -44,15 +47,15 @@ export default function Dashboard() {
           ) : (
             <Stat
               icon={<CalendarDays size={18} aria-hidden />}
-              value={days === 0 ? 'Today' : String(days)}
+              value={days === 0 ? 'Today' : days}
               label={days === 0 ? `${settings.competitionName}!` : `day${days === 1 ? '' : 's'} to ${settings.competitionName}`}
             />
           )}
-          <Stat icon={<Flame size={18} aria-hidden />} value={String(st)} label="day streak" />
+          <Stat icon={<Flame size={18} className={st > 0 ? 'animate-wiggle' : undefined} aria-hidden />} value={st} label="day streak" />
           <Stat
             to="/progress"
             icon={<Target size={18} aria-hidden />}
-            value={String(Math.round(projected))}
+            value={Math.round(projected)}
             unit="/100"
             label={partner ? `exam est. · team ${Math.round((projected + partner.projected) / 2)}` : 'exam estimate'}
           />
@@ -67,6 +70,7 @@ export default function Dashboard() {
       )}
 
       <Card className="receipt grid grid-cols-1 gap-4">
+        {celebrate && <Confetti />}
         <div className="flex items-baseline justify-between gap-2">
           <h2 className="text-xl">Today's plan</h2>
           <span className="num text-sm text-muted">{doneCount}/3 · about 10 min</span>
@@ -85,7 +89,7 @@ export default function Dashboard() {
                   className={cx('num grid size-8 shrink-0 place-items-center rounded-full text-sm font-bold', s.done ? 'bg-good text-card' : s === nextStep ? 'bg-accent text-accent-ink' : 'bg-paper-2 text-muted')}
                   aria-hidden
                 >
-                  {s.done ? <Check size={16} /> : i + 1}
+                  {s.done ? <Check size={16} className="animate-pop" /> : i + 1}
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className={cx('block font-bold', s.done && 'text-muted line-through')}>{s.title}</span>
@@ -102,7 +106,7 @@ export default function Dashboard() {
             Start step {steps.indexOf(nextStep) + 1}
           </LinkButton>
         ) : (
-          <div className="grid gap-1 rounded-xl bg-good-bg px-4 py-3 text-center">
+          <div className="grid gap-1 rounded-xl bg-good-bg px-4 py-3 text-center animate-pop">
             <p className="font-bold text-good">All done for today. Nice work! 🎉</p>
             <p className="text-sm text-muted">Want more? Try a <Link to="/cases" className="font-bold">case with your partner</Link> or a <Link to="/exam/mock" className="font-bold">mock exam</Link> on a free day.</p>
           </div>
@@ -144,20 +148,40 @@ export default function Dashboard() {
   )
 }
 
-/** A big-number tile for the top of Home. */
-function Stat({ icon, value, unit, label, to }: { icon: ReactNode; value: string; unit?: string; label: string; to?: string }) {
+/** True once per day, the first time today's plan is seen complete. */
+function useCelebrateOnce(allDone: boolean): boolean {
+  const [show, setShow] = useState(false)
+  useEffect(() => {
+    if (!allDone) return
+    const today = dayKey(new Date())
+    try {
+      if (localStorage.getItem('st-celebrated') === today) return
+      localStorage.setItem('st-celebrated', today)
+    } catch {
+      return
+    }
+    setShow(true)
+  }, [allDone])
+  return show
+}
+
+/** A big-number tile for the top of Home. Numbers count up when the screen opens. */
+function Stat({ icon, value, unit, label, to }: { icon: ReactNode; value: number | string; unit?: string; label: string; to?: string }) {
+  const counted = useCountUp(typeof value === 'number' ? value : 0)
   const body = (
     <>
       <span className="text-accent">{icon}</span>
       <span className="mt-1 flex items-baseline gap-0.5">
-        <span className="num font-display text-[clamp(1.9rem,8vw,2.75rem)] font-extrabold leading-none">{value}</span>
+        <span className="num font-display text-[clamp(1.9rem,8vw,2.75rem)] font-extrabold leading-none">
+          {typeof value === 'number' ? <><span aria-hidden>{counted}</span><span className="sr-only">{value}</span></> : value}
+        </span>
         {unit && <span className="num text-sm font-bold text-muted">{unit}</span>}
       </span>
       <span className="mt-1 text-xs font-bold leading-snug text-ink-2 sm:text-sm">{label}</span>
     </>
   )
   const cls = 'card flex min-w-0 flex-col p-3 text-ink no-underline sm:p-4'
-  return to ? <Link to={to} className={cls + ' transition-colors hover:border-accent'}>{body}</Link> : <div className={cls}>{body}</div>
+  return to ? <Link to={to} className={cls + ' lift hover:border-accent'}>{body}</Link> : <div className={cls}>{body}</div>
 }
 
 function greeting(): string {

@@ -170,6 +170,7 @@ function Session({ queue: initial, mode, daily, onRestart, filteredCount }: { qu
   const [done, setDone] = useState({ known: 0, again: 0 })
   const [history, setHistory] = useState<{ card: Flashcard; prev: ReturnType<typeof useStore.getState>['leitner'][string] | undefined; known: boolean }[]>([])
   const [drag, setDrag] = useState(0)
+  const [leaving, setLeaving] = useState<'left' | 'right' | null>(null)
   const start = useRef<{ x: number; y: number } | null>(null)
   const leitner = useStore((s) => s.leitner)
   const card = queue[0]
@@ -197,6 +198,20 @@ function Session({ queue: initial, mode, daily, onRestart, filteredCount }: { qu
     [card, mode],
   )
 
+  // Fly the card off to the side it was rated, then deal the next one.
+  const decide = useCallback(
+    (known: boolean) => {
+      if (!card || leaving) return
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return answer(known)
+      setLeaving(known ? 'right' : 'left')
+      window.setTimeout(() => {
+        answer(known)
+        setLeaving(null)
+      }, 200)
+    },
+    [answer, card, leaving],
+  )
+
   const undo = () => {
     const last = history[history.length - 1]
     if (!last) return
@@ -217,12 +232,12 @@ function Session({ queue: initial, mode, daily, onRestart, filteredCount }: { qu
         if (t?.tagName === 'BUTTON' && !t.dataset.flashcard) return
         e.preventDefault()
         setFlipped((f) => !f)
-      } else if (e.key === 'ArrowRight') answer(true)
-      else if (e.key === 'ArrowLeft') answer(false)
+      } else if (e.key === 'ArrowRight') decide(true)
+      else if (e.key === 'ArrowLeft') decide(false)
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [answer])
+  }, [decide])
 
   if (!card) {
     return (
@@ -261,7 +276,7 @@ function Session({ queue: initial, mode, daily, onRestart, filteredCount }: { qu
     const dx = e.clientX - start.current.x
     const dy = e.clientY - start.current.y
     start.current = null
-    if (Math.abs(dx) > threshold && Math.abs(dx) > Math.abs(dy)) answer(dx > 0)
+    if (Math.abs(dx) > threshold && Math.abs(dx) > Math.abs(dy)) decide(dx > 0)
     else {
       if (Math.abs(dx) < 8 && Math.abs(dy) < 8) setFlipped((f) => !f)
       setDrag(0)
@@ -277,11 +292,14 @@ function Session({ queue: initial, mode, daily, onRestart, filteredCount }: { qu
         </Button>
       </div>
 
+      {/* Clip sideways motion at the screen edge so a swipe never makes the page scroll. */}
+      <div className="-mx-4 w-[calc(100%+2rem)] overflow-x-clip px-4">
       <div className="relative w-full" style={{ perspective: 1200 }}>
         {/* Swipe hints */}
         <div aria-hidden className={cx('pointer-events-none absolute -left-1 top-1/2 z-10 -translate-y-1/2 rounded-full bg-bad px-3 py-1 text-sm font-bold text-card transition-opacity', drag < -30 ? 'opacity-100' : 'opacity-0')}>Still learning</div>
         <div aria-hidden className={cx('pointer-events-none absolute -right-1 top-1/2 z-10 -translate-y-1/2 rounded-full bg-good px-3 py-1 text-sm font-bold text-card transition-opacity', drag > 30 ? 'opacity-100' : 'opacity-0')}>Got it</div>
         <button
+          key={`${card.id}-${history.length}`}
           type="button"
           data-flashcard="1"
           onPointerDown={onPointerDown}
@@ -290,10 +308,11 @@ function Session({ queue: initial, mode, daily, onRestart, filteredCount }: { qu
           onPointerCancel={() => { start.current = null; setDrag(0) }}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); setFlipped((f) => !f) } }}
           aria-label={flipped ? `Definition: ${card.back}. Press space to flip back.` : `Term: ${card.front}. Press space to flip.`}
-          className="relative block h-[clamp(260px,62vw,360px)] w-full touch-pan-y select-none text-left"
+          className="animate-deal relative block h-[clamp(260px,62vw,360px)] w-full touch-pan-y select-none text-left"
           style={{
-            transform: `translateX(${drag}px) rotate(${drag / 25}deg)`,
-            transition: start.current ? 'none' : 'transform .25s ease',
+            transform: leaving ? `translateX(${leaving === 'right' ? 110 : -110}%) rotate(${leaving === 'right' ? 10 : -10}deg)` : `translateX(${drag}px) rotate(${drag / 25}deg)`,
+            opacity: leaving ? 0 : 1,
+            transition: start.current ? 'none' : 'transform .22s ease-in, opacity .22s ease-in',
           }}
         >
           <div
@@ -331,12 +350,13 @@ function Session({ queue: initial, mode, daily, onRestart, filteredCount }: { qu
           </div>
         </button>
       </div>
+      </div>
 
       <div className="grid w-full grid-cols-2 gap-3">
-        <Button variant="danger" size="lg" onClick={() => answer(false)} icon={<X size={20} aria-hidden />}>
+        <Button variant="danger" size="lg" onClick={() => decide(false)} icon={<X size={20} aria-hidden />}>
           Still learning
         </Button>
-        <Button size="lg" onClick={() => answer(true)} icon={<Check size={20} aria-hidden />} className="!bg-good !border-good !text-card">
+        <Button size="lg" onClick={() => decide(true)} icon={<Check size={20} aria-hidden />} className="!bg-good !border-good !text-card">
           Got it
         </Button>
       </div>

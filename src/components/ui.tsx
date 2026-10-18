@@ -29,7 +29,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       ref={ref}
       type={type}
       className={cx(
-        'inline-flex items-center justify-center gap-2 rounded-xl border font-bold transition-[filter,color,border-color,background-color] disabled:opacity-45 disabled:pointer-events-none select-none',
+        'inline-flex items-center justify-center gap-2 rounded-xl border font-bold transition-[filter,color,border-color,background-color,scale] duration-150 active:scale-[0.97] disabled:opacity-45 disabled:pointer-events-none select-none',
         size === 'sm' && 'min-h-9 px-3 text-sm',
         size === 'md' && 'min-h-11 px-4',
         size === 'lg' && 'min-h-13 px-6 text-lg',
@@ -63,7 +63,7 @@ export function LinkButton({
     <Link
       to={to}
       className={cx(
-        'inline-flex items-center justify-center gap-2 rounded-xl border font-bold no-underline transition-[filter,color,border-color] select-none',
+        'inline-flex items-center justify-center gap-2 rounded-xl border font-bold no-underline transition-[filter,color,border-color,scale] duration-150 active:scale-[0.97] select-none',
         size === 'sm' && 'min-h-9 px-3 text-sm',
         size === 'md' && 'min-h-11 px-4',
         size === 'lg' && 'min-h-13 px-6 text-lg',
@@ -139,7 +139,7 @@ export function Bar({ value, tone = 'accent', label, className }: { value: numbe
       aria-valuenow={Math.round(pct)}
       aria-label={label}
     >
-      <div className={cx('h-full rounded-full transition-[width] duration-500', tones[tone])} style={{ width: `${pct}%` }} />
+      <div className={cx('animate-grow h-full rounded-full transition-[width] duration-500', tones[tone])} style={{ width: `${pct}%` }} />
     </div>
   )
 }
@@ -166,7 +166,8 @@ export function Ring({ value, size = 96, stroke = 10, children, label }: { value
           strokeLinecap="round"
           strokeDasharray={c}
           strokeDashoffset={c * (1 - v)}
-          style={{ transition: 'stroke-dashoffset .6s ease' }}
+          className="animate-ring"
+          style={{ transition: 'stroke-dashoffset .6s ease', ['--ring-from' as string]: `${c}px` }}
         />
       </svg>
       <div className="absolute inset-0 grid place-items-center text-center">{children}</div>

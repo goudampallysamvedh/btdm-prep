@@ -24,7 +24,7 @@ export default function Cases() {
           const ready = plan ? planChecks(c, plan).filter((x) => x.ok).length : 0
           return (
             <li key={c.id}>
-              <Link to={`/cases/${c.id}`} className="card flex h-full flex-col gap-2 p-4 text-ink no-underline transition-colors hover:border-accent">
+              <Link to={`/cases/${c.id}`} className="card flex h-full flex-col gap-2 p-4 text-ink no-underline lift hover:border-accent">
                 <span className="flex items-center justify-between gap-2">
                   <span className="eyebrow">{c.company}</span>
                   <span className="flex gap-0.5" aria-label={`Difficulty ${c.difficulty} of 3`}>

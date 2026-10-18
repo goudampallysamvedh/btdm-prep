@@ -47,7 +47,7 @@ export default function LearnHub() {
             <ul className="grid gap-2 sm:grid-cols-2">
               {g.items.map(({ to, icon: Icon, title, sub }) => (
                 <li key={to}>
-                  <Link to={to} className="card flex h-full min-h-16 items-center gap-3 px-4 py-3 text-ink no-underline transition-colors hover:border-accent">
+                  <Link to={to} className="card flex h-full min-h-16 items-center gap-3 px-4 py-3 text-ink no-underline lift hover:border-accent">
                     <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-accent-soft text-accent" aria-hidden>
                       <Icon size={20} />
                     </span>

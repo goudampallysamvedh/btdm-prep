@@ -24,7 +24,7 @@ export default function Lessons() {
             <ol className="grid gap-3 sm:grid-cols-2">
               {g.lessons.map((l, i) => (
                 <li key={l.id}>
-                  <Link to={`/learn/lessons/${l.id}`} className="card flex h-full gap-4 p-4 text-ink no-underline transition-colors hover:border-accent">
+                  <Link to={`/learn/lessons/${l.id}`} className="card flex h-full gap-4 p-4 text-ink no-underline lift hover:border-accent">
                     <span className="num grid size-10 shrink-0 place-items-center rounded-xl bg-paper-2 font-bold text-accent">{String(i + 1).padStart(2, '0')}</span>
                     <span className="min-w-0">
                       <span className="block font-display text-lg font-extrabold leading-tight" style={{ fontStretch: '108%' }}>{l.title}</span>

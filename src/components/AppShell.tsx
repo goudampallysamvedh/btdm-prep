@@ -125,7 +125,7 @@ export function AppShell() {
               >
                 {({ isActive }) => (
                   <>
-                    <span className={cx('grid h-7 w-12 place-items-center rounded-full transition-colors', isActive && 'bg-accent-soft')}>
+                    <span className={cx('grid h-7 w-12 place-items-center rounded-full transition-colors', isActive && 'bg-accent-soft animate-pop')}>
                       <Icon size={20} aria-hidden />
                     </span>
                     {label}

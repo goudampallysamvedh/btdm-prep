@@ -25,7 +25,7 @@ export default function Trends() {
       <ul className="mt-4 grid gap-3 md:grid-cols-2">
         {TRENDS.map((tr) => (
           <li key={tr.id}>
-            <Link to={`/learn/trends/${tr.id}`} className="card flex h-full flex-col gap-2 p-4 text-ink no-underline transition-colors hover:border-accent">
+            <Link to={`/learn/trends/${tr.id}`} className="card flex h-full flex-col gap-2 p-4 text-ink no-underline lift hover:border-accent">
               <span className="flex items-center justify-between gap-2">
                 <span className="eyebrow">{tr.kicker}</span>
                 {read[tr.id] && <Pill tone="good">Read</Pill>}

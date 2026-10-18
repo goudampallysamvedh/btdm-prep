@@ -114,7 +114,7 @@ export default function JudgeDrill() {
         </div>
         <p className="font-display text-[clamp(1.35rem,4.5vw,1.9rem)] font-extrabold leading-tight" style={{ fontStretch: '106%' }}>"{q.q}"</p>
         <div className="flex items-center gap-3">
-          <span className={cx('num text-3xl font-bold', left <= 10 && left > 0 && 'text-bad', left === 0 && 'text-muted')} role="timer" aria-label={`${left} seconds left`}>
+          <span className={cx('num text-3xl font-bold', left <= 10 && left > 0 && 'text-bad animate-pulse', left === 0 && 'text-muted')} role="timer" aria-label={`${left} seconds left`}>
             {fmtClock(left)}
           </span>
           {running ? (
