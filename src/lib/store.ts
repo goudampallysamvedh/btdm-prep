@@ -60,6 +60,12 @@ export interface PartnerSummary {
   cases?: { attempts: number; best: number }
 }
 
+/** Live partner updates through an encrypted relay. `key` is the shared team secret. */
+export interface LiveLink {
+  key: string
+  linkedAt: number
+}
+
 export interface OfficialScore {
   id: string
   exam: string
@@ -74,6 +80,8 @@ export interface ProgressState {
   officialScores: OfficialScore[]
   /** Latest exam summary received from your partner (for the team exam estimate). */
   partner: PartnerSummary | null
+  /** Live partner updates, when linked. */
+  live: LiveLink | null
   /** dayKey -> number of study actions that day. */
   activity: Record<string, number>
   /** dayKey -> small counters for Today's plan (cards, questions, math, judge). */
@@ -128,6 +136,7 @@ export const emptyProgress: ProgressState = {
   settings: defaultSettings,
   officialScores: [],
   partner: null,
+  live: null,
   activity: {},
   daily: {},
   planDone: {},

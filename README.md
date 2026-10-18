@@ -64,7 +64,9 @@ Open it once while online. After that it works offline.
 
 ## Sync
 
-Progress stays on each device and moves with copy-and-paste codes (nothing is uploaded). **Sync → My devices** copies all of your progress to your other devices and combines it without losing anything. **Sync → Partner** shares case plans, case scores, your exam estimate, streak, and what you need to work on; the **Partner** page shows your partner's progress. A backup file is under My devices.
+Progress stays on each device and moves with copy-and-paste codes. **Sync → My devices** copies all of your progress to your other devices and combines it without losing anything. **Sync → Partner** shares case plans, case scores, your exam estimate, streak, and what you need to work on; the **Partner** page shows your partner's progress. A backup file is under My devices.
+
+**Live updates** (Sync → Partner): one partner creates a live link and the other pastes it. After that, each app sends its partner summary whenever progress changes, through [ntfy.sh](https://ntfy.sh) (a free relay, no account). Each update is encrypted on the phone with AES-GCM using a key derived from the shared link, and the relay channel name is derived from it too, so the relay can't read or fake updates (`src/lib/live.ts`). Only the summary is sent, never full history.
 
 ## Study helper (no AI)
 

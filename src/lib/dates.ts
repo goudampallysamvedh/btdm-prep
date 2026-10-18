@@ -57,3 +57,12 @@ export function relDay(ms: number, now = new Date()): string {
   const n = daysAgo(ms, now)
   return n === 0 ? 'today' : n === 1 ? 'yesterday' : `${n} days ago`
 }
+
+/** "just now", "5 min ago", "3 h ago", then "yesterday" / "N days ago". */
+export function relTime(ms: number, now = Date.now()): string {
+  const min = Math.floor((now - ms) / 60_000)
+  if (min < 1) return 'just now'
+  if (min < 60) return `${min} min ago`
+  if (min < 12 * 60) return `${Math.floor(min / 60)} h ago`
+  return relDay(ms, new Date(now))
+}

@@ -3,6 +3,7 @@ import { HashRouter, Route, Routes } from 'react-router-dom'
 import { AppShell } from './components/AppShell'
 import { useMotionSync, useThemeSync } from './lib/theme'
 import { usePlanTracker } from './lib/today'
+import { useLiveSync } from './lib/live'
 import { Empty, LinkButton } from './components/ui'
 
 const Dashboard = lazy(() => import('./pages/Dashboard'))
@@ -50,6 +51,7 @@ export function App() {
   useThemeSync()
   useMotionSync()
   usePlanTracker()
+  useLiveSync()
   return (
     <HashRouter>
       <Routes>

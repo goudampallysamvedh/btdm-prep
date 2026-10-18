@@ -9,13 +9,14 @@ import { CASE_BY_ID } from '@/data/cases'
 import { dayKey, fmtDateTime } from '@/lib/dates'
 import type { AreaCode } from '@/types'
 import { Button, Callout, Card, Disclosure, PageHeader, Segmented, cx, inputCls } from '@/components/ui'
+import { LiveCard } from '@/components/LiveCard'
 
 type Tab = 'me' | 'partner'
 
 function snapshot(): ProgressState {
   const s = useStore.getState()
   return {
-    settings: s.settings, officialScores: s.officialScores, partner: s.partner, activity: s.activity, daily: s.daily, planDone: s.planDone, tests: s.tests, leitner: s.leitner,
+    settings: s.settings, officialScores: s.officialScores, partner: s.partner, live: s.live, activity: s.activity, daily: s.daily, planDone: s.planDone, tests: s.tests, leitner: s.leitner,
     caseAttempts: s.caseAttempts, casePlans: s.casePlans, mathStats: s.mathStats, lessonsDone: s.lessonsDone,
     trendsRead: s.trendsRead, judgeDrill: s.judgeDrill, activeMock: s.activeMock,
   }
@@ -30,7 +31,7 @@ export default function Sync() {
   return (
     <>
       <PageHeader title="Sync">
-        Move progress with a code: copy it on one device, paste it on the other. Nothing is uploaded.
+        Copy a code on one device and paste it on the other. For your partner, you can also turn on live updates.
       </PageHeader>
       <Segmented<Tab>
         label="What to sync"
@@ -42,7 +43,7 @@ export default function Sync() {
       {tab === 'me' ? <MyDevices key="me" onSwitch={() => setTab('partner')} /> : <Partner key="partner" onSwitch={() => setTab('me')} />}
       <div className="mt-4">
         <Callout tone="info" title="Privacy">
-          Codes go only where you send them. Progress lives in this browser, so sync or save a backup before clearing site data.
+          Codes go only where you send them. Live updates send only your partner summary, encrypted on your phone first. Progress lives in this browser, so sync or save a backup before clearing site data.
         </Callout>
       </div>
     </>
@@ -101,6 +102,7 @@ function Partner({ onSwitch }: { onSwitch: () => void }) {
 
   return (
     <div className="grid gap-4">
+      <LiveCard />
       <Card className="grid gap-3">
         <div className="flex items-center gap-2"><Users size={20} className="text-accent" aria-hidden /><h2 className="text-lg">Team exam estimate</h2></div>
         <div className="grid grid-cols-3 gap-2 text-center">

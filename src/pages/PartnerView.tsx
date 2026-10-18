@@ -4,7 +4,8 @@ import { CalendarCheck, Flame, HandHelping, RefreshCw, Target } from 'lucide-rea
 import { useStore } from '@/lib/store'
 import { areaReadiness } from '@/lib/mastery'
 import { helpIdeas } from '@/lib/partner'
-import { daysAgo, relDay } from '@/lib/dates'
+import { daysAgo, relDay, relTime } from '@/lib/dates'
+import { useLiveStatus } from '@/lib/live'
 import { AREAS, AREA_BY_CODE } from '@/data/areas'
 import { TOPIC_BY_ID } from '@/data/topics'
 import { LESSONS } from '@/data/lessons'
@@ -17,6 +18,8 @@ const pct = (v: number) => `${Math.round(v * 100)}%`
 
 export default function PartnerView() {
   const p = useStore((s) => s.partner)
+  const live = useStore((s) => !!s.live)
+  const liveState = useLiveStatus((s) => s.state)
   const tests = useStore((s) => s.tests)
   const mine = useMemo(() => areaReadiness(tests), [tests])
 
@@ -41,10 +44,17 @@ export default function PartnerView() {
   return (
     <>
       <PageHeader title={`${p.name}'s progress`}>
-        From their last partner code, sent {relDay(p.at)}.
+        {live ? (
+          <span className="inline-flex flex-wrap items-center gap-1.5">
+            <span className={cx('size-2.5 rounded-full', liveState === 'live' ? 'bg-good animate-pulse' : 'bg-warn')} aria-hidden />
+            {liveState === 'live' ? 'Live' : 'Reconnecting'} · last update {relTime(p.at)}
+          </span>
+        ) : (
+          <>From their last partner code, sent {relDay(p.at)}. <Link to="/sync?tab=partner" className="font-bold">Turn on live updates</Link></>
+        )}
       </PageHeader>
 
-      {(old >= 3 || !rich) && (
+      {((old >= 3 && !live) || !rich) && (
         <div className="mb-4">
           <Callout tone="warn" title={!rich ? 'Ask for a new code to see more' : `This is ${old} days old`}>
             {!rich

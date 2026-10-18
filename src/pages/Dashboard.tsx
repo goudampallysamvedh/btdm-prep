@@ -4,7 +4,7 @@ import { ArrowRight, CalendarDays, Check, Flame, Target, Users } from 'lucide-re
 import { useStore } from '@/lib/store'
 import { areaReadiness, projectedScore, scoreOf } from '@/lib/mastery'
 import { buildPlan, PLAN_MINUTES } from '@/lib/today'
-import { dayKey, daysUntil, relDay, streak } from '@/lib/dates'
+import { dayKey, daysUntil, relTime, streak } from '@/lib/dates'
 import { AREAS, AREA_BY_CODE } from '@/data/areas'
 import { Bar, Card, Disclosure, LinkButton, Tag, cx, toneFor } from '@/components/ui'
 import { Confetti } from '@/components/Confetti'
@@ -179,7 +179,7 @@ function PartnerCard() {
         <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-accent-soft text-accent" aria-hidden><Users size={20} /></span>
         <span className="min-w-0 flex-1">
           <span className="block font-bold">{p.name}</span>
-          <span className="block text-xs text-muted">Updated {relDay(p.at)}</span>
+          <span className="block text-xs text-muted">Updated {relTime(p.at)}</span>
         </span>
         <ArrowRight size={18} className="shrink-0 text-muted" aria-hidden />
       </span>

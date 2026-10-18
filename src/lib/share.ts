@@ -215,6 +215,8 @@ export function mergeBackup(s: ProgressState, b: Backup): MergeResult {
   const caseAttempts = unionById(s.caseAttempts, d.caseAttempts ?? [])
   const partner = !s.partner || (d.partner && d.partner.at > s.partner.at) ? (d.partner ?? s.partner) : s.partner
   const takeSettings = isDefaultSettings(s) && !!d.settings
+  // Your other device joins your live link too, as the same partner (A or B).
+  const takeLive = !s.live && !!d.live
   const testsAdded = tests.length - s.tests.length
   const attemptsAdded = caseAttempts.length - s.caseAttempts.length
   const n = (k: number, word: string) => `${k} ${word}${k === 1 ? '' : 's'}`
@@ -233,13 +235,15 @@ export function mergeBackup(s: ProgressState, b: Backup): MergeResult {
       judgeDrill: { ...(d.judgeDrill ?? {}), ...s.judgeDrill },
       mathStats,
       partner,
-      ...(takeSettings ? { settings: { ...defaultSettings, ...d.settings, theme: s.settings.theme } } : {}),
+      ...(takeSettings ? { settings: { ...defaultSettings, ...d.settings, theme: s.settings.theme } } : takeLive ? { settings: { ...s.settings, me: d.settings.me } } : {}),
+      ...(takeLive ? { live: d.live } : {}),
     },
     summary: [
       `${n(testsAdded, 'test')} added`,
       `${n(cardsUpdated, 'flashcard')} updated`,
       `${n(plansUpdated, 'case plan')} updated, ${n(attemptsAdded, 'case score')} added`,
       ...(takeSettings ? ['Your names and exam date were copied to this device.'] : []),
+      ...(takeLive ? ['Live partner updates are now on for this device too.'] : []),
     ],
   }
 }
