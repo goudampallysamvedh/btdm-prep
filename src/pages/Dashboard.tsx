@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight, CalendarDays, Check, Flame, Target } from 'lucide-react'
 import { useStore } from '@/lib/store'
@@ -38,24 +38,24 @@ export default function Dashboard() {
           {greeting()}
           {name !== 'Partner A' && name !== 'Partner B' ? `, ${name}` : ''}
         </h1>
-        <div className="flex flex-wrap gap-2 text-sm">
-          {days === null ? (
-            <Link to="/settings" className="inline-flex items-center gap-1.5 rounded-full bg-card px-3 py-1.5 font-bold no-underline shadow-sm">
-              <CalendarDays size={15} aria-hidden /> Set your competition date
-            </Link>
+        <div className="grid grid-cols-3 gap-2 sm:gap-3">
+          {days === null || days < 0 ? (
+            <Stat to="/settings" icon={<CalendarDays size={18} aria-hidden />} value="—" label="Set your competition date" />
           ) : (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-card px-3 py-1.5 font-bold shadow-sm">
-              <CalendarDays size={15} className="text-accent" aria-hidden />
-              {days > 0 ? `${days} days to ${settings.competitionName}` : days === 0 ? `${settings.competitionName} is today` : 'Set your next date'}
-            </span>
+            <Stat
+              icon={<CalendarDays size={18} aria-hidden />}
+              value={days === 0 ? 'Today' : String(days)}
+              label={days === 0 ? `${settings.competitionName}!` : `day${days === 1 ? '' : 's'} to ${settings.competitionName}`}
+            />
           )}
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-card px-3 py-1.5 font-bold shadow-sm">
-            <Flame size={15} className="text-accent" aria-hidden /> {st}-day streak
-          </span>
-          <Link to="/progress" className="inline-flex items-center gap-1.5 rounded-full bg-card px-3 py-1.5 font-bold text-ink no-underline shadow-sm">
-            <Target size={15} className="text-accent" aria-hidden /> Exam est. {Math.round(projected)}/100
-            {partner && <span className="font-normal text-muted"> · team {Math.round((projected + partner.projected) / 2)}</span>}
-          </Link>
+          <Stat icon={<Flame size={18} aria-hidden />} value={String(st)} label="day streak" />
+          <Stat
+            to="/progress"
+            icon={<Target size={18} aria-hidden />}
+            value={String(Math.round(projected))}
+            unit="/100"
+            label={partner ? `exam est. · team ${Math.round((projected + partner.projected) / 2)}` : 'exam estimate'}
+          />
         </div>
       </header>
 
@@ -142,6 +142,22 @@ export default function Dashboard() {
       </div>
     </>
   )
+}
+
+/** A big-number tile for the top of Home. */
+function Stat({ icon, value, unit, label, to }: { icon: ReactNode; value: string; unit?: string; label: string; to?: string }) {
+  const body = (
+    <>
+      <span className="text-accent">{icon}</span>
+      <span className="mt-1 flex items-baseline gap-0.5">
+        <span className="num font-display text-[clamp(1.9rem,8vw,2.75rem)] font-extrabold leading-none">{value}</span>
+        {unit && <span className="num text-sm font-bold text-muted">{unit}</span>}
+      </span>
+      <span className="mt-1 text-xs font-bold leading-snug text-ink-2 sm:text-sm">{label}</span>
+    </>
+  )
+  const cls = 'card flex min-w-0 flex-col p-3 text-ink no-underline sm:p-4'
+  return to ? <Link to={to} className={cls + ' transition-colors hover:border-accent'}>{body}</Link> : <div className={cls}>{body}</div>
 }
 
 function greeting(): string {
