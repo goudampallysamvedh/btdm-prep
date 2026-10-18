@@ -6,7 +6,7 @@ import type { Flashcard, Question } from '@/types'
  * Forecasts are labeled as forecasts. To refresh: edit `data`, `asOf`, and `sources`, then redeploy.
  */
 /** Date the trend facts were last researched (YYYY-MM-DD). The weekly update job sets this. */
-export const TRENDS_CHECKED = '2026-10-16'
+export const TRENDS_CHECKED = '2026-10-18'
 
 export interface Trend {
   id: string
@@ -27,19 +27,20 @@ export const TRENDS: Trend[] = [
     id: 'teens',
     title: 'What teens are buying now',
     kicker: 'The target market in many BTDM cases',
-    what: 'DECA partners with Piper Sandler on a twice-yearly survey of U.S. teens. It\'s the best free source on teen spending, brands, and apps, which matters when a case asks you to target high school shoppers.',
+    what: 'DECA partners with Piper Sandler on a survey of U.S. teens, now run once a year each fall. It\'s the best free source on teen spending, brands, and apps, which matters when a case asks you to target high school shoppers.',
     data: [
-      { stat: 'Teens\' self-reported annual spending fell 6% year over year to $2,213 (fall 2025).', source: 0 },
-      { stat: 'TikTok was teens\' favorite app (46%), ahead of Instagram (31%) and Snapchat (14%). About 87% own an iPhone.', source: 0 },
-      { stat: 'Nike stayed the top clothing and footwear brand; Sephora stayed the top beauty destination.', source: 1 },
+      { stat: 'TikTok stayed teens\' favorite app at about 48% (up 2 points), with Instagram flat at 31% (fall 2026, about 9,000 teens).', source: 0 },
+      { stat: 'Teen beauty spending rose about 7% after falling the year before; Sephora (39%) and Ulta (25%) were teen girls\' top beauty stores.', source: 1 },
+      { stat: 'Nike was still the top shoe brand at 45%, but down from 48%, as casual brands gained; footwear spending was still slightly down.', source: 2 },
     ],
     sources: [
-      { label: 'Piper Sandler: 50th semi-annual teen survey (Oct 2025)', url: 'https://www.pipersandler.com/news/piper-sandler-completes-50th-semi-annual-teen-survey' },
-      { label: 'DECA Direct: Unpacking teen trends, fall 2025', url: 'https://www.decadirect.org/articles/unpacking-teen-trends-fall-2025-taking-stock-with-teens-survey' },
+      { label: 'Investing.com: Piper Sandler 26th annual teen survey (Oct 2026)', url: 'https://www.investing.com/news/analyst-ratings/piper-sandler-teen-survey-shows-beauty-spending-rises-tiktok-gains-93CH-4947072' },
+      { label: 'WWD: Teen beauty spend is up, Piper Sandler survey (Oct 2026)', url: 'https://wwd.com/beauty-industry-news/beauty-features/piper-sandler-survey-beauty-findings-1239351894/' },
+      { label: 'WWD: What teens want in footwear now (Oct 2026)', url: 'https://wwd.com/footwear-news/shoe-industry-news/teen-spending-footwear-piper-sandler-athletic-brands-1239351760/' },
     ],
-    asOf: 'Fall 2025 survey',
+    asOf: 'Fall 2026 survey',
     pis: ['MP:003', 'SE:359', 'PR:007'],
-    sayIt: '"Teens are spending a bit less this year, about $2,200 on average, so our exclusive has to feel like a deal and spread through TikTok, their favorite app."',
+    sayIt: '"Teens are spending more on beauty this year and TikTok is still their favorite app at about 48%, so our exclusive should launch with creator videos on TikTok."',
     fits: 'Any case targeting high school or Gen Z shoppers (like the 2026 BTDM sample).',
     watchOut: 'Survey data is self-reported and averages hide big differences by income and region.',
   },
@@ -235,9 +236,13 @@ export const TRENDS: Trend[] = [
     data: [
       { stat: 'BNPL drove about $20 billion in U.S. online holiday spending in 2025, up 9.8% (Adobe).', source: 0 },
       { stat: 'About 82% of holiday BNPL payments were made on mobile devices.', source: 0 },
+      { stat: 'Adobe forecasts about $21.3 billion in BNPL online holiday spending for Nov–Dec 2026, up about 6.6% (forecast).', source: 1 },
     ],
-    sources: [{ label: 'Adobe: 2025 holiday shopping season results (Jan 2026)', url: 'https://news.adobe.com/news/downloads/pdfs/2026/01/010726-holiday-shopping-season-2025.pdf' }],
-    asOf: '2025 holiday season',
+    sources: [
+      { label: 'Adobe: 2025 holiday shopping season results (Jan 2026)', url: 'https://news.adobe.com/news/downloads/pdfs/2026/01/010726-holiday-shopping-season-2025.pdf' },
+      { label: 'Adobe: 2026 holiday forecast via Business Wire (Sep 2026)', url: 'https://secure.businesswire.com/news/home/20260928285775/en/Adobe-U.S.-Holiday-Shopping-Season-to-Hit-Record-%24275.1-Billion-Online-Rising-6.7-YoY' },
+    ],
+    asOf: '2025 holiday results; 2026 holiday forecast',
     pis: ['FI:002', 'FI:063', 'EC:004'],
     sayIt: '"Offering pay-in-four on the $120 bundle creates possession utility: shoppers take it home today for $30 down."',
     fits: 'Pricing, credit, and premium-merchandise cases.',
@@ -249,14 +254,14 @@ export const TRENDS: Trend[] = [
     kicker: 'Closings outpace openings',
     what: 'Retailers are closing underperforming stores and investing in the ones that remain: remodels, experiences, services, and fulfillment.',
     data: [
-      { stat: 'U.S. store closings outpaced openings in 2024 (7,325 closed vs. 5,970 opened).', source: 0 },
-      { stat: 'Coresight expected a larger net loss in 2025, with about 5,800 openings forecast.', source: 1 },
+      { stat: 'By midyear 2026, Coresight counted 3,321 U.S. store closings (down 44% from a year earlier) and 3,215 openings (down 23%, the lowest midyear count since 2020).', source: 0 },
+      { stat: 'Coresight forecasts about 6,400 closings and 4,500 openings for full-year 2026, so closings still outpace openings.', source: 0 },
+      { stat: 'Dollar stores and off-price chains are opening the most stores; apparel, department stores, and electronics are closing the most.', source: 0 },
     ],
     sources: [
-      { label: 'Drug Store News: How many stores will open and close in 2025', url: 'https://drugstorenews.com/how-many-stores-will-open-close-2025' },
-      { label: 'CoStar: Rising U.S. store closings', url: 'https://www.costar.com/article/1870124869/rising-us-store-closings-on-pace-for-record-year' },
+      { label: 'Retail TouchPoints: Coresight midyear 2026 store openings and closures (Sep 2026)', url: 'https://www.retailtouchpoints.com/features/store-openings-and-closures-slow-in-2026-as-retailers-take-stock/621322/' },
     ],
-    asOf: '2024 actuals; 2025 forecast',
+    asOf: 'Midyear 2026 counts; full-year 2026 forecast',
     pis: ['MP:008', 'EC:010', 'SM:001'],
     sayIt: '"Every square foot has to earn its place, so we\'ll test the shop-in-shop in our top 50 stores and expand only if sales per square foot beat the department average."',
     fits: 'Space-productivity, store-experience, and situation-analysis questions.',
