@@ -79,7 +79,7 @@ export function CasePlanner({ c, partnerA, partnerB }: { c: CaseStudy; partnerA:
             </li>
           ))}
         </ul>
-        <p className="text-xs text-muted">Saved automatically on this device. Share it with your partner from Partner sync.</p>
+        <p className="text-xs text-muted">Saved automatically on this device. Share it with your partner from Sync.</p>
       </Card>
 
       <Card className="grid gap-2">

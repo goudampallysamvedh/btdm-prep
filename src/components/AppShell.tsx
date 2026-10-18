@@ -29,7 +29,7 @@ const learn = [
 
 const you = [
   { to: '/progress', label: 'Progress', icon: LineChart },
-  { to: '/sync', label: 'Partner sync', icon: ArrowLeftRight },
+  { to: '/sync', label: 'Sync', icon: ArrowLeftRight },
   { to: '/settings', label: 'Settings', icon: SettingsIcon },
 ]
 

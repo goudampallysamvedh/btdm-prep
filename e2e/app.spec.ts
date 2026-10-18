@@ -5,7 +5,7 @@ const ROUTES = [
   '', 'progress', 'exam', 'exam/practice?mode=smart&count=5', 'exam/mock', 'cards', 'math', 'math/markup', 'math/six-month-plan',
   'learn', 'learn/guide', 'learn/guide/PM', 'learn/lessons', 'learn/lessons/vendors', 'learn/lessons/risk', 'learn/visual/plc', 'learn/visual/markdown-timing',
   'learn/trends', 'learn/trends/collabs', 'learn/videos', 'learn/playbook', 'learn/pis', 'cards?deck=pi&pif=case', 'cases', 'cases/hallway-threads', 'cases/hallway-threads?tab=plan',
-  'cases/hallway-threads?tab=score', 'cases/hallway-threads?tab=timer', 'cases/judge', 'sync', 'settings',
+  'cases/hallway-threads?tab=score', 'cases/hallway-threads?tab=timer', 'cases/judge', 'sync', 'sync?tab=me', 'settings',
 ]
 
 mkdirSync('screenshots', { recursive: true })
@@ -70,4 +70,33 @@ test('works offline after the first load', async ({ page, context }) => {
     await expect(page.locator('main h1').first()).toBeVisible()
   }
   await context.setOffline(false)
+})
+
+test('my-devices sync copies progress to a second device', async ({ page, browser }) => {
+  // Device 1: answer a short practice set, then make a sync code.
+  await page.goto('#/exam/practice?mode=smart&count=2')
+  for (let i = 0; i < 2; i++) {
+    await page.getByRole('radio').first().click()
+    await page.getByRole('button', { name: i < 1 ? /next/i : /see my report/i }).click()
+  }
+  await expect(page.getByRole('heading', { name: /report/i })).toBeVisible()
+  await page.goto('#/sync?tab=me')
+  await expect(page.getByText(/holds all your progress: 1 test,/)).toBeVisible()
+  await page.getByRole('button', { name: /make my sync code/i }).click()
+  const code = await page.getByLabel('Sync code', { exact: true }).inputValue()
+  expect(code.startsWith('ST1.')).toBe(true)
+
+  // Device 2: a fresh browser with no progress.
+  const other = await browser.newContext()
+  const page2 = await other.newPage()
+  await page2.goto(page.url())
+  await expect(page2.getByText(/holds all your progress: 0 tests,/)).toBeVisible()
+  await page2.getByLabel('Paste a sync code').fill(code)
+  await page2.getByRole('button', { name: /check code/i }).click()
+  await page2.getByRole('button', { name: /combine with this device/i }).click()
+  await expect(page2.getByText(/1 test added/)).toBeVisible()
+  await page2.waitForTimeout(500)
+  await page2.reload()
+  await expect(page2.getByText(/holds all your progress: 1 test,/)).toBeVisible()
+  await other.close()
 })

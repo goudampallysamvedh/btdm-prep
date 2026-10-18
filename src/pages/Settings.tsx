@@ -43,9 +43,9 @@ export default function Settings() {
 
         <SectionTitle>Data</SectionTitle>
         <Card className="grid gap-3">
-          <p className="text-sm text-muted">Progress is saved on this device only (in the browser's IndexedDB). Use Partner sync to back it up or share it.</p>
+          <p className="text-sm text-muted">Progress is saved on this device only (in the browser's IndexedDB). Use Sync to copy it to your other devices or share it with your partner.</p>
           <div className="flex flex-wrap gap-2">
-            <LinkButton to="/sync" variant="ghost">Back up or sync</LinkButton>
+            <LinkButton to="/sync?tab=me" variant="ghost">Sync my devices</LinkButton>
             <Button
               variant="danger"
               onClick={() => {

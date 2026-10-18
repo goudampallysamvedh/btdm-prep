@@ -51,6 +51,49 @@ describe('merging', () => {
     const r = mergeBackup(state({ tests: [t('1')] }), makeBackup(state({ tests: [t('1'), t('2')] })))
     expect(r.state.tests!.map((x) => x.id)).toEqual(['1', '2'])
   })
+  it('combines two devices of the same person without losing or double-counting', () => {
+    const t = (id: string) => ({ id, kind: 'practice' as const, title: id, startedAt: 0, finishedAt: 1, answers: [] })
+    const card = (box: number, last: number) => ({ box, due: 0, seen: box, lapses: 0, last })
+    const phone = state({
+      tests: [t('p1')],
+      leitner: { a: card(3, 100), b: card(1, 50) },
+      daily: { '2026-10-17': { cards: 4 } },
+      mathStats: { markup: { kind: 'markup', tried: 5, correct: 4 } },
+      lessonsDone: { risk: 1 },
+    })
+    const laptop = state({
+      tests: [t('l1')],
+      leitner: { a: card(2, 90), b: card(4, 200), c: card(1, 10) },
+      daily: { '2026-10-17': { cards: 10, questions: 5 } },
+      mathStats: { markup: { kind: 'markup', tried: 3, correct: 3 } },
+      lessonsDone: { goals: 2 },
+    })
+    const r = mergeBackup(phone, makeBackup(laptop))
+    const merged = { ...phone, ...r.state } as ProgressState
+    expect(merged.tests.map((x) => x.id).sort()).toEqual(['l1', 'p1'])
+    expect(merged.leitner.a.box).toBe(3) // phone reviewed it more recently
+    expect(merged.leitner.b.box).toBe(4) // laptop reviewed it more recently
+    expect(merged.leitner.c).toBeDefined()
+    expect(merged.daily['2026-10-17']).toEqual({ cards: 10, questions: 5 })
+    expect(merged.mathStats.markup).toMatchObject({ tried: 5, correct: 4 })
+    expect(Object.keys(merged.lessonsDone).sort()).toEqual(['goals', 'risk'])
+    // Syncing back and forth again changes nothing.
+    const again = mergeBackup(merged, makeBackup(laptop))
+    expect({ ...merged, ...again.state }).toEqual(merged)
+    const back = mergeBackup(laptop, makeBackup(merged))
+    expect({ ...laptop, ...back.state }.leitner).toEqual(merged.leitner)
+  })
+  it('copies names to a device that was never set up, but never overwrites them', () => {
+    const fresh = { ...emptyProgress }
+    const named = state({ settings: { ...emptyProgress.settings, partnerA: 'Ava', partnerB: 'Ben', competitionDate: '2027-01-10' } })
+    expect(mergeBackup(fresh, makeBackup(named)).state.settings?.partnerA).toBe('Ava')
+    const other = state({ settings: { ...emptyProgress.settings, partnerA: 'Zoe', partnerB: 'Max' } })
+    expect(mergeBackup(other, makeBackup(named)).state.settings).toBeUndefined()
+  })
+  it('round-trips a full progress code', () => {
+    const r = parseShared(toCode(makeBackup(state({ lessonsDone: { risk: 1 } }))))
+    expect(r.ok && r.value.kind === 'backup' && r.value.data.lessonsDone.risk).toBe(1)
+  })
   it('averages team exam scores', () => {
     expect(teamExam(80, { name: 'B', projected: 70, areas: {}, answered: 0, at: 0 })).toBe(75)
     expect(teamExam(80, null)).toBeNull()

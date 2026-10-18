@@ -1,6 +1,6 @@
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string'
-import type { CaseAttempt, CasePlan, LeitnerState, TestRecord } from '@/types'
-import type { PartnerSummary, ProgressState } from './store'
+import type { CaseAttempt, CasePlan, LeitnerState, MathStat, TestRecord } from '@/types'
+import { defaultSettings, type DailyKind, type PartnerSummary, type ProgressState } from './store'
 import { areaReadiness, projectedScore } from './mastery'
 
 export const APP_ID = 'sell-through'
@@ -137,32 +137,83 @@ export function mergePartner(s: ProgressState, p: PartnerPackage): MergeResult {
   }
 }
 
-/** Merge a backup into the current device (e.g., same person, second device). */
+/** The name of the person whose progress this is. */
+export function ownerName(s: Pick<ProgressState, 'settings'>): string {
+  return s.settings.me === 'A' ? s.settings.partnerA : s.settings.partnerB
+}
+
+/** True when this device was never set up (names and competition date still blank). */
+function isDefaultSettings(s: ProgressState): boolean {
+  return s.settings.partnerA === defaultSettings.partnerA && s.settings.partnerB === defaultSettings.partnerB && !s.settings.competitionDate
+}
+
+/**
+ * Merge your own progress from another device. Nothing is lost on either side: tests and scores are
+ * combined, each flashcard keeps its most recent review, and counters keep the higher value (so
+ * syncing the same two devices again never double-counts). Sync both ways to make devices match.
+ */
 export function mergeBackup(s: ProgressState, b: Backup): MergeResult {
   const d = b.data
   const tests = unionById<TestRecord>(s.tests, d.tests ?? [])
   const leitner: Record<string, LeitnerState> = { ...s.leitner }
+  let cardsUpdated = 0
   for (const [id, st] of Object.entries(d.leitner ?? {})) {
-    if (!leitner[id] || (st.last ?? 0) > (leitner[id].last ?? 0)) leitner[id] = st
+    if (!leitner[id] || (st.last ?? 0) > (leitner[id].last ?? 0)) {
+      leitner[id] = st
+      cardsUpdated++
+    }
   }
   const activity = { ...s.activity }
   for (const [k, n] of Object.entries(d.activity ?? {})) activity[k] = Math.max(activity[k] ?? 0, n)
+  const daily: ProgressState['daily'] = { ...s.daily }
+  for (const [day, counts] of Object.entries(d.daily ?? {})) {
+    const merged = { ...(daily[day] ?? {}) }
+    for (const [k, n] of Object.entries(counts ?? {}) as [DailyKind, number][]) merged[k] = Math.max(merged[k] ?? 0, n)
+    daily[day] = merged
+  }
   const plans = { ...s.casePlans }
-  for (const plan of Object.values(d.casePlans ?? {})) if (!plans[plan.caseId] || plan.updatedAt > plans[plan.caseId].updatedAt) plans[plan.caseId] = plan
+  let plansUpdated = 0
+  for (const plan of Object.values(d.casePlans ?? {})) {
+    if (!plans[plan.caseId] || plan.updatedAt > plans[plan.caseId].updatedAt) {
+      plans[plan.caseId] = plan
+      plansUpdated++
+    }
+  }
+  const mathStats: Record<string, MathStat> = { ...s.mathStats }
+  for (const [k, st] of Object.entries(d.mathStats ?? {})) {
+    const mine = mathStats[k]
+    mathStats[k] = mine
+      ? { kind: st.kind, tried: Math.max(mine.tried, st.tried), correct: Math.max(mine.correct, st.correct), last: Math.max(mine.last ?? 0, st.last ?? 0) || undefined }
+      : st
+  }
+  const caseAttempts = unionById(s.caseAttempts, d.caseAttempts ?? [])
+  const partner = !s.partner || (d.partner && d.partner.at > s.partner.at) ? (d.partner ?? s.partner) : s.partner
+  const takeSettings = isDefaultSettings(s) && !!d.settings
+  const testsAdded = tests.length - s.tests.length
+  const attemptsAdded = caseAttempts.length - s.caseAttempts.length
+  const n = (k: number, word: string) => `${k} ${word}${k === 1 ? '' : 's'}`
   return {
     state: {
       tests,
       leitner,
       activity,
+      daily,
       casePlans: plans,
-      caseAttempts: unionById(s.caseAttempts, d.caseAttempts ?? []),
+      caseAttempts,
       officialScores: unionById(s.officialScores ?? [], d.officialScores ?? []),
       lessonsDone: { ...(d.lessonsDone ?? {}), ...s.lessonsDone },
       trendsRead: { ...(d.trendsRead ?? {}), ...s.trendsRead },
       judgeDrill: { ...(d.judgeDrill ?? {}), ...s.judgeDrill },
-      mathStats: { ...(d.mathStats ?? {}), ...s.mathStats },
+      mathStats,
+      partner,
+      ...(takeSettings ? { settings: { ...defaultSettings, ...d.settings, theme: s.settings.theme } } : {}),
     },
-    summary: [`${tests.length - s.tests.length} tests added`, `${Object.keys(leitner).length} flashcards tracked`],
+    summary: [
+      `${n(testsAdded, 'test')} added`,
+      `${n(cardsUpdated, 'flashcard')} updated`,
+      `${n(plansUpdated, 'case plan')} updated, ${n(attemptsAdded, 'case score')} added`,
+      ...(takeSettings ? ['Your names and exam date were copied to this device.'] : []),
+    ],
   }
 }
 
