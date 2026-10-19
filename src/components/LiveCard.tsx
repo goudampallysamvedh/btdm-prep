@@ -94,7 +94,7 @@ export function LiveCard() {
 
       {!live ? (
         <>
-          <p className="text-sm">Link every device once (yours and your partner's). After that, every device shows the latest progress for both of you, whichever device you studied on. Updates are encrypted on your phone before they're sent through a free relay (ntfy.sh), so only your linked devices can read them.</p>
+          <p className="text-sm">Link every device once (yours and your partner's). After that, every device shows the latest progress for both of you, whichever device you studied on. Everything is encrypted on your device before it's sent through free services (ntfy.sh for instant updates, textdb.dev for a saved copy that never expires), so only your linked devices can read it.</p>
           <div className="grid gap-2 rounded-xl bg-paper-2 p-3">
             <span className="text-sm font-bold">One of you: create the link</span>
             <div><Button onClick={create} icon={<ClipboardCopy size={16} aria-hidden />}>Create a live link</Button></div>
@@ -113,7 +113,7 @@ export function LiveCard() {
             {partner ? <>Last update from <b>{partner.name}</b>: {relTime(partner.at)}.</> : 'Waiting for your partner\'s first update. Make sure they pasted your link.'}
             {status.lastSent ? <> Your progress was sent {relTime(status.lastSent)}.</> : null}
           </p>
-          <p className="text-xs text-muted">Updates send while the app is open. If your partner's app was closed, it catches up next time they open it. To add another phone or computer (yours or your partner's), tap <b>Show the link again</b> and paste it there.</p>
+          <p className="text-xs text-muted">Devices sync while the app is open and every time it opens, so all of them end up identical, even if they're never open at the same time. To add another phone or computer (yours or your partner's), tap <b>Show the link again</b> and paste it there.</p>
           <div className="flex flex-wrap gap-2">
             {!code && <Button size="sm" variant="ghost" onClick={() => setCode(linkCode(live.key))}>Show the link again</Button>}
             <Button size="sm" variant="quiet" onClick={unlink}>Turn off</Button>

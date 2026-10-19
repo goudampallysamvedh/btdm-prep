@@ -176,8 +176,8 @@ export async function acceptState(msg: StateMessage, self = deviceId()) {
   if (msg.me === st.settings.me) {
     const r = mergeBackup(st, { app: 'sell-through', kind: 'backup', v: 1, exportedAt: msg.sentAt, data: { ...emptyProgress, ...msg.data } })
     const progress: Partial<ProgressData> = { ...r.state }
-    delete progress.settings
-    if (dataChanged(pickData(st), progress)) st.replaceAll(progress)
+    // mergeBackup only returns settings when this device was never set up: then take your names.
+    if (dataChanged(pickData(st), progress) || progress.settings) st.replaceAll(progress)
     return
   }
   const merged = st.partnerData ? mergeData(st.partnerData, msg.data) : pickData({ ...emptyProgress, ...msg.data })
@@ -187,8 +187,64 @@ export async function acceptState(msg: StateMessage, self = deviceId()) {
   for (const plan of Object.values(msg.data.casePlans ?? {})) if (!casePlans[plan.caseId] || plan.updatedAt > casePlans[plan.caseId].updatedAt) casePlans[plan.caseId] = plan
   const known = new Set(st.caseAttempts.map((a) => a.id))
   const caseAttempts = [...st.caseAttempts, ...(msg.data.caseAttempts ?? []).filter((a) => !known.has(a.id))]
-  st.replaceAll({ partnerData: merged, partner: summary, casePlans, caseAttempts })
+  const same =
+    JSON.stringify(merged) === JSON.stringify(st.partnerData) &&
+    caseAttempts.length === st.caseAttempts.length &&
+    JSON.stringify(casePlans) === JSON.stringify(st.casePlans) &&
+    JSON.stringify({ ...summary, at: 0 }) === JSON.stringify({ ...st.partner, at: 0 })
+  if (!same) st.replaceAll({ partnerData: merged, partner: summary, casePlans, caseAttempts })
   useLiveStatus.setState({ lastHeard: Date.now() })
+}
+
+// ---------- The shared copy (never expires) ----------
+
+/** textdb.dev: free, no-account text storage. Each person has one encrypted copy of all their progress. */
+export const VAULT = 'https://textdb.dev/api/data'
+
+export async function vaultId(secret: string, who: 'A' | 'B'): Promise<string> {
+  return 'st-' + hex(await sha256(`vault:${secret}:${who}`)).slice(0, 40)
+}
+
+async function readVault(key: CryptoKey, id: string): Promise<StateMessage | null> {
+  try {
+    const r = await fetch(`${VAULT}/${id}`, { cache: 'no-store' })
+    if (!r.ok) return null
+    const text = (await r.text()).trim()
+    return text ? await unpackState(key, unb64url(text)) : null
+  } catch {
+    return null
+  }
+}
+
+async function writeVault(key: CryptoKey, id: string, msg: StateMessage): Promise<boolean> {
+  try {
+    const body = b64url(await packState(key, msg))
+    const r = await fetch(`${VAULT}/${id}`, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body })
+    return r.ok
+  } catch {
+    return false
+  }
+}
+
+/** Progress without per-device settings (theme, motion), for comparing copies. */
+const progressSig = (d: ProgressData) => JSON.stringify({ ...d, settings: { a: d.settings?.partnerA, b: d.settings?.partnerB, date: d.settings?.competitionDate } })
+
+/**
+ * Make this device and both shared copies identical: read your copy and your partner's,
+ * merge them in, then save your copy back if this device had anything it was missing.
+ */
+export async function syncVault(secret: string, key: CryptoKey): Promise<void> {
+  const me = useStore.getState().settings.me
+  const other = me === 'A' ? 'B' : 'A'
+  const [myId, theirId] = await Promise.all([vaultId(secret, me), vaultId(secret, other)])
+  const [mine, theirs] = await Promise.all([readVault(key, myId), readVault(key, theirId)])
+  if (mine) await acceptState({ ...mine, me, device: 'vault' })
+  if (theirs) await acceptState({ ...theirs, me: other, device: 'vault' })
+  const { pickData } = await import('./share')
+  const data = pickData(useStore.getState())
+  if (!mine || progressSig(mine.data) !== progressSig(data)) {
+    if (await writeVault(key, myId, { v: 2, me, device: deviceId(), sentAt: Date.now(), data })) useLiveStatus.setState({ lastSent: Date.now() })
+  }
 }
 
 /** Re-figure the partner's streak and stats for today from their saved progress (a streak can end overnight). */
@@ -206,8 +262,8 @@ interface RelayMessage {
 }
 
 /**
- * Keeps everyone's progress flowing while the app is open: catches up on the last 12 hours,
- * listens for new updates, and sends this device's progress when it changes.
+ * Keeps every device identical: on open it merges both shared copies, then listens for live
+ * updates, re-checks every minute, and saves this device's progress whenever it changes.
  */
 export function useLiveSync() {
   const hydrated = useHydrated()
@@ -228,6 +284,8 @@ export function useLiveSync() {
     ;(async () => {
       const ch = await channelFor(secret)
       chan.current = ch
+      // Catch up from the shared copies first (they never expire), then today's live updates.
+      await (queue.current = queue.current.then(() => syncVault(secret, ch.key)))
       await refreshPartner()
       const handle = async (m: RelayMessage) => {
         if (m.event !== 'message') return
@@ -269,10 +327,18 @@ export function useLiveSync() {
       lastSent.current = ''
       void send()
     })()
+    const resync = () => {
+      const ch = chan.current
+      if (ch && document.visibilityState === 'visible') queue.current = queue.current.then(() => syncVault(secret, ch.key))
+    }
+    const timer = window.setInterval(resync, 60_000)
+    document.addEventListener('visibilitychange', resync)
     return () => {
       stopped = true
       es?.close()
       chan.current = null
+      window.clearInterval(timer)
+      document.removeEventListener('visibilitychange', resync)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrated, secret])
@@ -286,6 +352,8 @@ export function useLiveSync() {
     const data = pickData(st)
     const sig = JSON.stringify(data)
     if (sig === lastSent.current) return
+    const secretNow = st.live.key
+    await (queue.current = queue.current.then(() => syncVault(secretNow, ch.key)))
     try {
       const body = await packState(ch.key, { v: 2, me: st.settings.me, device: deviceId(), sentAt: Date.now(), data })
       const r = await fetch(`${RELAY}/${ch.topic}`, { method: 'PUT', body, headers: { Filename: 'p.bin' } })
