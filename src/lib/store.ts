@@ -74,6 +74,14 @@ export interface OfficialScore {
   at: number
 }
 
+/** The study progress one person carries between devices. */
+export type ProgressData = Pick<
+  ProgressState,
+  'settings' | 'officialScores' | 'activity' | 'daily' | 'planDone' | 'tests' | 'leitner' | 'caseAttempts' | 'casePlans' | 'mathStats' | 'lessonsDone' | 'trendsRead' | 'judgeDrill'
+>
+
+export const DATA_KEYS = ['settings', 'officialScores', 'activity', 'daily', 'planDone', 'tests', 'leitner', 'caseAttempts', 'casePlans', 'mathStats', 'lessonsDone', 'trendsRead', 'judgeDrill'] as const
+
 export interface ProgressState {
   settings: Settings
   /** Scores from DECA's official sample exams, taken on paper or PDF and logged by hand. */
@@ -82,6 +90,8 @@ export interface ProgressState {
   partner: PartnerSummary | null
   /** Live partner updates, when linked. */
   live: LiveLink | null
+  /** Your partner's study progress combined from all of their devices (live updates). */
+  partnerData: ProgressData | null
   /** dayKey -> number of study actions that day. */
   activity: Record<string, number>
   /** dayKey -> small counters for Today's plan (cards, questions, math, judge). */
@@ -137,6 +147,7 @@ export const emptyProgress: ProgressState = {
   officialScores: [],
   partner: null,
   live: null,
+  partnerData: null,
   activity: {},
   daily: {},
   planDone: {},

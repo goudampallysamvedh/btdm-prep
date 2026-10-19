@@ -94,7 +94,7 @@ export function LiveCard() {
 
       {!live ? (
         <>
-          <p className="text-sm">Link once, and both of your Partner pages update by themselves whenever either of you studies. Updates are encrypted on your phone before they're sent through a free relay (ntfy.sh), so only your linked devices can read them.</p>
+          <p className="text-sm">Link every device once (yours and your partner's). After that, every device shows the latest progress for both of you, whichever device you studied on. Updates are encrypted on your phone before they're sent through a free relay (ntfy.sh), so only your linked devices can read them.</p>
           <div className="grid gap-2 rounded-xl bg-paper-2 p-3">
             <span className="text-sm font-bold">One of you: create the link</span>
             <div><Button onClick={create} icon={<ClipboardCopy size={16} aria-hidden />}>Create a live link</Button></div>

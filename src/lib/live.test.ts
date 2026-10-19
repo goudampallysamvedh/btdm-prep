@@ -39,3 +39,32 @@ describe('live partner updates', () => {
     expect((await seal(ch.key, { v: 1, me: 'A', summary: big })).length).toBeLessThan(4000)
   })
 })
+
+describe('full progress between devices', () => {
+  it('packs and unpacks a progress update, and strangers cannot open it', async () => {
+    const { emptyProgress } = await import('./store')
+    const { pickData } = await import('./share')
+    const { packState, unpackState } = await import('./live')
+    const ch = await channelFor(newSecret())
+    const data = pickData({ ...emptyProgress, planDone: { '2026-10-18': 1 } })
+    const msg = { v: 2 as const, me: 'A' as const, device: 'd1', sentAt: 5, data }
+    const bytes = await packState(ch.key, msg)
+    expect(await unpackState(ch.key, bytes)).toEqual(msg)
+    expect(await unpackState((await channelFor(newSecret())).key, bytes)).toBeNull()
+  })
+
+  it('combines the same person from different devices: union of finished days, latest card reviews, all tests', async () => {
+    const { emptyProgress } = await import('./store')
+    const { mergeData, pickData } = await import('./share')
+    const t = (id: string) => ({ id, kind: 'practice' as const, title: id, startedAt: 0, finishedAt: 1, answers: [] })
+    const phone = pickData({ ...emptyProgress, planDone: { '2026-10-17': 1, '2026-10-18': 1 }, tests: [t('p')], leitner: { c1: { box: 3, due: 0, seen: 3, lapses: 0, last: 200 } } })
+    const laptop = pickData({ ...emptyProgress, planDone: { '2026-10-16': 1 }, tests: [t('l')], leitner: { c1: { box: 1, due: 0, seen: 1, lapses: 1, last: 100 } } })
+    const m = mergeData(phone, laptop)
+    expect(Object.keys(m.planDone).sort()).toEqual(['2026-10-16', '2026-10-17', '2026-10-18'])
+    expect(m.tests.map((x) => x.id).sort()).toEqual(['l', 'p'])
+    expect(m.leitner.c1.box).toBe(3)
+    // Same result in either order, and merging again changes nothing.
+    expect(mergeData(laptop, phone).planDone).toEqual(m.planDone)
+    expect(mergeData(m, laptop)).toEqual(m)
+  })
+})

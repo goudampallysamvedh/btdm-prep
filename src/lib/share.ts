@@ -1,6 +1,6 @@
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string'
 import type { CaseAttempt, CasePlan, LeitnerState, MathStat, TestRecord } from '@/types'
-import { defaultSettings, type DailyKind, type PartnerSummary, type ProgressState } from './store'
+import { DATA_KEYS, defaultSettings, emptyProgress, type DailyKind, type PartnerSummary, type ProgressData, type ProgressState } from './store'
 import { areaReadiness, cardEvidence, projectedScore, questionEvidence, scoreOf, topicStatuses } from './mastery'
 import { dayKey, streak } from './dates'
 import { AREA_BY_CODE } from '@/data/areas'
@@ -279,4 +279,22 @@ export async function shareJson(obj: unknown, filename: string, title: string): 
   }
   downloadJson(obj, filename)
   return 'downloaded'
+}
+
+// ---------- Live: one person's progress, combined across devices ----------
+
+export function pickData(s: ProgressData): ProgressData {
+  return Object.fromEntries(DATA_KEYS.map((k) => [k, s[k]])) as unknown as ProgressData
+}
+
+/** Combine two copies of the same person's progress: nothing is lost, latest reviews and highest counts win. */
+export function mergeData(a: ProgressData, b: ProgressData): ProgressData {
+  const base: ProgressState = { ...emptyProgress, ...a }
+  const r = mergeBackup(base, { app: APP_ID, kind: 'backup', v: FORMAT_VERSION, exportedAt: 0, data: { ...emptyProgress, ...b } })
+  return pickData({ ...base, ...r.state, settings: b.settings ?? a.settings })
+}
+
+/** True when merging changed any progress (settings aside). */
+export function dataChanged(before: ProgressData, after: Partial<ProgressData>): boolean {
+  return DATA_KEYS.some((k) => k !== 'settings' && k in after && JSON.stringify(before[k]) !== JSON.stringify(after[k]))
 }

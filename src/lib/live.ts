@@ -5,11 +5,14 @@
  *  - a channel name on the relay, which is hard to guess, and
  *  - an AES-GCM key. Every update is encrypted on the phone before it's sent, so the relay
  *    only ever passes along scrambled data. Without the secret, nobody can read or fake one.
- * Only the partner summary is sent (streak, exam estimate, focus areas, and so on).
+ * Each device sends its owner's study progress. Every linked device combines what it hears:
+ * your own devices merge your progress, and everyone keeps your partner's progress combined
+ * from all of their devices, so every device shows the latest for both of you.
  */
 import { useEffect, useRef } from 'react'
 import { create } from 'zustand'
-import { useHydrated, useStore, type PartnerSummary, type ProgressState } from './store'
+import { compressToUint8Array, decompressFromUint8Array } from 'lz-string'
+import { emptyProgress, useHydrated, useStore, type PartnerSummary, type ProgressData } from './store'
 
 export const RELAY = 'https://ntfy.sh'
 const LINK_PREFIX = 'STL1.'
@@ -100,32 +103,118 @@ export async function unseal(key: CryptoKey, payload: string): Promise<LiveMessa
 export type LiveState = 'off' | 'connecting' | 'live' | 'offline'
 export const useLiveStatus = create<{ state: LiveState; lastSent: number; lastHeard: number }>()(() => ({ state: 'off', lastSent: 0, lastHeard: 0 }))
 
-/** Take a received message: keep it only if it's from the partner and newer than what we have. */
-export function accept(msg: LiveMessage) {
+/** Encrypt bytes: 12-byte IV followed by the AES-GCM ciphertext. */
+export async function sealBytes(key: CryptoKey, bytes: Uint8Array): Promise<Uint8Array> {
+  const iv = crypto.getRandomValues(new Uint8Array(12))
+  const ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, bytes))
+  const out = new Uint8Array(12 + ct.length)
+  out.set(iv)
+  out.set(ct, 12)
+  return out
+}
+export async function unsealBytes(key: CryptoKey, bytes: Uint8Array): Promise<Uint8Array | null> {
+  try {
+    return new Uint8Array(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: bytes.slice(0, 12) }, key, bytes.slice(12)))
+  } catch {
+    return null
+  }
+}
+
+/** A device's full progress update (sent as an encrypted file on the relay). */
+export interface StateMessage {
+  v: 2
+  me: 'A' | 'B'
+  device: string
+  sentAt: number
+  data: ProgressData
+}
+
+export async function packState(key: CryptoKey, msg: StateMessage): Promise<Uint8Array> {
+  return sealBytes(key, compressToUint8Array(JSON.stringify(msg)))
+}
+export async function unpackState(key: CryptoKey, bytes: Uint8Array): Promise<StateMessage | null> {
+  const plain = await unsealBytes(key, bytes)
+  if (!plain) return null
+  try {
+    const msg = JSON.parse(decompressFromUint8Array(plain) ?? '') as StateMessage
+    return msg.v === 2 && msg.data && Array.isArray(msg.data.tests) && (msg.me === 'A' || msg.me === 'B') ? msg : null
+  } catch {
+    return null
+  }
+}
+
+let memoryDevice: string | undefined
+/** A random id for this device, so it can skip its own echoes. */
+function deviceId(): string {
+  try {
+    let id = localStorage.getItem('st-device')
+    if (!id) {
+      id = b64url(crypto.getRandomValues(new Uint8Array(9)))
+      localStorage.setItem('st-device', id)
+    }
+    return id
+  } catch {
+    memoryDevice ??= b64url(crypto.getRandomValues(new Uint8Array(9)))
+    return memoryDevice
+  }
+}
+
+/** Older app versions send only a summary. Use it until full progress from the partner arrives. */
+export function acceptSummary(msg: LiveMessage) {
   const st = useStore.getState()
-  if (msg.me === st.settings.me) return // from me (another of my devices)
+  if (msg.me === st.settings.me || st.partnerData) return
   if (st.partner && msg.summary.at < st.partner.at) return
   st.replaceAll({ partner: msg.summary })
   useLiveStatus.setState({ lastHeard: Date.now() })
 }
 
-function snapshot(): ProgressState {
-  const s = useStore.getState()
-  return { ...s }
+/** Merge a received progress update into the right person: you (another of your devices) or your partner. */
+export async function acceptState(msg: StateMessage, self = deviceId()) {
+  if (msg.device === self) return
+  const { dataChanged, mergeBackup, mergeData, ownerName, partnerSummary, pickData } = await import('./share')
+  const st = useStore.getState()
+  if (msg.me === st.settings.me) {
+    const r = mergeBackup(st, { app: 'sell-through', kind: 'backup', v: 1, exportedAt: msg.sentAt, data: { ...emptyProgress, ...msg.data } })
+    const progress: Partial<ProgressData> = { ...r.state }
+    delete progress.settings
+    if (dataChanged(pickData(st), progress)) st.replaceAll(progress)
+    return
+  }
+  const merged = st.partnerData ? mergeData(st.partnerData, msg.data) : pickData({ ...emptyProgress, ...msg.data })
+  const summary = { ...partnerSummary({ ...emptyProgress, ...merged }, ownerName(merged)), at: Math.max(msg.sentAt, st.partner?.at ?? 0) }
+  // Case plans and case scores belong to the team: take the partner's newer plans and any new scores.
+  const casePlans = { ...st.casePlans }
+  for (const plan of Object.values(msg.data.casePlans ?? {})) if (!casePlans[plan.caseId] || plan.updatedAt > casePlans[plan.caseId].updatedAt) casePlans[plan.caseId] = plan
+  const known = new Set(st.caseAttempts.map((a) => a.id))
+  const caseAttempts = [...st.caseAttempts, ...(msg.data.caseAttempts ?? []).filter((a) => !known.has(a.id))]
+  st.replaceAll({ partnerData: merged, partner: summary, casePlans, caseAttempts })
+  useLiveStatus.setState({ lastHeard: Date.now() })
 }
 
-/** Fields that change the summary; the time stamp is left out so unchanged progress isn't resent. */
-const signature = (p: PartnerSummary) => JSON.stringify({ ...p, at: 0 })
+/** Re-figure the partner's streak and stats for today from their saved progress (a streak can end overnight). */
+async function refreshPartner() {
+  const st = useStore.getState()
+  if (!st.partnerData) return
+  const { ownerName, partnerSummary } = await import('./share')
+  st.replaceAll({ partner: { ...partnerSummary({ ...emptyProgress, ...st.partnerData }, ownerName(st.partnerData)), at: st.partner?.at ?? Date.now() } })
+}
+
+interface RelayMessage {
+  event?: string
+  message?: string
+  attachment?: { url: string }
+}
 
 /**
- * Keeps the partner summary flowing both ways while the app is open:
- * catches up on recent updates, listens for new ones, and sends yours when your progress changes.
+ * Keeps everyone's progress flowing while the app is open: catches up on the last 12 hours,
+ * listens for new updates, and sends this device's progress when it changes.
  */
 export function useLiveSync() {
   const hydrated = useHydrated()
   const secret = useStore((s) => s.live?.key)
   const chan = useRef<Channel | null>(null)
-  const lastSig = useRef('')
+  const lastSent = useRef('')
+  const queue = useRef<Promise<void>>(Promise.resolve())
 
   // Listen.
   useEffect(() => {
@@ -139,17 +228,29 @@ export function useLiveSync() {
     ;(async () => {
       const ch = await channelFor(secret)
       chan.current = ch
-      const take = async (payload: string) => {
-        const msg = await unseal(ch.key, payload)
-        if (msg) accept(msg)
+      await refreshPartner()
+      const handle = async (m: RelayMessage) => {
+        if (m.event !== 'message') return
+        if (m.attachment?.url) {
+          try {
+            const r = await fetch(m.attachment.url)
+            if (!r.ok) return // expired (files last about 3 hours)
+            const msg = await unpackState(ch.key, new Uint8Array(await r.arrayBuffer()))
+            if (msg) await acceptState(msg)
+          } catch {
+            /* skip */
+          }
+        } else if (m.message) {
+          const msg = await unseal(ch.key, m.message)
+          if (msg) acceptSummary(msg)
+        }
       }
+      // Handle one message at a time so merges never race.
+      const enqueue = (m: RelayMessage) => (queue.current = queue.current.then(() => handle(m)))
       try {
         const r = await fetch(`${RELAY}/${ch.topic}/json?poll=1&since=12h`)
-        for (const line of (await r.text()).split('\n')) {
-          if (!line.trim()) continue
-          const m = JSON.parse(line) as { event?: string; message?: string }
-          if (m.event === 'message' && m.message) await take(m.message)
-        }
+        const lines = (await r.text()).split(/\r?\n/).filter((l) => l.trim())
+        for (const line of lines) await enqueue(JSON.parse(line) as RelayMessage)
       } catch {
         /* offline: keep what we have */
       }
@@ -159,14 +260,13 @@ export function useLiveSync() {
       es.onerror = () => useLiveStatus.setState({ state: navigator.onLine ? 'connecting' : 'offline' })
       es.onmessage = (e) => {
         try {
-          const m = JSON.parse(e.data) as { event?: string; message?: string }
-          if (m.event === 'message' && m.message) void take(m.message)
+          void enqueue(JSON.parse(e.data) as RelayMessage)
         } catch {
           /* not for us */
         }
       }
-      // Send once on open so the partner sees a fresh "updated" time.
-      lastSig.current = ''
+      // Send this device's progress once on open, so every other device catches up.
+      lastSent.current = ''
       void send()
     })()
     return () => {
@@ -177,21 +277,20 @@ export function useLiveSync() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrated, secret])
 
-  // Send when something in the summary changes (debounced, and only if it actually changed).
+  // Send this device's progress when it changes (debounced, and only if it actually changed).
   const send = async () => {
     const st = useStore.getState()
     const ch = chan.current
     if (!ch || !st.live) return
-    // Loaded on demand so the app's first screen stays fast.
-    const { ownerName, partnerSummary } = await import('./share')
-    const summary = partnerSummary(snapshot(), ownerName(st))
-    const sig = signature(summary)
-    if (sig === lastSig.current) return
+    const { pickData } = await import('./share')
+    const data = pickData(st)
+    const sig = JSON.stringify(data)
+    if (sig === lastSent.current) return
     try {
-      const body = await seal(ch.key, { v: 1, me: st.settings.me, summary })
-      const r = await fetch(`${RELAY}/${ch.topic}`, { method: 'POST', body })
+      const body = await packState(ch.key, { v: 2, me: st.settings.me, device: deviceId(), sentAt: Date.now(), data })
+      const r = await fetch(`${RELAY}/${ch.topic}`, { method: 'PUT', body, headers: { Filename: 'p.bin' } })
       if (r.ok) {
-        lastSig.current = sig
+        lastSent.current = sig
         useLiveStatus.setState({ lastSent: Date.now() })
       }
     } catch {
@@ -202,13 +301,17 @@ export function useLiveSync() {
   const leitner = useStore((s) => s.leitner)
   const planDone = useStore((s) => s.planDone)
   const activity = useStore((s) => s.activity)
+  const daily = useStore((s) => s.daily)
   const lessonsDone = useStore((s) => s.lessonsDone)
+  const trendsRead = useStore((s) => s.trendsRead)
   const caseAttempts = useStore((s) => s.caseAttempts)
+  const casePlans = useStore((s) => s.casePlans)
+  const mathStats = useStore((s) => s.mathStats)
   const settings = useStore((s) => s.settings)
   useEffect(() => {
     if (!hydrated || !secret) return
-    const t = window.setTimeout(() => void send(), 4000)
+    const t = window.setTimeout(() => void send(), 5000)
     return () => window.clearTimeout(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hydrated, secret, tests, leitner, planDone, activity, lessonsDone, caseAttempts, settings])
+  }, [hydrated, secret, tests, leitner, planDone, activity, daily, lessonsDone, trendsRead, caseAttempts, casePlans, mathStats, settings])
 }
