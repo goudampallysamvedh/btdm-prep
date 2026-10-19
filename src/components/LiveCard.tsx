@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { ClipboardCopy, Radio, Send } from 'lucide-react'
 import { useStore } from '@/lib/store'
-import { linkName, makeLinkCode, newSecret, parseLinkCode, useLiveStatus, type LinkInfo } from '@/lib/live'
+import { dropSelfAsPartner, linkName, makeLinkCode, newSecret, parseLinkCode, resetVault, useLiveStatus, type LinkInfo } from '@/lib/live'
 import { relTime } from '@/lib/dates'
 import { Button, Card, cx, inputCls } from './ui'
 
@@ -24,6 +24,7 @@ export function LiveCard() {
   const canShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function'
   const [name, setName] = useState('')
   const [switching, setSwitching] = useState(false)
+  const [changingSlot, setChangingSlot] = useState(false)
   useEffect(() => {
     if (live) void linkName(live.key).then(setName)
   }, [live])
@@ -76,6 +77,19 @@ export function LiveCard() {
   }
   const nameOf = (who: 'A' | 'B') => (who === 'A' ? pending?.a || settings.partnerA : pending?.b || settings.partnerB)
 
+  // Fix a device that picked the wrong person: move it to the other slot and empty the slot it was writing to.
+  const changeSlot = async (who: 'A' | 'B') => {
+    setChangingSlot(false)
+    if (!live || who === settings.me) return
+    const old = settings.me
+    useStore.getState().replaceAll({ settings: { ...settings, me: who } })
+    dropSelfAsPartner()
+    useLiveStatus.setState({ slotClash: null })
+    await resetVault(live.key, old)
+    const n = who === 'A' ? settings.partnerA : settings.partnerB
+    setMsg({ ok: true, text: `This device now belongs to ${n}. Its progress is combined with ${n}'s other devices.` })
+  }
+
   const unlink = () => {
     if (!confirm('Turn off live updates on this device? You can link again any time.')) return
     useStore.getState().replaceAll({ live: null })
@@ -111,6 +125,11 @@ export function LiveCard() {
         )}
       </div>
 
+      {live && status.slotClash && (
+        <p role="alert" className="rounded-xl border-l-4 border-warn bg-warn-bg px-3 py-2 text-sm">
+          <b>Two of your devices picked different people.</b> That can make your own progress show up as your partner's. On each of your devices, check <b>This device</b> below: it should show your name. Tap <b>Wrong person? Change</b> on any that doesn't.</p>
+      )}
+
       {!live ? (
         <>
           <p className="text-sm">Link every device once (yours and your partner's). After that, every device shows the latest progress for both of you, whichever device you studied on. Everything is encrypted on your device before it's sent through free services (ntfy.sh for instant updates, textdb.dev for a saved copy that never expires), so only your linked devices can read it.</p>
@@ -131,7 +150,12 @@ export function LiveCard() {
             <dt className="text-muted">Link name</dt>
             <dd className="num font-bold">{name || '…'}</dd>
             <dt className="text-muted">This device</dt>
-            <dd className="font-bold">{myName}</dd>
+            <dd className="flex flex-wrap items-center gap-x-2 font-bold">
+              {myName}
+              <button type="button" className="text-xs font-bold text-accent underline" onClick={() => setChangingSlot(!changingSlot)} aria-expanded={changingSlot}>
+                Wrong person? Change
+              </button>
+            </dd>
             <dt className="text-muted">App version</dt>
             <dd className="num">{__APP_VERSION__}</dd>
           </dl>
@@ -143,6 +167,19 @@ export function LiveCard() {
             <Button size="sm" variant="ghost" onClick={() => setSwitching(!switching)} aria-expanded={switching}>Use a different link</Button>
             <Button size="sm" variant="quiet" onClick={unlink}>Turn off</Button>
           </div>
+          {changingSlot && (
+            <div className="grid gap-2 rounded-xl border border-accent bg-accent-soft/40 p-3 animate-rise">
+              <span className="font-bold">Whose device is this?</span>
+              <div className="grid grid-cols-2 gap-2">
+                {(['A', 'B'] as const).map((who) => (
+                  <Button key={who} variant={who === settings.me ? 'ghost' : 'primary'} onClick={() => void changeSlot(who)}>
+                    {who === 'A' ? settings.partnerA : settings.partnerB}
+                  </Button>
+                ))}
+              </div>
+              <span className="text-xs text-muted">Pick the person who uses this device. Every one of your devices must pick you, and every one of your partner's devices must pick them.</span>
+            </div>
+          )}
           {switching && pasteBox}
         </>
       )}

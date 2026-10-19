@@ -166,3 +166,13 @@ describe('settings across devices', () => {
     expect(r.state.settings?.competitionDate).toBe('2026-12-04')
   })
 })
+
+describe('partner code after a mix-up', () => {
+  it('replaces a partner that is really you, and a different partner, instead of merging', () => {
+    const mine = state({ settings: { ...emptyProgress.settings, partnerA: 'Samvedh', partnerB: 'Arjun', me: 'A' }, partner: { name: 'Samvedh', projected: 72, areas: {}, answered: 900, at: 5 }, partnerData: { ...emptyProgress } })
+    const arjun = makePartnerPackage(state({ settings: { ...emptyProgress.settings, partnerA: 'Samvedh', partnerB: 'Arjun', me: 'B' } }))
+    const r = mergePartner(mine, arjun)
+    expect(r.state.partner?.name).toBe('Arjun')
+    expect(r.state.partnerData).toBeNull()
+  })
+})

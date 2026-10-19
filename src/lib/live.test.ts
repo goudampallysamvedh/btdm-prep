@@ -68,3 +68,19 @@ describe('full progress between devices', () => {
     expect(mergeData(m, laptop)).toEqual(m)
   })
 })
+
+describe('telling you and your partner apart', () => {
+  const who = (me: 'A' | 'B', a: string, b: string) => ({ settings: { theme: 'system' as const, competitionDate: '', competitionName: '', partnerA: a, partnerB: b, me, dailyGoal: 20 } })
+  it('uses names when both are set, so a device in the wrong slot is still recognized as you', async () => {
+    const { isMine } = await import('./live')
+    const me = who('A', 'Samvedh', 'Arjun')
+    expect(isMine(who('B', 'Arjun', 'Samvedh'), 'B', me)).toBe(true) // your device, wrong slot
+    expect(isMine(who('B', 'Samvedh', 'Arjun'), 'B', me)).toBe(false) // your partner
+    expect(isMine(who('A', 'Samvedh', 'Arjun'), 'A', me)).toBe(true)
+  })
+  it('falls back to the slot when names are not set', async () => {
+    const { isMine } = await import('./live')
+    expect(isMine(who('A', 'Partner A', 'Partner B'), 'A', who('A', 'Partner A', 'Partner B'))).toBe(true)
+    expect(isMine(who('B', 'Partner A', 'Partner B'), 'B', who('A', 'Partner A', 'Partner B'))).toBe(false)
+  })
+})

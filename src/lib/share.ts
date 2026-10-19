@@ -153,8 +153,11 @@ export function mergePartner(s: ProgressState, p: PartnerPackage): MergeResult {
   const added = attempts.length - s.caseAttempts.length
   const meName = s.settings.me === 'A' ? s.settings.partnerA : s.settings.partnerB
   const isSelf = p.from === meName && p.summary.name === meName
+  // A code from someone other than the partner shown here (or a partner that is really you) replaces
+  // the partner completely, so a mix-up is undone instead of merged.
+  const replace = !isSelf && (!s.partner || s.partner.name !== p.summary.name || s.partner.name === meName)
   return {
-    state: { casePlans: plans, caseAttempts: attempts, ...(isSelf ? {} : { partner: p.summary }) },
+    state: { casePlans: plans, caseAttempts: attempts, ...(isSelf ? {} : { partner: p.summary }), ...(replace ? { partnerData: null } : {}) },
     summary: [
       `${newer} case plan${newer === 1 ? '' : 's'} updated`,
       `${added} case attempt${added === 1 ? '' : 's'} added`,

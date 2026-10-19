@@ -111,7 +111,31 @@ export async function unseal(key: CryptoKey, payload: string): Promise<LiveMessa
 // ---------- Status (this visit only) ----------
 
 export type LiveState = 'off' | 'connecting' | 'live' | 'offline'
-export const useLiveStatus = create<{ state: LiveState; lastSent: number; lastHeard: number }>()(() => ({ state: 'off', lastSent: 0, lastHeard: 0 }))
+export const useLiveStatus = create<{ state: LiveState; lastSent: number; lastHeard: number; slotClash: 'A' | 'B' | null }>()(() => ({ state: 'off', lastSent: 0, lastHeard: 0, slotClash: null }))
+
+const isRealName = (n?: string) => !!n && !/^Partner [AB]$/.test(n.trim())
+const nameOf = (s: Pick<ProgressData, 'settings'>) => (s.settings?.me === 'B' ? s.settings?.partnerB : s.settings?.partnerA)?.trim() ?? ''
+
+/**
+ * Whose progress is this: yours or your partner's? Names decide when both are set (so a device
+ * that picked the wrong slot can't make you your own partner); otherwise the slot letter does.
+ */
+export function isMine(sender: Pick<ProgressData, 'settings'>, senderSlot: 'A' | 'B', me: Pick<ProgressData, 'settings'>): boolean {
+  const a = nameOf(sender)
+  const b = nameOf(me)
+  if (isRealName(a) && isRealName(b)) return a.toLowerCase() === b.toLowerCase()
+  return senderSlot === me.settings.me
+}
+
+/** Clear "partner" data that is really your own (left over from a slot mix-up). */
+export function dropSelfAsPartner() {
+  const st = useStore.getState()
+  const me = nameOf(st)
+  if (!isRealName(me)) return
+  const pName = st.partner?.name?.trim().toLowerCase()
+  const dName = st.partnerData ? nameOf(st.partnerData).toLowerCase() : undefined
+  if (pName === me.toLowerCase() || dName === me.toLowerCase()) st.replaceAll({ partner: null, partnerData: null })
+}
 
 /** Encrypt bytes: 12-byte IV followed by the AES-GCM ciphertext. */
 export async function sealBytes(key: CryptoKey, bytes: Uint8Array): Promise<Uint8Array> {
@@ -173,6 +197,7 @@ function deviceId(): string {
 export function acceptSummary(msg: LiveMessage) {
   const st = useStore.getState()
   if (msg.me === st.settings.me || st.partnerData) return
+  if (isRealName(msg.summary.name) && msg.summary.name.trim().toLowerCase() === nameOf(st).toLowerCase()) return // that's you
   if (st.partner && msg.summary.at < st.partner.at) return
   st.replaceAll({ partner: msg.summary })
   useLiveStatus.setState({ lastHeard: Date.now() })
@@ -183,14 +208,22 @@ export async function acceptState(msg: StateMessage, self = deviceId()) {
   if (msg.device === self) return
   const { dataChanged, mergeBackup, mergeData, ownerName, partnerSummary, pickData } = await import('./share')
   const st = useStore.getState()
-  if (msg.me === st.settings.me) {
+  if (isMine(msg.data, msg.me, st)) {
+    // Your name in the other slot: one of your devices picked the wrong person. Flag it so it can be fixed.
+    if (msg.me !== st.settings.me && msg.device !== 'vault') useLiveStatus.setState({ slotClash: msg.me })
     const r = mergeBackup(st, { app: 'sell-through', kind: 'backup', v: 1, exportedAt: msg.sentAt, data: { ...emptyProgress, ...msg.data } })
     const progress: Partial<ProgressData> = { ...r.state }
-    // mergeBackup only returns settings when this device was never set up: then take your names.
+    // Settings (names, date, goal) only come from devices that agree on your slot, so a mixed-up
+    // device can't swap names on your other devices.
+    if (msg.me !== st.settings.me) delete progress.settings
     if (dataChanged(pickData(st), progress) || progress.settings) st.replaceAll(progress)
     return
   }
-  const merged = st.partnerData ? mergeData(st.partnerData, msg.data) : pickData({ ...emptyProgress, ...msg.data })
+  // A different person than the partner saved here replaces them instead of being merged in.
+  const oldName = st.partnerData ? nameOf(st.partnerData) : ''
+  const newName = nameOf(msg.data)
+  const samePerson = !(isRealName(oldName) && isRealName(newName) && oldName.toLowerCase() !== newName.toLowerCase())
+  const merged = st.partnerData && samePerson ? mergeData(st.partnerData, msg.data) : pickData({ ...emptyProgress, ...msg.data })
   const summary = { ...partnerSummary({ ...emptyProgress, ...merged }, ownerName(merged)), at: Math.max(msg.sentAt, st.partner?.at ?? 0) }
   // Case plans and case scores belong to the team: take the partner's newer plans and any new scores.
   const casePlans = { ...st.casePlans }
@@ -233,6 +266,15 @@ async function writeVault(key: CryptoKey, id: string, msg: StateMessage): Promis
     return r.ok
   } catch {
     return false
+  }
+}
+
+/** Empty one slot's shared copy (after a device used the wrong slot). The right devices refill it. */
+export async function resetVault(secret: string, who: 'A' | 'B'): Promise<void> {
+  try {
+    await fetch(`${VAULT}/${await vaultId(secret, who)}`, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: ' ' })
+  } catch {
+    /* offline: the right devices will overwrite it anyway */
   }
 }
 
@@ -284,6 +326,7 @@ export function useLiveSync() {
 
   // Listen.
   useEffect(() => {
+    if (hydrated) dropSelfAsPartner()
     if (!hydrated || !secret) {
       useLiveStatus.setState({ state: 'off' })
       return
@@ -294,6 +337,7 @@ export function useLiveSync() {
     ;(async () => {
       const ch = await channelFor(secret)
       chan.current = ch
+      dropSelfAsPartner()
       // Catch up from the shared copies first (they never expire), then today's live updates.
       await (queue.current = queue.current.then(() => syncVault(secret, ch.key)))
       await refreshPartner()
