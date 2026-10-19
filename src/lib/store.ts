@@ -29,6 +29,8 @@ export interface Settings {
   /** Which partner is using this device. */
   me: 'A' | 'B'
   dailyGoal: number
+  /** When the shared settings (names, competition, goal) last changed; the newest wins across devices. */
+  updatedAt?: number
 }
 
 export type DailyKind = 'cards' | 'questions' | 'math' | 'judge'
@@ -172,7 +174,11 @@ export const useStore = create<ProgressState & Actions>()(
   persist(
     (setState) => ({
       ...emptyProgress,
-      setSettings: (s) => setState((st) => ({ settings: { ...st.settings, ...s } })),
+      setSettings: (s) =>
+        setState((st) => {
+          const shared = (['partnerA', 'partnerB', 'competitionDate', 'competitionName', 'dailyGoal'] as const).some((k) => k in s)
+          return { settings: { ...st.settings, ...s, ...(shared ? { updatedAt: Date.now() } : {}) } }
+        }),
       logActivity: (n = 1) =>
         setState((st) => {
           const k = dayKey(new Date())

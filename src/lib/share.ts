@@ -163,6 +163,20 @@ export function mergePartner(s: ProgressState, p: PartnerPackage): MergeResult {
   }
 }
 
+/** Settings that are the same on every device (theme, motion, and who uses the device stay per device). */
+export function sharedSettings(x: ProgressState['settings']) {
+  return { partnerA: x.partnerA, partnerB: x.partnerB, competitionDate: x.competitionDate, competitionName: x.competitionName, dailyGoal: x.dailyGoal, updatedAt: x.updatedAt }
+}
+
+function fillBlanks(mine: ProgressState['settings'], other: ProgressState['settings']): Partial<ProgressState['settings']> | null {
+  const out: Partial<ProgressState['settings']> = {}
+  if (!mine.competitionDate && other.competitionDate) out.competitionDate = other.competitionDate
+  if (mine.competitionName === defaultSettings.competitionName && other.competitionName && other.competitionName !== defaultSettings.competitionName) out.competitionName = other.competitionName
+  if (mine.partnerA === defaultSettings.partnerA && other.partnerA !== defaultSettings.partnerA) out.partnerA = other.partnerA
+  if (mine.partnerB === defaultSettings.partnerB && other.partnerB !== defaultSettings.partnerB) out.partnerB = other.partnerB
+  return Object.keys(out).length ? out : null
+}
+
 /** The name of the person whose progress this is. */
 export function ownerName(s: Pick<ProgressState, 'settings'>): string {
   return s.settings.me === 'A' ? s.settings.partnerA : s.settings.partnerB
@@ -217,6 +231,10 @@ export function mergeBackup(s: ProgressState, b: Backup): MergeResult {
   const takeSettings = isDefaultSettings(s) && !!d.settings
   // Your other device joins your live link too, as the same partner (A or B).
   const takeLive = !s.live && !!d.live
+  // Names, competition date, and goal: the most recent change wins on every device.
+  const newerSettings = !takeSettings && !!d.settings && (d.settings.updatedAt ?? 0) > (s.settings.updatedAt ?? 0)
+  // Otherwise fill in anything still blank here (like a competition date set before settings synced).
+  const blanks = !takeSettings && !newerSettings && d.settings ? fillBlanks(s.settings, d.settings) : null
   const testsAdded = tests.length - s.tests.length
   const attemptsAdded = caseAttempts.length - s.caseAttempts.length
   const n = (k: number, word: string) => `${k} ${word}${k === 1 ? '' : 's'}`
@@ -235,7 +253,15 @@ export function mergeBackup(s: ProgressState, b: Backup): MergeResult {
       judgeDrill: { ...(d.judgeDrill ?? {}), ...s.judgeDrill },
       mathStats,
       partner,
-      ...(takeSettings ? { settings: { ...defaultSettings, ...d.settings, theme: s.settings.theme } } : takeLive ? { settings: { ...s.settings, me: d.settings.me } } : {}),
+      ...(takeSettings
+        ? { settings: { ...defaultSettings, ...d.settings, theme: s.settings.theme, motion: s.settings.motion } }
+        : takeLive
+          ? { settings: { ...s.settings, me: d.settings.me } }
+          : newerSettings
+            ? { settings: { ...s.settings, ...sharedSettings(d.settings) } }
+            : blanks
+              ? { settings: { ...s.settings, ...blanks } }
+              : {}),
       ...(takeLive ? { live: d.live } : {}),
     },
     summary: [

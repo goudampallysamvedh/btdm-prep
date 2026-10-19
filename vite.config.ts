@@ -4,12 +4,23 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import { fileURLToPath } from 'node:url'
+import { execSync } from 'node:child_process'
 
 // GitHub Pages serves the app from /<repo>/. Override with BASE_PATH for other hosts.
 const base = process.env.BASE_PATH ?? '/btdm-prep/'
 
+// A short version label (date + commit) shown in the app, so devices can be compared.
+let commit = 'dev'
+try {
+  commit = execSync('git rev-parse --short HEAD').toString().trim()
+} catch {
+  /* not a git checkout */
+}
+const appVersion = `${new Date().toISOString().slice(0, 10)} · ${commit}`
+
 export default defineConfig({
   base,
+  define: { __APP_VERSION__: JSON.stringify(appVersion) },
   resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
   plugins: [
     react(),

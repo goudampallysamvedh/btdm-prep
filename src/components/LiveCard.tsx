@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { ClipboardCopy, Radio, Send } from 'lucide-react'
 import { useStore } from '@/lib/store'
-import { makeLinkCode, newSecret, parseLinkCode, useLiveStatus, type LinkInfo } from '@/lib/live'
+import { linkName, makeLinkCode, newSecret, parseLinkCode, useLiveStatus, type LinkInfo } from '@/lib/live'
 import { relTime } from '@/lib/dates'
 import { Button, Card, cx, inputCls } from './ui'
 
@@ -22,6 +22,11 @@ export function LiveCard() {
     if (pending) pickRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }, [pending])
   const canShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function'
+  const [name, setName] = useState('')
+  const [switching, setSwitching] = useState(false)
+  useEffect(() => {
+    if (live) void linkName(live.key).then(setName)
+  }, [live])
 
   const linkCode = (key: string) => makeLinkCode({ key, me: settings.me, a: settings.partnerA, b: settings.partnerB })
   const copy = async (c: string) => {
@@ -65,7 +70,9 @@ export function LiveCard() {
     })
     setPending(null)
     setPaste('')
-    setMsg({ ok: true, text: `Linked! This device belongs to ${myName}. Updates now flow both ways.` })
+    setSwitching(false)
+    setCode('')
+    setMsg({ ok: true, text: `Linked! This device belongs to ${myName}. Its progress is combined with every other device on this link.` })
   }
   const nameOf = (who: 'A' | 'B') => (who === 'A' ? pending?.a || settings.partnerA : pending?.b || settings.partnerB)
 
@@ -75,6 +82,18 @@ export function LiveCard() {
     setCode('')
     setMsg(null)
   }
+
+  const myName = settings.me === 'A' ? settings.partnerA : settings.partnerB
+  const pasteBox = (
+    <div className="grid gap-2 rounded-xl bg-paper-2 p-3">
+      <span className="text-sm font-bold">{live ? 'Paste the link the other devices use' : "Every other device (your partner's and your own): paste it here"}</span>
+      <div className="flex gap-2">
+        <input className={inputCls + ' num flex-1 text-xs'} value={paste} onChange={(e) => { setPaste(e.target.value); setMsg(null) }} placeholder="Paste a live link (STL1.…)" aria-label="Paste your partner's live link" />
+        <Button onClick={join} disabled={!paste.trim()}>Link</Button>
+      </div>
+      {live && <span className="text-xs text-muted">This device's progress is kept and combined into that link.</span>}
+    </div>
+  )
 
   const dot = { live: 'bg-good', connecting: 'bg-warn', offline: 'bg-muted', off: 'bg-muted' }[status.state]
   const label = { live: 'Live', connecting: 'Connecting…', offline: 'Offline. Will catch up when you\'re back online.', off: 'Off' }[status.state]
@@ -96,16 +115,11 @@ export function LiveCard() {
         <>
           <p className="text-sm">Link every device once (yours and your partner's). After that, every device shows the latest progress for both of you, whichever device you studied on. Everything is encrypted on your device before it's sent through free services (ntfy.sh for instant updates, textdb.dev for a saved copy that never expires), so only your linked devices can read it.</p>
           <div className="grid gap-2 rounded-xl bg-paper-2 p-3">
-            <span className="text-sm font-bold">One of you: create the link</span>
+            <span className="text-sm font-bold">Only ONE device creates the link</span>
+            <span className="text-xs text-muted">If any device (yours or your partner's) is already linked, don't create a new one: paste that link below instead.</span>
             <div><Button onClick={create} icon={<ClipboardCopy size={16} aria-hidden />}>Create a live link</Button></div>
           </div>
-          <div className="grid gap-2 rounded-xl bg-paper-2 p-3">
-            <span className="text-sm font-bold">Every other device (your partner's and your own): paste it here</span>
-            <div className="flex gap-2">
-              <input className={inputCls + ' num flex-1 text-xs'} value={paste} onChange={(e) => { setPaste(e.target.value); setMsg(null) }} placeholder="Paste a live link (STL1.…)" aria-label="Paste your partner's live link" />
-              <Button onClick={join} disabled={!paste.trim()}>Link</Button>
-            </div>
-          </div>
+{pasteBox}
         </>
       ) : (
         <>
@@ -113,11 +127,23 @@ export function LiveCard() {
             {partner ? <>Last update from <b>{partner.name}</b>: {relTime(partner.at)}.</> : 'Waiting for your partner\'s first update. Make sure they pasted your link.'}
             {status.lastSent ? <> Your progress was sent {relTime(status.lastSent)}.</> : null}
           </p>
-          <p className="text-xs text-muted">Devices sync while the app is open and every time it opens, so all of them end up identical, even if they're never open at the same time. To add another phone or computer (yours or your partner's), tap <b>Show the link again</b> and paste it there.</p>
+          <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 rounded-xl bg-paper-2 p-3 text-sm">
+            <dt className="text-muted">Link name</dt>
+            <dd className="num font-bold">{name || '…'}</dd>
+            <dt className="text-muted">This device</dt>
+            <dd className="font-bold">{myName}</dd>
+            <dt className="text-muted">App version</dt>
+            <dd className="num">{__APP_VERSION__}</dd>
+          </dl>
+          <p className="text-xs text-muted">
+            <b>Every device, yours and your partner's, should show the same link name and app version.</b> If one shows a different link name, open <b>Use a different link</b> on it and paste the right link; nothing is lost. If the version differs, tap Update on that device. To add another device, tap <b>Show the link again</b> and paste it there.
+          </p>
           <div className="flex flex-wrap gap-2">
             {!code && <Button size="sm" variant="ghost" onClick={() => setCode(linkCode(live.key))}>Show the link again</Button>}
+            <Button size="sm" variant="ghost" onClick={() => setSwitching(!switching)} aria-expanded={switching}>Use a different link</Button>
             <Button size="sm" variant="quiet" onClick={unlink}>Turn off</Button>
           </div>
+          {switching && pasteBox}
         </>
       )}
 

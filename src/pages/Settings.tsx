@@ -64,7 +64,7 @@ export default function Settings() {
           </div>
         </Card>
         <p className="text-xs text-muted">
-          Sell-Through is an unofficial study aid. Practice questions and cases are original. It is not affiliated with or endorsed by DECA Inc. or MBA Research.
+          App version {__APP_VERSION__}. Sell-Through is an unofficial study aid. Practice questions and cases are original. It is not affiliated with or endorsed by DECA Inc. or MBA Research.
         </p>
       </div>
     </>

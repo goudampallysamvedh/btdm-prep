@@ -31,6 +31,16 @@ function unb64url(s: string): Uint8Array {
 const sha256 = async (text: string) => new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)))
 const hex = (b: Uint8Array) => [...b].map((x) => x.toString(16).padStart(2, '0')).join('')
 
+// ---------- Link names ----------
+
+const WORDS = 'amber,maple,coral,olive,cobalt,ruby,jade,ivory,lemon,plum,slate,sage,copper,denim,mint,peach,otter,falcon,tiger,koala,panda,raven,bison,lynx,heron,moose,gecko,orca,puffin,zebra,llama,badger'.split(',')
+
+/** A short, readable name for a link ("amber-otter-42"). Every device on the same link shows the same name. */
+export async function linkName(secret: string): Promise<string> {
+  const h = await sha256(`name:${secret}`)
+  return `${WORDS[h[0] % 16]}-${WORDS[16 + (h[1] % 16)]}-${10 + (h[2] % 90)}`
+}
+
 // ---------- Link codes ----------
 
 export interface LinkInfo {
@@ -227,7 +237,7 @@ async function writeVault(key: CryptoKey, id: string, msg: StateMessage): Promis
 }
 
 /** Progress without per-device settings (theme, motion), for comparing copies. */
-const progressSig = (d: ProgressData) => JSON.stringify({ ...d, settings: { a: d.settings?.partnerA, b: d.settings?.partnerB, date: d.settings?.competitionDate } })
+const progressSig = (d: ProgressData) => JSON.stringify({ ...d, settings: { a: d.settings?.partnerA, b: d.settings?.partnerB, date: d.settings?.competitionDate, at: d.settings?.updatedAt } })
 
 /**
  * Make this device and both shared copies identical: read your copy and your partner's,

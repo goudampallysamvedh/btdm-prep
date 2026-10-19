@@ -91,7 +91,8 @@ describe('merging', () => {
     const named = state({ settings: { ...emptyProgress.settings, partnerA: 'Ava', partnerB: 'Ben', competitionDate: '2027-01-10' } })
     expect(mergeBackup(fresh, makeBackup(named)).state.settings?.partnerA).toBe('Ava')
     const other = state({ settings: { ...emptyProgress.settings, partnerA: 'Zoe', partnerB: 'Max' } })
-    expect(mergeBackup(other, makeBackup(named)).state.settings).toBeUndefined()
+    // Names already set here stay; only the blank competition date is filled in.
+    expect(mergeBackup(other, makeBackup(named)).state.settings).toMatchObject({ partnerA: 'Zoe', partnerB: 'Max', competitionDate: '2027-01-10' })
   })
   it('round-trips a full progress code', () => {
     const r = parseShared(toCode(makeBackup(state({ lessonsDone: { risk: 1 } }))))
@@ -148,5 +149,20 @@ describe('partner progress', () => {
     const h = helpIdeas(mine, p)
     expect(h.youHelp.map((x) => x.area)).toEqual(['PR'])
     expect(h.theyHelp.map((x) => x.area)).toEqual(['PM'])
+  })
+})
+
+describe('settings across devices', () => {
+  const named = (patch: Partial<ProgressState['settings']>) => state({ settings: { ...emptyProgress.settings, partnerA: 'Sam', partnerB: 'Ben', ...patch } })
+  it('takes the most recently changed names, date, and goal, but keeps theme and motion per device', () => {
+    const phone = named({ competitionDate: '2026-12-04', dailyGoal: 30, updatedAt: 200, theme: 'dark' })
+    const laptop = named({ competitionDate: '', dailyGoal: 20, updatedAt: 100, theme: 'light' })
+    const r = mergeBackup(laptop, makeBackup(phone))
+    expect(r.state.settings).toMatchObject({ competitionDate: '2026-12-04', dailyGoal: 30, theme: 'light' })
+    expect(mergeBackup(phone, makeBackup(laptop)).state.settings).toBeUndefined()
+  })
+  it('fills in a missing competition date even from older settings', () => {
+    const r = mergeBackup(named({ competitionDate: '' }), makeBackup(named({ competitionDate: '2026-12-04' })))
+    expect(r.state.settings?.competitionDate).toBe('2026-12-04')
   })
 })
