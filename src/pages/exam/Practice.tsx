@@ -3,6 +3,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowRight, X } from 'lucide-react'
 import type { AnswerRecord, AreaCode, Question, TestKind } from '@/types'
 import { useHydrated, useStore, newId } from '@/lib/store'
+import { dayKey } from '@/lib/dates'
+import { SMART_STEP_FROM } from '@/lib/today'
 import { drawPractice, optionOrder, type PracticeMode } from '@/lib/exam'
 import { areaName } from '@/data/areas'
 import { TOPIC_BY_ID } from '@/data/topics'
@@ -74,7 +76,8 @@ function PracticeRun() {
     next[i] = orig
     setAnswers(next)
     useStore.getState().logActivity()
-    useStore.getState().bumpDaily('questions')
+    // Smart practice has its own daily step (from SMART_STEP_FROM); other practice counts toward the exam-questions step.
+    useStore.getState().bumpDaily(mode === 'smart' && dayKey(new Date()) >= SMART_STEP_FROM ? 'smart' : 'questions')
     setTimeout(() => nextRef.current?.focus(), 50)
   }
 

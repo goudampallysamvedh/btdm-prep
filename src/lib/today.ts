@@ -6,9 +6,17 @@ import { TRENDS } from '@/data/trends'
 import { AREA_BY_CODE } from '@/data/areas'
 import type { AreaCode } from '@/types'
 
-/** Daily goals: about 15 minutes total. Finishing all three steps keeps the streak going. */
-export const DAILY_GOAL: Record<DailyKind, number> = { cards: 15, questions: 8, math: 5, judge: 3 }
-export const PLAN_MINUTES = 15
+/** Daily goals. Finishing every step of the day's plan keeps the streak going. */
+export const DAILY_GOAL: Record<DailyKind, number> = { cards: 15, questions: 8, math: 5, judge: 3, smart: 20 }
+
+/**
+ * The 20-question smart practice step starts on this day. Earlier days keep their three-step plan,
+ * so plans already finished (and the streak) are never changed.
+ */
+export const SMART_STEP_FROM = '2026-10-20'
+
+/** Rough minutes for a plan with this many steps. */
+export const planMinutes = (steps: number) => (steps >= 4 ? 25 : 15)
 
 export interface PlanStep {
   title: string
@@ -66,6 +74,16 @@ export function buildPlan(opts: {
   } else {
     const next = TRENDS.find((t) => !opts.trendsRead[t.id]) ?? TRENDS[now.getDate() % TRENDS.length]
     steps.push({ title: 'Read one industry trend', sub: `${next.title} · 2 minutes`, to: `/learn/trends/${next.id}`, done: doneToday(opts.trendsRead) })
+  }
+
+  if (dayKey(now) >= SMART_STEP_FROM) {
+    steps.push({
+      title: `Answer ${DAILY_GOAL.smart} smart practice questions`,
+      sub: 'Mixed questions picked for your weak spots · about 10 minutes',
+      to: `/exam/practice?mode=smart&count=${DAILY_GOAL.smart}`,
+      done: c('smart') >= DAILY_GOAL.smart,
+      progress: { have: Math.min(c('smart'), DAILY_GOAL.smart), need: DAILY_GOAL.smart },
+    })
   }
   return steps
 }

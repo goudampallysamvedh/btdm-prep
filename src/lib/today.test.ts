@@ -9,7 +9,8 @@ describe("Today's plan", () => {
   it('always has three steps with modest goals (about 15 minutes)', () => {
     for (let d = 0; d < 7; d++) {
       const steps = buildPlan({ ...base, now: day(d) })
-      expect(steps).toHaveLength(3)
+      // Oct 18-19 keep the old three steps; the smart practice step starts Oct 20.
+      expect(steps).toHaveLength(d < 2 ? 3 : 4)
       expect(steps[0].title).toContain(String(DAILY_GOAL.cards))
       expect(steps[1].title).toContain(String(DAILY_GOAL.questions))
       // Never a full case or a 100-question mock as a daily task.
@@ -46,5 +47,26 @@ describe('streak days', () => {
     expect(streak({ '2026-10-17': 1, '2026-10-16': 1 }, now)).toBe(2)
     expect(streak({ '2026-10-18': 1, '2026-10-17': 1, '2026-10-16': 1 }, now)).toBe(3)
     expect(streak({ '2026-10-16': 1 }, now)).toBe(0)
+  })
+})
+
+describe('smart practice step', () => {
+  it('starts on Oct 20 and never changes earlier days', () => {
+    const before = buildPlan({ ...base, now: new Date(2026, 9, 19, 20) })
+    expect(before.map((s) => s.title).join()).not.toMatch(/smart/)
+    const after = buildPlan({ ...base, now: new Date(2026, 9, 20, 9) })
+    expect(after[3].title).toBe(`Answer ${DAILY_GOAL.smart} smart practice questions`)
+    expect(after[3].to).toContain('mode=smart&count=20')
+  })
+  it('a day that finished the old three steps stays finished', () => {
+    const counts = { cards: DAILY_GOAL.cards, questions: DAILY_GOAL.questions }
+    const oct18 = new Date(2026, 9, 18, 15) // Sunday: trend day
+    expect(buildPlan({ ...base, counts, trendsRead: { t: oct18.getTime() }, now: oct18 }).every((s) => s.done)).toBe(true)
+  })
+  it('needs all 20 smart questions to finish the day', () => {
+    const tue = new Date(2026, 9, 20, 15)
+    const counts = { cards: DAILY_GOAL.cards, questions: DAILY_GOAL.questions, math: DAILY_GOAL.math }
+    expect(buildPlan({ ...base, counts: { ...counts, smart: 19 }, now: tue }).every((s) => s.done)).toBe(false)
+    expect(buildPlan({ ...base, counts: { ...counts, smart: 20 }, now: tue }).every((s) => s.done)).toBe(true)
   })
 })

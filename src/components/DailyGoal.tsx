@@ -3,7 +3,7 @@ import type { DailyKind } from '@/lib/store'
 import { DAILY_GOAL, useTodayCount } from '@/lib/today'
 import { Bar, LinkButton } from './ui'
 
-const NOUN: Record<DailyKind, string> = { cards: 'cards', questions: 'questions', math: 'problems', judge: 'questions' }
+const NOUN: Record<DailyKind, string> = { cards: 'cards', questions: 'questions', math: 'problems', judge: 'questions', smart: 'smart practice questions' }
 
 /** Shown when a screen is opened from Today's plan (?daily=1): progress toward today's small goal. */
 export function DailyGoal({ kind }: { kind: DailyKind }) {

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { ArrowRight, CalendarDays, Check, Flame, Target, Users } from 'lucide-react'
 import { useStore } from '@/lib/store'
 import { areaReadiness, projectedScore, scoreOf } from '@/lib/mastery'
-import { buildPlan, PLAN_MINUTES } from '@/lib/today'
+import { buildPlan, planMinutes } from '@/lib/today'
 import { dayKey, daysUntil, relTime, streak } from '@/lib/dates'
 import { AREAS, AREA_BY_CODE } from '@/data/areas'
 import { Bar, Card, Disclosure, LinkButton, Tag, cx, toneFor } from '@/components/ui'
@@ -74,12 +74,12 @@ export default function Dashboard() {
         {celebrate && <Confetti />}
         <div className="flex items-baseline justify-between gap-2">
           <h2 className="text-xl">Today's plan</h2>
-          <span className="num text-sm text-muted">{doneCount}/3 · about {PLAN_MINUTES} min</span>
+          <span className="num text-sm text-muted">{doneCount}/{steps.length} · about {planMinutes(steps.length)} min</span>
         </div>
         {nextStep && (
           <p className="-mt-2 flex items-center gap-1.5 text-sm text-ink-2">
             <Flame size={15} className="shrink-0 text-accent" aria-hidden />
-            Finish all three to {st > 0 ? `make your streak ${st + 1} days` : 'start your streak'}.
+            Finish all {steps.length === 4 ? 'four' : 'three'} to {st > 0 ? `make your streak ${st + 1} days` : 'start your streak'}.
           </p>
         )}
         <ol className="grid grid-cols-1 gap-2">

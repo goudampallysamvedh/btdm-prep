@@ -33,7 +33,7 @@ export interface Settings {
   updatedAt?: number
 }
 
-export type DailyKind = 'cards' | 'questions' | 'math' | 'judge'
+export type DailyKind = 'cards' | 'questions' | 'math' | 'judge' | 'smart'
 
 export interface PartnerSummary {
   name: string
