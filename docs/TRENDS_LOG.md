@@ -9,3 +9,11 @@ Updated 3 trends:
 - Fewer, better stores: 2024 actuals / 2025 forecast → Coresight midyear 2026 (3,321 closings, 3,215 openings) and full-year 2026 forecast (about 6,400 closings, 4,500 openings). Source: Retail TouchPoints (Sep 8, 2026).
 - BNPL: added Adobe 2026 holiday forecast (about $21.3B, up about 6.6%). Source: Adobe via Business Wire (Sep 28, 2026).
 Checked, no change: private label, value (McKinsey 2026 survey only seen in secondary coverage), retail media (EMARKETER 2026 figures paywalled), and the remaining trends.
+
+## 2026-10-25
+Updated 4 trends:
+- Store brands: added first-half 2026 PLMA/Circana results (record 23.8% unit share; store-brand dollars flat vs. national brands +2.2%); sayIt now cites the record unit share instead of 2025 growth. Source: Abasto (Jul 8, 2026).
+- Value-seeking shoppers: McKinsey 2025 holiday sentiment → Deloitte 2026 Holiday Retail Survey (about 38% are value seekers; 62% of them bought store brands vs. 46% of others). Source: Deloitte 2026 Holiday Retail Survey PDF.
+- Social commerce: added EMARKETER forecast of about $23.4B TikTok Shop U.S. sales in 2026, up about 48% (forecast). Source: EMARKETER (Dec 26, 2025).
+- AI shopping: Adobe Q1 2026 AI-referred traffic (+393%) → Adobe 2026 holiday forecast (+130%, forecast). Source: Digital Commerce 360 (Sep 29, 2026).
+Checked, no change: retail media (EMARKETER June 2026 revision seen only in search summaries; report paywalled), loyalty (no newer U.S. primary survey found), dupes (only a retailer-linked 2026 survey), teens, collaborations, resale, tariffs, shrink, BOPIS, BNPL, store fleet.

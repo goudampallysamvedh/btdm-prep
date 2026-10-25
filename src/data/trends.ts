@@ -6,7 +6,7 @@ import type { Flashcard, Question } from '@/types'
  * Forecasts are labeled as forecasts. To refresh: edit `data`, `asOf`, and `sources`, then redeploy.
  */
 /** Date the trend facts were last researched (YYYY-MM-DD). The weekly update job sets this. */
-export const TRENDS_CHECKED = '2026-10-18'
+export const TRENDS_CHECKED = '2026-10-25'
 
 export interface Trend {
   id: string
@@ -72,11 +72,15 @@ export const TRENDS: Trend[] = [
     data: [
       { stat: 'U.S. store-brand sales hit a record $282.8 billion in 2025.', source: 0 },
       { stat: 'Store-brand dollar sales grew 3.3% vs. 1.2% for national brands; dollar share reached 21.3% and unit share a record 23.5%.', source: 0 },
+      { stat: 'In the first half of 2026, store-brand unit share hit a new record of 23.8% (units up 0.2% while national brands fell 0.5%), though store-brand dollar sales were flat as national-brand dollars rose 2.2%.', source: 1 },
     ],
-    sources: [{ label: 'PLMA / Circana: U.S. private label reached $282.8B in 2025 (Jan 2026)', url: 'https://www.plma.com/article/us-private-label-industry-reached-2828-billion-sales-2025' }],
-    asOf: 'Calendar 2025',
+    sources: [
+      { label: 'PLMA / Circana: U.S. private label reached $282.8B in 2025 (Jan 2026)', url: 'https://www.plma.com/article/us-private-label-industry-reached-2828-billion-sales-2025' },
+      { label: 'Abasto: Store brands hit record market share in first half of 2026 (PLMA / Circana, Jul 2026)', url: 'https://abasto.com/en/news/store-brands-hit-record-market-share-in-first-half-of-2026/' },
+    ],
+    asOf: 'Calendar 2025; first half 2026',
     pis: ['PM:206', 'PM:042', 'CM:008', 'PI:002'],
-    sayIt: '"Store brands grew almost three times faster than national brands last year, so launching our own line meets shoppers where they are and lifts our margin."',
+    sayIt: '"Store brands now account for a record share of items shoppers buy, nearly 1 in 4, so launching our own line meets shoppers where they are and lifts our margin."',
     fits: 'Private-label launch, margin improvement, vendor-relationship cases.',
     watchOut: 'Vertical channel conflict with national-brand vendors. Plan how to keep those relationships healthy.',
   },
@@ -86,14 +90,15 @@ export const TRENDS: Trend[] = [
     kicker: 'Trading down, hunting deals',
     what: 'Many households are cautious: buying needs over wants, switching to cheaper brands, and waiting for deals. Value doesn\'t only mean lowest price; it also means quality for the money.',
     data: [
-      { stat: 'McKinsey\'s 2025 holiday survey of 4,000+ U.S. consumers found net sentiment 35% lower than in 2024, with shoppers shifting toward needed goods.', source: 0 },
-      { stat: 'Store brands growing faster than national brands (see Store brands) is one sign of trading down.', source: 1 },
+      { stat: 'Deloitte\'s 2026 holiday survey of 4,000 U.S. consumers found about 38% are "value seekers" who use five or more money-saving tactics, yet they plan to spend about 12% more than other shoppers.', source: 0 },
+      { stat: 'About 62% of those value seekers bought store brands in the past six months (vs. 46% of others), and more of them shop off-price and dollar stores.', source: 0 },
+      { stat: 'Store brands\' record share of units sold (see Store brands) is another sign of trading down.', source: 1 },
     ],
     sources: [
-      { label: 'McKinsey: Holiday shopping 2025', url: 'https://www.mckinsey.com/industries/retail/our-insights/holiday-shopping-trends' },
+      { label: 'Deloitte 2026 Holiday Retail Survey (PDF, fall 2026)', url: 'https://www.deloitte.com/content/dam/insights/articles/2026/amer189387_cic_holiday-retail-survey/pdf/DI_2026-Holiday-Retail-Survey.pdf' },
       { label: 'PLMA 2025 store-brand results', url: 'https://www.plma.com/article/us-private-label-industry-reached-2828-billion-sales-2025' },
     ],
-    asOf: 'Late 2025',
+    asOf: 'Fall 2026 survey',
     pis: ['EC:006', 'PI:002', 'MK:014'],
     sayIt: '"With shoppers trading down, we\'ll keep an opening price point under $15 and use price lining, $15, $25, $40, so every customer finds a step that fits."',
     fits: 'Pricing, premium-vs-discount positioning, and economics cases.',
@@ -126,8 +131,12 @@ export const TRENDS: Trend[] = [
     data: [
       { stat: 'U.S. social commerce sales were about $87 billion in 2025 (+21.5%) and are forecast to pass $100 billion in 2026.', source: 0 },
       { stat: 'TikTok Shop U.S. sales were estimated at $15.8 billion in 2025, about 18% of U.S. social commerce.', source: 0 },
+      { stat: 'EMARKETER forecasts TikTok Shop U.S. sales of about $23.4 billion in 2026, up about 48%, which would be more than Target\'s U.S. ecommerce sales (forecast).', source: 1 },
     ],
-    sources: [{ label: 'EMARKETER: TikTok Shop makes up nearly 20% of social commerce in 2025', url: 'https://www.emarketer.com/press-releases/tiktok-shop-makes-up-nearly-20-of-social-commerce-in-2025' }],
+    sources: [
+      { label: 'EMARKETER: TikTok Shop makes up nearly 20% of social commerce in 2025', url: 'https://www.emarketer.com/press-releases/tiktok-shop-makes-up-nearly-20-of-social-commerce-in-2025' },
+      { label: 'EMARKETER: TikTok Shop is becoming a major US ecommerce player (Dec 2025)', url: 'https://www.emarketer.com/content/tiktok-shop-becoming-major-us-ecommerce-player' },
+    ],
     asOf: 'Dec 2025 estimates and forecasts',
     pis: ['PR:247', 'PR:100', 'CM:003'],
     sayIt: '"We\'ll seed the product with 20 micro-creators and link to it in-app, so teens can buy straight from the video they\'re watching."',
@@ -162,13 +171,13 @@ export const TRENDS: Trend[] = [
     data: [
       { stat: 'About 70% of consumers say they use AI tools while shopping online, and 65% use them to research products (Clutch, Jan 2026).', source: 0 },
       { stat: 'Most shoppers still want to approve purchases themselves rather than give AI full buying control.', source: 0 },
-      { stat: 'Adobe reported AI-referred traffic to U.S. retail sites grew 393% year over year in Q1 2026.', source: 1 },
+      { stat: 'Adobe forecasts AI-referred traffic to U.S. retail sites will grow about 130% year over year in the 2026 holiday season (forecast), still a small share of total visits.', source: 1 },
     ],
     sources: [
       { label: 'Clutch report: 65% use AI to research products (Jan 2026)', url: 'https://secure.businesswire.com/news/home/20260122526477/en/Clutch-Report-65-of-Consumers-Use-AI-to-Research-Products-Before-Making-a-Purchase' },
-      { label: 'FashionUnited: 7 in 10 U.S. consumers use AI to shop (Jul 2026)', url: 'https://fashionunited.com/news/retail/7-in-10-us-consumers-use-ai-to-shop-reshaping-how-americans-make-their-purchases/2026071773585' },
+      { label: 'Digital Commerce 360: Adobe 2026 holiday forecast (Sep 2026)', url: 'https://www.digitalcommerce360.com/2026/09/29/adobe-projection-2026-online-holiday-sales-275-billion/' },
     ],
-    asOf: 'Surveys from 2026 (vendor-sponsored)',
+    asOf: '2026 surveys (vendor-sponsored); 2026 holiday forecast',
     pis: ['PR:100', 'SE:107', 'IM:183'],
     sayIt: '"We\'ll make sure our product pages have complete sizes, materials, and reviews so AI shopping assistants can recommend us."',
     fits: 'Technology-in-selling and promotion PIs; omnichannel cases.',
