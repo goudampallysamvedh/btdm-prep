@@ -6,7 +6,7 @@ import type { Flashcard, Question } from '@/types'
  * Forecasts are labeled as forecasts. To refresh: edit `data`, `asOf`, and `sources`, then redeploy.
  */
 /** Date the trend facts were last researched (YYYY-MM-DD). The weekly update job sets this. */
-export const TRENDS_CHECKED = '2026-10-25'
+export const TRENDS_CHECKED = '2026-11-15'
 
 export interface Trend {
   id: string
@@ -72,15 +72,15 @@ export const TRENDS: Trend[] = [
     data: [
       { stat: 'U.S. store-brand sales hit a record $282.8 billion in 2025.', source: 0 },
       { stat: 'Store-brand dollar sales grew 3.3% vs. 1.2% for national brands; dollar share reached 21.3% and unit share a record 23.5%.', source: 0 },
-      { stat: 'In the first half of 2026, store-brand unit share hit a new record of 23.8% (units up 0.2% while national brands fell 0.5%), though store-brand dollar sales were flat as national-brand dollars rose 2.2%.', source: 1 },
+      { stat: 'Through the first ten months of 2026 (to Nov 1), store-brand units rose 0.1% while national-brand units fell 0.9%; store brands held about 23.7% of units and 21% of dollars. Store-brand dollars grew only 0.3% vs. 1.9% for national brands.', source: 1 },
     ],
     sources: [
       { label: 'PLMA / Circana: U.S. private label reached $282.8B in 2025 (Jan 2026)', url: 'https://www.plma.com/article/us-private-label-industry-reached-2828-billion-sales-2025' },
-      { label: 'Abasto: Store brands hit record market share in first half of 2026 (PLMA / Circana, Jul 2026)', url: 'https://abasto.com/en/news/store-brands-hit-record-market-share-in-first-half-of-2026/' },
+      { label: 'PLMA / Circana: Store brands leading national brands in 2026 unit sales gain (Nov 2026)', url: 'https://www.plma.com/article/store-brands-leading-national-brands-2026-unit-sales-gain' },
     ],
-    asOf: 'Calendar 2025; first half 2026',
+    asOf: 'Calendar 2025; Jan–Oct 2026',
     pis: ['PM:206', 'PM:042', 'CM:008', 'PI:002'],
-    sayIt: '"Store brands now account for a record share of items shoppers buy, nearly 1 in 4, so launching our own line meets shoppers where they are and lifts our margin."',
+    sayIt: '"Store brands now account for a near-record share of items shoppers buy, nearly 1 in 4, so launching our own line meets shoppers where they are and lifts our margin."',
     fits: 'Private-label launch, margin improvement, vendor-relationship cases.',
     watchOut: 'Vertical channel conflict with national-brand vendors. Plan how to keep those relationships healthy.',
   },
@@ -112,12 +112,14 @@ export const TRENDS: Trend[] = [
     data: [
       { stat: 'EMARKETER forecasts U.S. retail media ad spending of about $71 billion in 2026, up roughly 18% (Dec 2025 forecast).', source: 0 },
       { stat: 'Walmart and Amazon were forecast to capture over 89% of the incremental retail media dollars in 2026.', source: 1 },
+      { stat: 'EMARKETER\'s Oct 2026 outlook says growth is slowing but still gaining share of digital ads; Amazon and Walmart are forecast to take about 81% of U.S. off-site retail media spending in 2027 (forecast).', source: 2 },
     ],
     sources: [
       { label: 'EMARKETER: FAQ on retail media networks (2026)', url: 'https://www.emarketer.com/content/faq-on-retail-media-networks-how-marketers-should-allocate-budgets-2026' },
       { label: 'EMARKETER: Retail media forecast H2 2025', url: 'https://www.emarketer.com/content/retail-media-ad-spending-forecast-trends-h2-2025' },
+      { label: 'EMARKETER: US retail media ad spending forecast H2 2026 (Oct 2026)', url: 'https://www.emarketer.com/content/us-retail-media-ad-spending-forecast-h2-2026' },
     ],
-    asOf: 'Forecasts from late 2025',
+    asOf: 'Forecasts from late 2025 and Oct 2026',
     pis: ['PR:007', 'PR:100', 'CM:007', 'IM:184'],
     sayIt: '"Our partner brand can fund part of the launch by buying placements on our app\'s home screen, and we can show them exactly which ads led to sales."',
     fits: 'Promotion, vendor-partnership, and co-op advertising questions.',
@@ -282,11 +284,15 @@ export const TRENDS: Trend[] = [
     kicker: '"Looks like the famous one, costs less"',
     what: 'Dupes are lower-priced lookalikes of popular products. They\'re big on social media, especially among young shoppers, and pressure brands to prove their value.',
     data: [
-      { stat: '27% of U.S. adults said they had intentionally bought a dupe (Feb 2025), down from 31% in late 2023.', source: 0 },
-      { stat: 'Dupe buyers skew young, lower-income, and very online.', source: 0 },
+      { stat: 'About 58% of U.S. shoppers said in 2026 they have bought a dupe, with apparel, footwear, and beauty the main categories (Circana).', source: 0 },
+      { stat: 'Price is no longer the only reason: quality, convenience, and social media discovery matter too, and about 70% of beauty dupe buyers say they would pick a dupe even if they could afford the original.', source: 0 },
+      { stat: 'Dupe buyers skew young and very online (Morning Consult, 2025). Surveys word the question differently, so shares vary by source.', source: 1 },
     ],
-    sources: [{ label: 'Morning Consult: Dupe shoppers & brand strategy (2025)', url: 'https://pro.morningconsult.com/analysis/dupe-shoppers-brand-strategy-2025' }],
-    asOf: 'Feb 2025 survey',
+    sources: [
+      { label: 'Circana: Life imitates brands, how dupe demand is evolving (Aug 2026)', url: 'https://www.circana.com/post/life-imitates-brands-how-dupe-demand-is-evolving' },
+      { label: 'Morning Consult: Dupe shoppers & brand strategy (2025)', url: 'https://pro.morningconsult.com/analysis/dupe-shoppers-brand-strategy-2025' },
+    ],
+    asOf: '2026 Circana survey',
     pis: ['PM:042', 'BL:001', 'PM:040'],
     sayIt: '"Instead of copying a designer, our store brand will be \'inspired by\' the trend with our own design and name, so we get the value appeal without legal risk."',
     fits: 'Private-label, positioning, and legal/ethical PIs.',
@@ -299,13 +305,14 @@ export const TRENDS: Trend[] = [
     what: 'Most shoppers belong to loyalty programs, but far fewer use them actively. Paid memberships with perks (free shipping, early access) are growing.',
     data: [
       { stat: '82% of grocery shoppers belong to at least one program, but only 59% of members use it regularly (Upside, 2025).', source: 0 },
-      { stat: '53% of consumers said they pay to participate in a loyalty program, up from 32% in 2022 (Deloitte, reported Jan 2024).', source: 1 },
+      { stat: 'Nearly 80% of shoppers belong to at least one paid membership, and 21% to three or more (Numerator survey of 500+ shoppers, Jul 2026).', source: 1 },
+      { stat: 'Paid members shop far more often: Walmart+ members average about 122 Walmart trips a year vs. 62 for non-members.', source: 1 },
     ],
     sources: [
       { label: 'Upside: Going beyond loyalty (2025)', url: 'https://www.upside.com/reports/going-beyond-loyalty-part-i-for-retailers' },
-      { label: 'Retail TouchPoints: Deloitte loyalty trends', url: 'https://www.retailtouchpoints.com/features/deloitte-shares-loyalty-trends-and-best-practices-for-2024/139822/' },
+      { label: 'Numerator: What retailers need to know about loyalty in 2026 (Jul 2026)', url: 'https://www.numerator.com/resources/blog/measuring-retail-loyalty-2026/' },
     ],
-    asOf: '2024–2025 surveys',
+    asOf: '2025–2026 surveys',
     pis: ['SE:828', 'CR:016', 'CR:030'],
     sayIt: '"Loyalty members get early access to the drop. Signing up is free, and it gives us the data to invite them back for the next one."',
     fits: 'Clientele-building, CRM, and repeat-business cases.',
