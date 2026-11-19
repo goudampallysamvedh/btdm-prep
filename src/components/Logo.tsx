@@ -15,12 +15,10 @@ export function LogoMark({ size = 32 }: { size?: number }) {
 export function Logo({ compact = false }: { compact?: boolean }) {
   return (
     <Link to="/" className="flex items-center gap-2.5 text-ink no-underline" aria-label="Sell-Through home">
-      <LogoMark size={compact ? 30 : 36} />
-      <span className="grid leading-none">
-        <span className="font-display text-[1.15rem] font-extrabold tracking-tight" style={{ fontStretch: '115%' }}>
-          Sell-Through
-        </span>
-        {!compact && <span className="eyebrow mt-1 !text-[0.62rem]">BTDM prep · 2026–27</span>}
+      <LogoMark size={compact ? 28 : 32} />
+      <span className="grid leading-tight">
+        <span className="text-[1.05rem] font-semibold tracking-[-0.01em]">Sell-Through</span>
+        {!compact && <span className="text-xs text-muted">BTDM prep, 2026–27</span>}
       </span>
     </Link>
   )

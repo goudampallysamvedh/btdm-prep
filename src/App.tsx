@@ -4,7 +4,7 @@ import { AppShell } from './components/AppShell'
 import { useMotionSync, useThemeSync } from './lib/theme'
 import { usePlanTracker } from './lib/today'
 import { useLiveSync } from './lib/live'
-import { Empty, LinkButton } from './components/ui'
+import { LinkButton, PageHeader } from './components/ui'
 
 const Dashboard = lazy(() => import('./pages/Dashboard'))
 const Progress = lazy(() => import('./pages/progress/Progress'))
@@ -41,9 +41,10 @@ function Page({ children }: { children: ReactNode }) {
 
 function NotFound() {
   return (
-    <Empty title="Page not found" action={<LinkButton to="/">Go home</LinkButton>}>
-      That link doesn't match any screen in the app.
-    </Empty>
+    <>
+      <PageHeader title="Page not found">That link doesn't match any screen in the app.</PageHeader>
+      <LinkButton to="/">Go home</LinkButton>
+    </>
   )
 }
 

@@ -39,30 +39,30 @@ export function SixMonthPlan() {
   }
 
   return (
-    <Card className="grid gap-4">
-      <h2 className="text-lg">Spring season plan</h2>
+    <Card className="grid gap-5">
+      <h2 className="text-[1.05rem]">Spring season plan</h2>
       <div className="grid gap-3 sm:grid-cols-3">
         <label className="grid gap-1 text-sm">
-          <span className="font-bold">Season sales (retail)</span>
+          <span className="font-medium">Season sales (retail)</span>
           <input className={inputCls + ' num'} inputMode="decimal" value={season} onChange={(e) => setSeason(e.target.value.replace(/[$,\s]/g, ''))} />
         </label>
         <label className="grid gap-1 text-sm">
-          <span className="font-bold">EOM after the last month</span>
+          <span className="font-medium">EOM after the last month</span>
           <input className={inputCls + ' num'} inputMode="decimal" value={endEom} onChange={(e) => setEndEom(e.target.value.replace(/[$,\s]/g, ''))} />
         </label>
         <label className="grid gap-1 text-sm">
-          <span className="font-bold">Initial markup %</span>
+          <span className="font-medium">Initial markup %</span>
           <input className={inputCls + ' num'} inputMode="decimal" value={imu} onChange={(e) => setImu(e.target.value.replace(/[%\s]/g, ''))} />
         </label>
       </div>
       {Math.abs(totalPct - 100) > 0.01 && (
-        <p className="rounded-xl bg-warn-bg px-3 py-2 text-sm text-warn">Monthly sales shares add up to {M.num(totalPct, 1)}%, not 100%.</p>
+        <p className="rounded-2xl bg-warn-bg px-4 py-2.5 text-sm text-warn">Monthly sales shares add up to {M.num(totalPct, 1)}%, not 100%.</p>
       )}
       <div className="scroll-x -mx-1 px-1">
         <table className="num w-full min-w-[640px] border-collapse text-sm">
           <caption className="sr-only">Six-month merchandise plan</caption>
           <thead>
-            <tr className="text-left text-xs uppercase tracking-wide text-muted">
+            <tr className="text-left text-xs font-medium text-muted">
               <th className="py-2 pr-2">Month</th>
               <th className="px-2">% of season</th>
               <th className="px-2">Sales</th>
@@ -71,7 +71,7 @@ export function SixMonthPlan() {
               <th className="px-2">Red. %</th>
               <th className="px-2">Reductions</th>
               <th className="px-2">EOM</th>
-              <th className="px-2 text-accent">Purchases</th>
+              <th className="px-2 text-ink">Purchases</th>
               <th className="px-2">At cost</th>
             </tr>
           </thead>
@@ -80,7 +80,7 @@ export function SixMonthPlan() {
               const r = rows?.[i]
               return (
                 <tr key={m.name} className="border-t border-line">
-                  <th scope="row" className="py-1.5 pr-2 text-left">{m.name}</th>
+                  <th scope="row" className="py-1.5 pr-2 text-left font-medium">{m.name}</th>
                   <td className="px-1"><CellInput label={`${m.name} % of season`} value={m.salesPct} onChange={(v) => setCell(i, 'salesPct', v)} /></td>
                   <td className="px-2">{r ? k(r.sales) : '—'}</td>
                   <td className="px-1"><CellInput label={`${m.name} stock-to-sales ratio`} value={m.ssRatio} onChange={(v) => setCell(i, 'ssRatio', v)} /></td>
@@ -88,7 +88,7 @@ export function SixMonthPlan() {
                   <td className="px-1"><CellInput label={`${m.name} reductions %`} value={m.reductionsPct} onChange={(v) => setCell(i, 'reductionsPct', v)} /></td>
                   <td className="px-2">{r ? k(r.reductions) : '—'}</td>
                   <td className="px-2">{r ? k(r.eom) : '—'}</td>
-                  <td className={cx('px-2 font-bold', r && r.purchases < 0 ? 'text-bad' : 'text-accent')}>{r ? k(r.purchases) : '—'}</td>
+                  <td className={cx('px-2 font-semibold', r && r.purchases < 0 ? 'text-bad' : 'text-accent')}>{r ? k(r.purchases) : '—'}</td>
                   <td className="px-2">{r ? k(r.purchasesCost) : '—'}</td>
                 </tr>
               )
@@ -96,7 +96,7 @@ export function SixMonthPlan() {
           </tbody>
           {rows && (
             <tfoot>
-              <tr className="border-t-2 border-line-2 font-bold">
+              <tr className="border-t border-line-2 font-semibold">
                 <th scope="row" className="py-2 pr-2 text-left">Season</th>
                 <td className="px-2">{M.num(totalPct, 0)}%</td>
                 <td className="px-2">{k(rows.reduce((s, r) => s + r.sales, 0))}</td>
@@ -112,10 +112,10 @@ export function SixMonthPlan() {
           )}
         </table>
       </div>
-      <ul className="grid gap-1 text-xs text-muted">
-        <li>• BOM = sales × stock-to-sales ratio. Each month's EOM is the next month's BOM.</li>
-        <li>• Purchases = sales + reductions + EOM − BOM. A negative number (red) means the plan carries too much stock into that month.</li>
-        <li>• Values shown in thousands ($k).</li>
+      <ul className="grid gap-1 text-sm text-muted">
+        <li>BOM = sales × stock-to-sales ratio. Each month's EOM is the next month's BOM.</li>
+        <li>Purchases = sales + reductions + EOM − BOM. A negative number (red) means the plan carries too much stock into that month.</li>
+        <li>Values shown in thousands ($k).</li>
       </ul>
     </Card>
   )
@@ -126,7 +126,7 @@ function CellInput({ label, value, onChange }: { label: string; value: number; o
     <input
       aria-label={label}
       inputMode="decimal"
-      className="num w-16 rounded-lg border border-line-2 bg-card px-2 py-1 text-right focus:border-accent focus:outline-none"
+      className="num min-h-9 w-16 rounded-full border border-line-2 bg-paper px-2.5 py-1 text-right focus:border-ink focus:outline-none"
       defaultValue={value}
       onChange={(e) => onChange(e.target.value)}
     />

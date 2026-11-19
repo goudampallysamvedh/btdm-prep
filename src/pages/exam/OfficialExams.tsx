@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ExternalLink, FileText, Trash2 } from 'lucide-react'
+import { ExternalLink, Trash2 } from 'lucide-react'
 import { useStore, newId } from '@/lib/store'
 import { fmtDate } from '@/lib/dates'
 import { Button, Card, inputCls } from '@/components/ui'
@@ -30,8 +30,8 @@ export function OfficialExams({ bare = false }: { bare?: boolean }) {
       <ul className="grid gap-1.5 text-sm">
         {OFFICIAL_EXAMS.map((e) => (
           <li key={e.url}>
-            <a href={e.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-start gap-1 font-bold">
-              {e.label} <ExternalLink size={13} className="mt-1 shrink-0" aria-hidden />
+            <a href={e.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-start gap-1.5 font-medium text-ink underline decoration-line-2 underline-offset-4 hover:decoration-ink">
+              {e.label} <ExternalLink size={14} strokeWidth={1.75} className="mt-1 shrink-0 text-muted" aria-hidden />
             </a>
           </li>
         ))}
@@ -47,26 +47,30 @@ export function OfficialExams({ bare = false }: { bare?: boolean }) {
         }}
       >
         <label className="grid min-w-0 flex-1 gap-1 text-sm">
-          <span className="font-bold">Exam</span>
+          <span className="font-medium">Exam</span>
           <select className={inputCls} value={exam} onChange={(e) => setExam(e.target.value)}>
             {EXAM_NAMES.map((x) => <option key={x}>{x}</option>)}
           </select>
         </label>
         <label className="grid w-28 gap-1 text-sm">
-          <span className="font-bold">Score /100</span>
+          <span className="font-medium">Score /100</span>
           <input className={inputCls + ' num'} inputMode="numeric" value={score} onChange={(e) => setScore(e.target.value.replace(/\D/g, ''))} placeholder="e.g. 78" />
         </label>
         <Button type="submit" disabled={!valid}>Log score</Button>
       </form>
       {scores.length > 0 && (
-        <ul className="grid gap-1 text-sm">
+        <ul className="divide-y divide-line border-t border-line text-sm" aria-label="Logged scores">
           {[...scores].sort((a, b) => b.at - a.at).map((o) => (
-            <li key={o.id} className="flex items-center justify-between gap-2 border-b border-line pb-1">
-              <span>{fmtDate(o.at)} · {o.exam}</span>
-              <span className="flex items-center gap-1">
-                <b className="num">{o.score}</b>
-                <Button size="sm" variant="quiet" aria-label="Delete score" onClick={() => useStore.getState().deleteOfficial(o.id)}><Trash2 size={14} aria-hidden /></Button>
+            <li key={o.id} className="grid min-h-12 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-x-3 py-1.5">
+              <span className="min-w-0">
+                <span className="block truncate font-medium">{o.exam}</span>
+                <span className="num text-xs text-muted">{fmtDate(o.at)}</span>
               </span>
+              <span className="num w-16 text-right text-base">
+                {o.score}
+                <span className="text-xs text-muted">/100</span>
+              </span>
+              <Button size="sm" variant="quiet" className="size-11 !px-0" aria-label="Delete score" onClick={() => useStore.getState().deleteOfficial(o.id)}><Trash2 size={16} strokeWidth={1.75} aria-hidden /></Button>
             </li>
           ))}
         </ul>
@@ -76,10 +80,7 @@ export function OfficialExams({ bare = false }: { bare?: boolean }) {
   if (bare) return <div className="grid gap-3">{body}</div>
   return (
     <Card className="grid content-start gap-3">
-      <div className="flex items-center gap-2">
-        <FileText size={20} className="text-accent" aria-hidden />
-        <h2 className="text-xl">Official DECA sample exams</h2>
-      </div>
+      <h2 className="text-lg">Official DECA sample exams</h2>
       {body}
     </Card>
   )

@@ -92,23 +92,24 @@ function PracticeRun() {
   const q = set[i]
   const isLast = i === set.length - 1
   return (
-    <div className="mx-auto grid max-w-2xl gap-4">
-      <div className="flex items-center gap-3">
-        <Button variant="quiet" size="sm" onClick={() => (done ? finish() : nav('/exam'))} aria-label={done ? 'End and see report' : 'Leave practice'}>
-          <X size={18} aria-hidden />
-        </Button>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-baseline justify-between gap-2">
-            <h1 className="truncate text-lg">{title}</h1>
-            <span className="num shrink-0 text-sm text-muted">
-              {right}/{done} right
-            </span>
-          </div>
-          <Bar value={(i + (answers[i] !== null ? 1 : 0)) / set.length} label="Progress through this set" className="mt-1" />
+    <div className="mx-auto grid max-w-[44rem] gap-5">
+      <div className="grid gap-3">
+        <div className="flex items-center gap-2">
+          <Button variant="quiet" size="sm" className="-ml-2 size-11 shrink-0 !px-0" onClick={() => (done ? finish() : nav('/exam'))} aria-label={done ? 'End and see report' : 'Leave practice'}>
+            <X size={18} strokeWidth={1.75} aria-hidden />
+          </Button>
+          <h1 className="min-w-0 flex-1 truncate font-body text-lg font-semibold tracking-normal">{title}</h1>
+          <span className="num shrink-0 text-sm text-muted">
+            {right}/{done} right
+          </span>
+        </div>
+        <div className="flex items-center gap-3">
+          <Bar value={(i + (answers[i] !== null ? 1 : 0)) / set.length} tone="ink" label="Progress through this set" className="!h-1" />
+          <span className="num shrink-0 text-sm text-muted">{i + 1} of {set.length}</span>
         </div>
       </div>
 
-      <QuestionCard q={q} order={orders[i]} chosen={answers[i]} onChoose={choose} reveal number={i + 1} total={set.length} />
+      <QuestionCard key={q.id} q={q} order={orders[i]} chosen={answers[i]} onChoose={choose} reveal number={i + 1} total={set.length} />
 
       <div className="flex flex-wrap justify-between gap-2">
         <Button variant="ghost" onClick={() => setI(Math.max(0, i - 1))} disabled={i === 0}>
@@ -116,11 +117,11 @@ function PracticeRun() {
         </Button>
         {isLast ? (
           <Button ref={nextRef} onClick={() => finish()} disabled={answers[i] === null}>
-            See my report <ArrowRight size={18} aria-hidden />
+            See my report <ArrowRight size={18} strokeWidth={1.75} aria-hidden />
           </Button>
         ) : (
           <Button ref={nextRef} onClick={() => setI(i + 1)} disabled={answers[i] === null}>
-            Next <ArrowRight size={18} aria-hidden />
+            Next <ArrowRight size={18} strokeWidth={1.75} aria-hidden />
           </Button>
         )}
       </div>

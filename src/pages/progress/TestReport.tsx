@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { ArrowDownRight, ArrowUpRight, CheckCircle2, CircleAlert, CircleDashed, Trash2, TrendingDown, TrendingUp } from 'lucide-react'
+import { ArrowDownRight, ArrowUpRight, Trash2 } from 'lucide-react'
 import { useHydrated, useStore } from '@/lib/store'
 import { buildReport, type TopicLine } from '@/lib/mastery'
 import { areaName } from '@/data/areas'
@@ -8,7 +8,7 @@ import { QUESTION_BY_ID } from '@/data/questions'
 import { fmtClock, fmtDateTime } from '@/lib/dates'
 import { QuestionCard } from '@/components/QuestionCard'
 import { TopicLinks, StatusChip } from '@/components/TopicLinks'
-import { Bar, Button, Card, Empty, LinkButton, PageHeader, Ring, SectionTitle, Segmented, Tag, toneFor } from '@/components/ui'
+import { Bar, Button, Card, Empty, LinkButton, PageHeader, SectionTitle, Segmented, Tag, cx } from '@/components/ui'
 
 export default function TestReport() {
   const hydrated = useHydrated()
@@ -29,45 +29,49 @@ export default function TestReport() {
 
   return (
     <>
-      <PageHeader eyebrow={`${fmtDateTime(test.finishedAt)} · ${fmtClock(report.durationSec)} min`} title={`${test.title} report`} />
+      <PageHeader title={`${test.title} report`}>{`${fmtDateTime(test.finishedAt)} · ${fmtClock(report.durationSec)} min`}</PageHeader>
 
-      <div className="grid gap-4 md:grid-cols-[auto_1fr]">
-        <Card className="receipt flex items-center gap-5">
-          <Ring value={report.pct} size={112} label={`Score ${pct}%`}>
-            <span className="num text-3xl font-bold">{pct}%</span>
-          </Ring>
-          <div className="grid gap-1">
-            <span className="num text-lg font-bold">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-4 md:grid-cols-12">
+        <section className="card grid content-between gap-6 p-5 sm:p-6 md:col-span-5" aria-label="Score">
+          <div className="grid gap-2">
+            <p className="flex items-baseline gap-1">
+              <span className="num text-[clamp(3.5rem,8vw,4.5rem)] font-normal leading-none">{pct}</span>
+              <span className="text-2xl text-muted">%</span>
+            </p>
+            <p className="num text-lg">
               {report.right} / {report.total} right
-            </span>
-            {report.answered < report.total && <span className="text-sm text-bad">{report.total - report.answered} left blank</span>}
+              {report.answered < report.total && <span className="text-sm text-bad"> · {report.total - report.answered} left blank</span>}
+            </p>
+          </div>
+          <div className="grid gap-2">
+            <Bar value={report.pct} label={`Score ${pct}%`} />
             {delta !== null && (
-              <span className={`inline-flex items-center gap-1 text-sm font-bold ${delta >= 0 ? 'text-good' : 'text-bad'}`}>
-                {delta >= 0 ? <ArrowUpRight size={16} aria-hidden /> : <ArrowDownRight size={16} aria-hidden />}
+              <span className={cx('inline-flex items-center gap-1 text-sm font-medium', delta >= 0 ? 'text-good' : 'text-bad')}>
+                {delta >= 0 ? <ArrowUpRight size={16} strokeWidth={1.75} aria-hidden /> : <ArrowDownRight size={16} strokeWidth={1.75} aria-hidden />}
                 {delta >= 0 ? '+' : ''}
                 {delta} pts vs. last {report.previous?.title.toLowerCase()}
               </span>
             )}
             <span className="text-sm text-muted">{pct >= 70 ? 'At or above the 70% AMA certification mark.' : 'Aim for 70%+ (the AMA certification mark), then 80%.'}</span>
           </div>
-        </Card>
+        </section>
 
-        <Card className="grid content-start gap-3">
-          <h2 className="text-lg">Since your last test</h2>
+        <Card className="grid content-start gap-3 md:col-span-7">
+          <h2 className="text-[0.95rem]">Since your last test</h2>
           {report.newlyLearned.length === 0 && report.slipped.length === 0 ? (
             <p className="text-sm text-muted">No topics changed level this time. Topics count as learned after you get them right in two separate tests.</p>
           ) : (
             <>
               {report.newlyLearned.length > 0 && (
-                <div className="grid gap-1.5">
-                  <span className="inline-flex items-center gap-1.5 text-sm font-bold text-good"><TrendingUp size={16} aria-hidden /> Newly learned</span>
-                  <div className="flex flex-wrap gap-1.5">{report.newlyLearned.map((t) => <StatusChip key={t.topic} status="learned">{t.name}</StatusChip>)}</div>
+                <div className="grid gap-2">
+                  <span className="text-sm font-medium">Newly learned</span>
+                  <div className="flex flex-wrap gap-1.5">{report.newlyLearned.map((t) => <StatusChip key={t.topic} status="learned" className="!font-medium">{t.name}</StatusChip>)}</div>
                 </div>
               )}
               {report.slipped.length > 0 && (
-                <div className="grid gap-1.5">
-                  <span className="inline-flex items-center gap-1.5 text-sm font-bold text-bad"><TrendingDown size={16} aria-hidden /> Slipped</span>
-                  <div className="flex flex-wrap gap-1.5">{report.slipped.map((t) => <StatusChip key={t.topic} status={t.status}>{t.name}</StatusChip>)}</div>
+                <div className="grid gap-2">
+                  <span className="text-sm font-medium">Slipped</span>
+                  <div className="flex flex-wrap gap-1.5">{report.slipped.map((t) => <StatusChip key={t.topic} status={t.status} className="!font-medium">{t.name}</StatusChip>)}</div>
                 </div>
               )}
             </>
@@ -76,24 +80,26 @@ export default function TestReport() {
       </div>
 
       <SectionTitle>What you learned and what's next</SectionTitle>
-      <div className="grid gap-4 lg:grid-cols-3">
-        <TopicColumn title="Learned" icon={<CheckCircle2 size={18} className="text-good" aria-hidden />} lines={report.learned} empty="Get a topic right in two separate tests to lock it in." />
-        <TopicColumn title="Still shaky" icon={<CircleDashed size={18} className="text-warn" aria-hidden />} lines={report.shaky} empty="Nothing shaky in this test." />
-        <TopicColumn title="Need to learn" icon={<CircleAlert size={18} className="text-bad" aria-hidden />} lines={report.need} empty="No weak topics in this test. 🎉" withLinks />
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-4 md:grid-cols-12">
+        <TopicColumn title="Need to learn" lines={report.need} empty="No weak topics in this test." withLinks className="md:col-span-7" />
+        <div className="grid content-start gap-4 md:col-span-5">
+          <TopicColumn title="Still shaky" lines={report.shaky} empty="Nothing shaky in this test." />
+          <TopicColumn title="Learned" lines={report.learned} empty="Get a topic right in two separate tests to lock it in." />
+        </div>
       </div>
 
       <SectionTitle aside={<span className="text-sm text-muted">Sorted by exam points at stake</span>}>By area</SectionTitle>
       <Card>
-        <ul className="grid gap-3">
+        <ul className="divide-y divide-line">
           {report.areas.map((a) => (
-            <li key={a.area} className="grid grid-cols-[3.2rem_1fr_auto] items-center gap-3">
+            <li key={a.area} className="grid grid-cols-[3.2rem_minmax(0,1fr)_auto] items-center gap-x-3 py-3 first:pt-0 last:pb-0">
               <Tag>{a.area}</Tag>
               <div className="min-w-0">
                 <div className="flex justify-between gap-2 text-sm">
-                  <span className="truncate font-bold">{areaName(a.area)}</span>
+                  <span className="truncate font-medium">{areaName(a.area)}</span>
                   <span className="num shrink-0">{a.right}/{a.total}</span>
                 </div>
-                <Bar value={a.right / a.total} tone={toneFor(a.right / a.total)} label={`${areaName(a.area)} score`} className="mt-1" />
+                <Bar value={a.right / a.total} label={`${areaName(a.area)} score`} className="mt-1.5 !h-1" />
               </div>
               <span className="num w-20 text-right text-xs text-muted" title="Expected points lost on the real exam at this accuracy">
                 {a.pointsAtStake > 0.05 ? `−${a.pointsAtStake.toFixed(1)} pts` : 'on track'}
@@ -108,7 +114,7 @@ export default function TestReport() {
       >
         Question review
       </SectionTitle>
-      <div className="grid gap-3">
+      <div className="mx-auto grid max-w-[44rem] gap-4">
         {reviewItems.length === 0 && <p className="text-muted">No missed questions. Perfect set!</p>}
         {reviewItems.map((a) => {
           const q = QUESTION_BY_ID[a.qid]
@@ -118,12 +124,12 @@ export default function TestReport() {
         })}
       </div>
 
-      <div className="mt-8 flex flex-wrap gap-2">
+      <div className="mt-10 flex flex-wrap gap-2">
         <LinkButton to="/exam/practice?mode=smart&count=20">Practice again</LinkButton>
         {report.need.length > 0 && <LinkButton variant="ghost" to="/exam/practice?mode=missed&count=20">Review misses</LinkButton>}
         <Button
           variant="danger"
-          icon={<Trash2 size={16} aria-hidden />}
+          icon={<Trash2 size={16} strokeWidth={1.75} aria-hidden />}
           onClick={() => {
             if (confirm('Delete this test from your history?')) {
               useStore.getState().deleteTest(test.id)
@@ -138,20 +144,20 @@ export default function TestReport() {
   )
 }
 
-function TopicColumn({ title, icon, lines, empty, withLinks }: { title: string; icon: React.ReactNode; lines: TopicLine[]; empty: string; withLinks?: boolean }) {
+function TopicColumn({ title, lines, empty, withLinks, className }: { title: string; lines: TopicLine[]; empty: string; withLinks?: boolean; className?: string }) {
   return (
-    <Card className="grid content-start gap-3">
-      <h3 className="flex items-center gap-2 text-lg">
-        {icon} {title} <span className="num text-sm font-normal text-muted">({lines.length})</span>
+    <Card className={cx('grid content-start gap-3', className)}>
+      <h3 className="flex items-baseline gap-2 text-[0.95rem]">
+        {title} <span className="num text-sm font-normal text-muted">{lines.length}</span>
       </h3>
       {lines.length === 0 ? (
         <p className="text-sm text-muted">{empty}</p>
       ) : (
-        <ul className="grid gap-3">
+        <ul className="divide-y divide-line">
           {lines.map((t) => (
-            <li key={t.topic} className="grid gap-1.5">
-              <div className="flex items-baseline justify-between gap-2">
-                <Link to={`/learn/guide/${t.area}#${encodeURIComponent(t.topic)}`} className="font-bold text-ink">
+            <li key={t.topic} className="grid gap-2 py-2.5 first:pt-0 last:pb-0">
+              <div className="flex items-baseline justify-between gap-3">
+                <Link to={`/learn/guide/${t.area}#${encodeURIComponent(t.topic)}`} className="font-medium text-ink">
                   {t.name}
                 </Link>
                 <span className="num shrink-0 text-xs text-muted">

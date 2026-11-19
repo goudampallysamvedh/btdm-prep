@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { ClipboardCopy, Download, FileUp, Laptop, Send, Smartphone, Users } from 'lucide-react'
+import { ClipboardCopy, Download, FileUp, Send } from 'lucide-react'
 import { useStore, type ProgressState } from '@/lib/store'
 import { makeBackup, makePartnerPackage, mergeBackup, mergePartner, ownerName, parseShared, downloadJson, teamExam, toCode, type Backup, type PartnerPackage } from '@/lib/share'
 import { areaReadiness, projectedScore } from '@/lib/mastery'
@@ -18,7 +18,7 @@ function snapshot(): ProgressState {
   return {
     settings: s.settings, officialScores: s.officialScores, partner: s.partner, live: s.live, partnerData: s.partnerData, activity: s.activity, daily: s.daily, planDone: s.planDone, tests: s.tests, leitner: s.leitner,
     caseAttempts: s.caseAttempts, casePlans: s.casePlans, mathStats: s.mathStats, lessonsDone: s.lessonsDone,
-    trendsRead: s.trendsRead, judgeDrill: s.judgeDrill, activeMock: s.activeMock,
+    trendsRead: s.trendsRead, judgeDrill: s.judgeDrill, removed: s.removed, activeMock: s.activeMock,
   }
 }
 
@@ -61,18 +61,18 @@ function MyDevices({ onSwitch }: { onSwitch: () => void }) {
   return (
     <div className="grid gap-4">
       <Card className="grid gap-3">
-        <div className="flex items-center gap-2"><Smartphone size={20} className="text-accent" aria-hidden /><h2 className="text-lg">1. Copy your code on this device</h2></div>
+        <h2 className="text-lg">1. Copy your code on this device</h2>
         <p className="text-sm">Your code holds all your progress: {tests.length} test{tests.length === 1 ? '' : 's'}, {Object.keys(leitner).length} flashcards, case plans, scores, lessons, and settings. Send it to yourself (text, email, or notes) or copy it.</p>
         <CodeMaker make={() => toCode(makeBackup(snapshot()))} label="Make my sync code" shareTitle="My Sell-Through progress" />
       </Card>
 
       <Card className="grid gap-3">
-        <div className="flex items-center gap-2"><Laptop size={20} className="text-accent" aria-hidden /><h2 className="text-lg">2. Paste it on your other device</h2></div>
+        <h2 className="text-lg">2. Paste it on your other device</h2>
         <p className="text-sm">Open <b>Sync → My devices</b> there and paste the code. Progress from both devices is combined; nothing is lost.</p>
         <Receive expect="backup" onWrongKind={onSwitch} onDone={() => setMerged(true)} />
       </Card>
 
-      <Card className={cx('grid gap-2', merged && 'border-accent')}>
+      <Card className={cx('grid gap-2', merged && 'border-line-2')}>
         <h2 className="text-lg">3. Make both devices match</h2>
         <p className="text-sm">Steps 1–2 copy one way. To bring this device's progress back to the first one, make a code here and paste it there. Sync whenever you switch devices.</p>
         {merged && <CodeMaker make={() => toCode(makeBackup(snapshot()))} label="Make a code to send back" shareTitle="My Sell-Through progress" />}
@@ -104,16 +104,16 @@ function Partner({ onSwitch }: { onSwitch: () => void }) {
     <div className="grid gap-4">
       <LiveCard />
       <Card className="grid gap-3">
-        <div className="flex items-center gap-2"><Users size={20} className="text-accent" aria-hidden /><h2 className="text-lg">Team exam estimate</h2></div>
-        <div className="grid grid-cols-3 gap-2 text-center">
-          <div className="rounded-xl bg-paper-2 p-3"><div className="num text-2xl font-bold">{Math.round(mine)}</div><div className="text-xs text-muted">{me} (you)</div></div>
-          <div className="rounded-xl bg-paper-2 p-3"><div className="num text-2xl font-bold">{partner ? Math.round(partner.projected) : '—'}</div><div className="text-xs text-muted">{partner?.name ?? other}</div></div>
-          <div className="rounded-xl bg-accent-soft p-3"><div className="num text-2xl font-bold text-accent">{team !== null ? Math.round(team) : '—'}</div><div className="text-xs text-muted">Team average</div></div>
+        <h2 className="text-lg">Team exam estimate</h2>
+        <div className="grid grid-cols-3 gap-px overflow-hidden rounded-2xl bg-line">
+          <div className="grid gap-1 bg-paper p-4"><div className="num text-2xl">{Math.round(mine)}</div><div className="text-xs text-muted">{me} (you)</div></div>
+          <div className="grid gap-1 bg-paper p-4"><div className="num text-2xl">{partner ? Math.round(partner.projected) : '—'}</div><div className="text-xs text-muted">{partner?.name ?? other}</div></div>
+          <div className="grid gap-1 bg-paper p-4"><div className="num text-2xl text-accent">{team !== null ? Math.round(team) : '—'}</div><div className="text-xs text-muted">Team average</div></div>
         </div>
         {partner ? (
           <p className="text-sm text-muted">
             {partner.name}'s data from {fmtDateTime(partner.at)}.{partnerAreas.length > 0 && <> Their weakest areas: {partnerAreas.map(([a, v]) => `${AREA_BY_CODE[a as AreaCode]?.name ?? a} (${Math.round(v * 100)}%)`).join(', ')}.</>}{' '}
-            <Link to="/partner" className="font-bold">See all of {partner.name}'s progress →</Link>
+            <Link to="/partner" className="font-medium text-ink">See all of {partner.name}'s progress →</Link>
           </p>
         ) : (
           <p className="text-sm text-muted">Paste your partner's code below to see the team average.</p>
@@ -121,7 +121,7 @@ function Partner({ onSwitch }: { onSwitch: () => void }) {
       </Card>
 
       <Card className="grid gap-3">
-        <div className="flex items-center gap-2"><Send size={20} className="text-accent" aria-hidden /><h2 className="text-lg">Send to your partner</h2></div>
+        <h2 className="text-lg">Send to your partner</h2>
         <p className="text-sm">Shares your {planCount} case plan{planCount === 1 ? '' : 's'}, case scores, exam estimate, streak, and the areas and topics you need to work on. Your full test history and flashcards stay yours.</p>
         <CodeMaker make={() => toCode(makePartnerPackage(snapshot()))} label="Make a partner code" shareTitle="Sell-Through partner sync" />
       </Card>
@@ -242,7 +242,7 @@ function Receive({ expect, onWrongKind, onDone }: { expect: 'backup' | 'partner'
       </div>
 
       {preview && preview.kind !== expect && (
-        <div className="grid gap-2 rounded-xl border border-line bg-paper-2 p-3 animate-rise">
+        <div className="grid gap-2 rounded-2xl bg-paper p-4 animate-rise">
           <span className="text-sm">
             {preview.kind === 'partner'
               ? `This is a partner code from ${preview.from}. Partner codes go in the Partner tab.`
@@ -253,7 +253,7 @@ function Receive({ expect, onWrongKind, onDone }: { expect: 'backup' | 'partner'
       )}
 
       {preview && preview.kind === expect && (
-        <div className="grid gap-2 rounded-xl border border-accent bg-accent-soft/40 p-3 animate-rise">
+        <div className="grid gap-2 rounded-2xl border border-ink/70 bg-paper p-3 animate-rise">
           {preview.kind === 'partner' ? (
             <>
               <b>Partner code from {preview.from}</b>
@@ -266,7 +266,7 @@ function Receive({ expect, onWrongKind, onDone }: { expect: 'backup' | 'partner'
               <b>Progress from {isDefaultName(fromName) ? 'your other device' : `${fromName}'s other device`}</b>
               <span className="text-sm">{preview.data.tests.length} tests · {Object.keys(preview.data.leitner ?? {}).length} flashcards · {Object.keys(preview.data.casePlans ?? {}).length} case plans · made {fmtDateTime(preview.exportedAt)}</span>
               {looksLikeSomeoneElse && (
-                <span className="text-sm font-bold text-bad">This looks like {fromName}'s progress, but this device belongs to {meName}. Only merge your own progress; use the Partner tab to share with a teammate.</span>
+                <span className="text-sm font-semibold text-bad">This looks like {fromName}'s progress, but this device belongs to {meName}. Only merge your own progress; use the Partner tab to share with a teammate.</span>
               )}
               <div className="flex flex-wrap gap-2">
                 <Button onClick={() => apply('merge')}>Combine with this device</Button>
@@ -278,7 +278,7 @@ function Receive({ expect, onWrongKind, onDone }: { expect: 'backup' | 'partner'
       )}
 
       {msg && (
-        <div role="status" className={cx('rounded-xl px-3 py-2 text-sm', msg.tone === 'good' ? 'bg-good-bg text-good' : 'bg-bad-bg text-bad')}>
+        <div role="status" className={cx('rounded-2xl px-3 py-2 text-sm', msg.tone === 'good' ? 'bg-good-bg text-good' : 'bg-bad-bg text-bad')}>
           {msg.lines.map((l) => <div key={l}>{l}</div>)}
         </div>
       )}

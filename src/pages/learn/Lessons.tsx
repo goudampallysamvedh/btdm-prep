@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { CheckCircle2, Clock } from 'lucide-react'
+import { Check } from 'lucide-react'
 import { LESSONS, type Lesson } from '@/data/lessons'
 import { useStore } from '@/lib/store'
 import { PageHeader } from '@/components/ui'
@@ -14,25 +14,24 @@ export default function Lessons() {
   return (
     <>
       <PageHeader title="Lessons">
-        Short lessons, each with a quick check and lines to use in a case.
+        Short lessons, each with a quick check and lines to use in a case. {Object.keys(done).length} of {LESSONS.length} done.
       </PageHeader>
-      <div className="grid gap-6">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-x-10 gap-y-10 md:grid-cols-12">
         {GROUPS.map((g) => (
-          <section key={g.title}>
-            <h2 className="eyebrow">{g.title}</h2>
+          <section key={g.title} className="md:col-span-6">
+            <h2 className="text-[0.95rem]">{g.title}</h2>
             <p className="mb-2 text-sm text-muted">{g.hint}</p>
-            <ol className="grid gap-3 sm:grid-cols-2">
-              {g.lessons.map((l, i) => (
+            <ol className="divide-y divide-line border-t border-line">
+              {g.lessons.map((l) => (
                 <li key={l.id}>
-                  <Link to={`/learn/lessons/${l.id}`} className="card flex h-full gap-4 p-4 text-ink no-underline lift hover:border-accent">
-                    <span className="num grid size-10 shrink-0 place-items-center rounded-xl bg-paper-2 font-bold text-accent">{String(i + 1).padStart(2, '0')}</span>
-                    <span className="min-w-0">
-                      <span className="block font-display text-lg font-extrabold leading-tight" style={{ fontStretch: '108%' }}>{l.title}</span>
+                  <Link to={`/learn/lessons/${l.id}`} className="group flex min-h-16 items-start gap-3 py-3.5 text-ink no-underline">
+                    <span className="min-w-0 flex-1">
+                      <span className="block font-display text-xl font-normal leading-tight group-hover:underline group-hover:decoration-line-2 group-hover:underline-offset-4">{l.title}</span>
                       <span className="mt-1 line-clamp-2 block text-sm text-muted">{l.hook}</span>
-                      <span className="mt-2 flex items-center gap-3 text-xs text-muted">
-                        <span className="inline-flex items-center gap-1"><Clock size={13} aria-hidden /> {l.minutes} min</span>
-                        {done[l.id] && <span className="inline-flex items-center gap-1 font-bold text-good"><CheckCircle2 size={13} aria-hidden /> Done</span>}
-                      </span>
+                    </span>
+                    <span className="num mt-1 flex shrink-0 items-center gap-2 text-sm text-muted">
+                      {done[l.id] && <Check size={16} strokeWidth={1.75} className="text-good" aria-label="Done" />}
+                      {l.minutes} min
                     </span>
                   </Link>
                 </li>

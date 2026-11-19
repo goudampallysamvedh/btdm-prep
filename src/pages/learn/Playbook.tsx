@@ -3,18 +3,18 @@ import {
   CASE_RESEARCH, COMPETENCIES, FORMAT, LEVELS, LEVEL_MEANING, PI_FORMULA, PREP_PHASES, PRESENTATION_FLOW,
   RUBRIC_POINTS, SOLUTION_CRITERIA, SOURCES, STUDY_PLAN, TEAM_TIPS, WHAT_CHANGED,
 } from '@/data/playbook'
-import { Callout, Card, Html, LinkButton, PageHeader, SectionTitle, cx } from '@/components/ui'
+import { Callout, Html, LinkButton, PageHeader, SectionTitle, cx } from '@/components/ui'
 
 export default function Playbook() {
   return (
     <>
-      <PageHeader eyebrow="Buying and Merchandising Team Decision Making" title="BTDM playbook">
-        Everything about the event in one place, checked against the 2026–27 DECA Guide and DECA's published BTDM cases.
+      <PageHeader title="BTDM playbook">
+        Buying and Merchandising Team Decision Making, in one place, checked against the 2026–27 DECA Guide and DECA's published BTDM cases.
       </PageHeader>
 
       <SectionTitle>How you're scored</SectionTitle>
-      <Card className="grid gap-4">
-        <div className="flex h-14 overflow-hidden rounded-xl border border-line text-sm font-bold" role="img" aria-label="Presentation counts two thirds, averaged exam counts one third">
+      <div className="card grid gap-5 p-5 sm:p-6">
+        <div className="flex h-12 overflow-hidden rounded-full text-sm font-semibold" role="img" aria-label="Presentation counts two thirds, averaged exam counts one third">
           <div className="grid flex-[2] place-items-center bg-accent text-accent-ink">Case presentation · 2×</div>
           <div className="grid flex-1 place-items-center bg-ink-2 text-paper">Team exam avg · 1×</div>
         </div>
@@ -22,19 +22,19 @@ export default function Playbook() {
         <dl className="grid gap-x-6 gap-y-2 sm:grid-cols-2">
           {FORMAT.map((f) => (
             <div key={f.k} className="border-b border-line pb-2">
-              <dt className="eyebrow">{f.k}</dt>
+              <dt className="text-sm text-muted">{f.k}</dt>
               <dd className="m-0 text-[0.95rem]">{f.v}</dd>
             </div>
           ))}
         </dl>
-      </Card>
+      </div>
 
       <SectionTitle>The judge's evaluation form (100 points)</SectionTitle>
-      <Card className="grid gap-4">
+      <div className="card grid gap-5 p-5 sm:p-6">
         <div className="scroll-x">
           <table className="w-full min-w-[520px] text-sm">
             <thead>
-              <tr className="text-left text-xs uppercase tracking-wide text-muted">
+              <tr className="text-left text-xs font-medium text-muted">
                 <th className="py-2">Line</th>
                 {LEVELS.map((l) => <th key={l} className="px-2">{l}</th>)}
                 <th className="px-2">Max</th>
@@ -52,7 +52,7 @@ export default function Playbook() {
                   <tr key={label as string} className="border-t border-line">
                     <td className="py-2 font-body">{label as string}</td>
                     {rp.bands.map((b) => <td key={b} className="px-2">{b}</td>)}
-                    <td className="px-2 font-bold">{total as string}</td>
+                    <td className="px-2 font-semibold">{total as string}</td>
                   </tr>
                 )
               })}
@@ -61,118 +61,124 @@ export default function Playbook() {
         </div>
         <div className="grid gap-2 sm:grid-cols-2">
           {LEVELS.map((l, i) => (
-            <div key={l} className={cx('rounded-xl p-3 text-sm', i === 0 ? 'bg-bad-bg' : i === 1 ? 'bg-warn-bg' : 'bg-good-bg')}>
-              <b>{l}:</b> {LEVEL_MEANING[i]}
+            <div key={l} className={cx('rounded-2xl p-3.5 text-sm', i === 0 ? 'bg-bad-bg' : i === 1 ? 'bg-warn-bg' : 'bg-good-bg')}>
+              <b className="font-semibold">{l}:</b> {LEVEL_MEANING[i]}
             </div>
           ))}
         </div>
         <div className="grid gap-3 md:grid-cols-2">
           <div>
-            <div className="mb-1 font-bold">Solution</div>
-            <ul className="grid gap-1 text-sm">{SOLUTION_CRITERIA.map((s) => <li key={s.key}><b>{s.label}:</b> {s.text}</li>)}</ul>
+            <div className="mb-1 font-semibold">Solution</div>
+            <ul className="grid gap-1 text-sm">{SOLUTION_CRITERIA.map((s) => <li key={s.key}><b className="font-semibold">{s.label}:</b> {s.text}</li>)}</ul>
           </div>
           <div>
-            <div className="mb-1 font-bold">Career competencies (the guide lists five)</div>
-            <ul className="grid gap-1 text-sm">{COMPETENCIES.map((c) => <li key={c.key}><b>{c.label}:</b> {c.text}</li>)}</ul>
+            <div className="mb-1 font-semibold">Career competencies (the guide lists five)</div>
+            <ul className="grid gap-1 text-sm">{COMPETENCIES.map((c) => <li key={c.key}><b className="font-semibold">{c.label}:</b> {c.text}</li>)}</ul>
           </div>
         </div>
         <Callout tone="warn" title="Check your case">
           The 2026 BTDM sample scored only three competencies (Critical Thinking, Communication, Decision Making). Each case lists its own, so read the cover sheet. The point split above comes from that sample's form.
         </Callout>
-      </Card>
+      </div>
 
       <SectionTitle>What changed for 2026–27</SectionTitle>
-      <Card><ul className="prose-app">{WHAT_CHANGED.map((w) => <li key={w}><Html html={w} /></li>)}</ul></Card>
+      <div className="card p-5 sm:p-6"><ul className="prose-app">{WHAT_CHANGED.map((w) => <li key={w}><Html html={w} /></li>)}</ul></div>
 
       <SectionTitle>What DECA's BTDM cases actually test</SectionTitle>
-      <Card className="grid gap-3">
+      <div className="card grid gap-4 p-5 sm:p-6">
         <p>{CASE_RESEARCH.summary}</p>
         <div className="scroll-x">
           <table className="w-full min-w-[620px] text-sm">
             <thead>
-              <tr className="text-left text-xs uppercase tracking-wide text-muted">
+              <tr className="text-left text-xs font-medium text-muted">
                 <th className="py-2 pr-2">Year</th><th className="px-2">Business</th><th className="px-2">Your roles</th><th className="px-2">Area</th><th className="px-2">PI themes</th>
               </tr>
             </thead>
             <tbody>
               {CASE_RESEARCH.cases.map((c) => (
                 <tr key={c.year} className="border-t border-line align-top">
-                  <td className="num py-2 pr-2 font-bold">{c.year}</td><td className="px-2">{c.setting}</td><td className="px-2">{c.roles}</td><td className="px-2">{c.area}</td><td className="px-2">{c.pis}</td>
+                  <td className="num py-2 pr-2 font-semibold">{c.year}</td><td className="px-2">{c.setting}</td><td className="px-2">{c.roles}</td><td className="px-2">{c.area}</td><td className="px-2">{c.pis}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
         <ul className="prose-app">{CASE_RESEARCH.takeaways.map((t) => <li key={t}>{t}</li>)}</ul>
-      </Card>
+      </div>
 
       <SectionTitle>The PI formula: define → explain → apply</SectionTitle>
-      <Card className="grid gap-3">
+      <div className="card grid gap-4 p-5 sm:p-6">
         <ol className="grid gap-2 sm:grid-cols-3">
           {PI_FORMULA.steps.map((s, i) => (
-            <li key={s.k} className="rounded-xl bg-paper-2 p-3">
-              <div className="num text-xs text-muted">STEP {i + 1}</div>
-              <div className="font-bold">{s.k}</div>
+            <li key={s.k} className="rounded-2xl border border-line bg-paper p-4">
+              <div className="num text-xs text-muted">Step {i + 1}</div>
+              <div className="font-semibold">{s.k}</div>
               <div className="text-sm">{s.v}</div>
             </li>
           ))}
         </ol>
-        <p className="border-l-4 border-marker pl-3 italic">{PI_FORMULA.example}</p>
+        <p className="rounded-2xl bg-paper px-4 py-3 italic">{PI_FORMULA.example}</p>
         <p className="text-sm text-muted">Most competitors only define. Proficient means you explain it for this business; Exemplary means you apply it with specifics that solve the case.</p>
-      </Card>
+      </div>
 
       <SectionTitle>Your 30 minutes of prep</SectionTitle>
-      <div className="flex h-12 overflow-hidden rounded-xl border border-line text-xs font-bold">
+      <div className="flex h-12 overflow-hidden rounded-full text-xs font-semibold">
         {PREP_PHASES.map((p, i) => (
-          <div key={p.id} className={cx('grid place-items-center px-1 text-center', i === 0 ? 'bg-marker text-[#14213d]' : i === 1 ? 'bg-accent text-accent-ink' : i === 2 ? 'bg-ink-2 text-paper' : 'bg-line-2 text-ink')} style={{ flex: p.minutes }}>
+          <div key={p.id} className={cx('grid place-items-center px-1 text-center', i === 0 ? 'bg-accent-soft text-ink' : i === 1 ? 'bg-accent text-accent-ink' : i === 2 ? 'bg-ink-2 text-paper' : 'bg-paper-2 text-ink')} style={{ flex: p.minutes }}>
             {p.minutes}m · {p.label}
           </div>
         ))}
       </div>
       <div className="mt-3 grid gap-3 md:grid-cols-2">
         {PREP_PHASES.map((p) => (
-          <Card key={p.id}>
-            <div className="mb-1 font-bold">{p.label} <span className="num font-normal text-muted">({p.minutes} min)</span></div>
+          <div key={p.id} className="card p-5">
+            <div className="mb-1 font-semibold">{p.label} <span className="num font-normal text-muted">({p.minutes} min)</span></div>
             <ul className="prose-app text-sm">{p.tips.map((t) => <li key={t}>{t}</li>)}</ul>
-          </Card>
+          </div>
         ))}
       </div>
 
       <SectionTitle>The 15 minutes with the judge</SectionTitle>
-      <Card>
-        <dl className="grid gap-2">
-          {PRESENTATION_FLOW.map((f) => (
-            <div key={f.k} className="grid gap-1 border-b border-line pb-2 sm:grid-cols-[10rem_1fr]">
-              <dt className="font-bold">{f.k}</dt>
-              <dd className="m-0">{f.v}</dd>
-            </div>
-          ))}
-        </dl>
-      </Card>
+      <dl className="divide-y divide-line border-t border-line">
+        {PRESENTATION_FLOW.map((f) => (
+          <div key={f.k} className="grid gap-1 py-3 sm:grid-cols-[10rem_1fr] sm:gap-6">
+            <dt className="font-medium">{f.k}</dt>
+            <dd className="m-0 text-ink-2">{f.v}</dd>
+          </div>
+        ))}
+      </dl>
 
       <SectionTitle>Winning as a team</SectionTitle>
-      <Card><ul className="prose-app">{TEAM_TIPS.map((t) => <li key={t}>{t}</li>)}</ul></Card>
+      <div className="card p-5 sm:p-6"><ul className="prose-app">{TEAM_TIPS.map((t) => <li key={t}>{t}</li>)}</ul></div>
 
       <SectionTitle>Hitting the competencies</SectionTitle>
-      <div className="grid gap-3 md:grid-cols-2">
-        <Card className="text-sm"><b>Critical Thinking:</b> use the case's facts and numbers as evidence. One calculation beats three adjectives.</Card>
-        <Card className="text-sm"><b>Communication:</b> eye contact, steady pace, no filler words, plain language. Both partners speak about equally.</Card>
-        <Card className="text-sm"><b>Decision Making:</b> commit, and name the tradeoff. "We recommend X because… The risk is Y, so we'll Z."</Card>
-        <Card className="text-sm"><b>Collaboration & Innovation:</b> smooth handoffs that build on each other, plus one idea the judge hasn't heard all day (see Industry trends).</Card>
-      </div>
+      <dl className="divide-y divide-line border-t border-line">
+        {[
+          ['Critical Thinking', "use the case's facts and numbers as evidence. One calculation beats three adjectives."],
+          ['Communication', 'eye contact, steady pace, no filler words, plain language. Both partners speak about equally.'],
+          ['Decision Making', 'commit, and name the tradeoff. "We recommend X because… The risk is Y, so we\'ll Z."'],
+          ['Collaboration & Innovation', "smooth handoffs that build on each other, plus one idea the judge hasn't heard all day (see Industry trends)."],
+        ].map(([k, v]) => (
+          <div key={k} className="grid gap-1 py-3 sm:grid-cols-[13rem_1fr] sm:gap-6">
+            <dt className="font-medium">{k}</dt>
+            <dd className="m-0 text-ink-2">{v}</dd>
+          </div>
+        ))}
+      </dl>
 
       <SectionTitle>Four-week plan</SectionTitle>
-      <div className="grid gap-3 md:grid-cols-2">
+      <ol className="relative ml-2 grid gap-6 border-l border-line-2 pl-6">
         {STUDY_PLAN.map((w) => (
-          <Card key={w.week} className="grid gap-1.5">
-            <div className="font-display text-lg font-extrabold">Week {w.week}</div>
-            <div className="text-sm"><b>Exam:</b> {w.exam}</div>
-            <div className="text-sm"><b>Cases:</b> {w.cases}</div>
-          </Card>
+          <li key={w.week} className="relative grid gap-1">
+            <span className="absolute -left-[1.9rem] top-1.5 size-2.5 rounded-full bg-accent ring-4 ring-paper" aria-hidden />
+            <div className="font-semibold">Week <span className="num">{w.week}</span></div>
+            <div className="text-sm text-ink-2"><span className="text-muted">Exam</span> {w.exam}</div>
+            <div className="text-sm text-ink-2"><span className="text-muted">Cases</span> {w.cases}</div>
+          </li>
         ))}
-      </div>
+      </ol>
 
-      <div className="mt-6 flex flex-wrap gap-2">
+      <div className="mt-8 flex flex-wrap gap-2">
         <LinkButton to="/cases">Run a case</LinkButton>
         <LinkButton variant="ghost" to="/cases/judge">Drill judge questions</LinkButton>
       </div>
@@ -181,7 +187,7 @@ export default function Playbook() {
       <ul className="grid gap-1.5 text-sm">
         {SOURCES.map((s) => (
           <li key={s.url}>
-            <a href={s.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-start gap-1">{s.label} <ExternalLink size={13} className="mt-1 shrink-0" aria-hidden /></a>
+            <a href={s.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-start gap-1 text-ink underline decoration-line-2 underline-offset-2">{s.label} <ExternalLink size={13} strokeWidth={1.75} className="mt-1 shrink-0 text-muted" aria-hidden /></a>
           </li>
         ))}
       </ul>

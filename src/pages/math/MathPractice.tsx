@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Check, ChevronRight, Lightbulb, RefreshCw, X } from 'lucide-react'
+import { ArrowRight, Check, ChevronRight, Lightbulb, RefreshCw, X } from 'lucide-react'
 import { GENERATORS, GENERATOR_BY_KIND, displayAnswer, isCorrect, parseAnswer, type Problem } from '@/lib/mathProblems'
 import { pick } from '@/lib/random'
 import { useStore } from '@/lib/store'
@@ -50,18 +50,18 @@ export function MathPractice({ kinds, title = 'Endless practice' }: { kinds?: st
   }
 
   return (
-    <Card className="grid gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-xl">{title}</h2>
+    <Card className="grid gap-5">
+      <div className="flex flex-wrap items-baseline justify-between gap-3">
+        <h2 className="text-[1.05rem]">{title}</h2>
         <span className="num text-sm text-muted">
-          {run.right}/{run.total} right{run.streak >= 3 ? ` · 🔥 ${run.streak} in a row` : ''}
+          {run.right}/{run.total} right{run.streak >= 3 ? ` · ${run.streak} in a row` : ''}
         </span>
       </div>
       {pool.length > 1 && (
         <label className="flex flex-wrap items-center gap-2 text-sm">
-          <span className="font-bold">Problem type</span>
+          <span className="font-medium">Problem type</span>
           <select
-            className={inputCls + ' !min-h-10 !w-auto max-w-full'}
+            className={inputCls + ' !min-h-10 !w-auto max-w-full !rounded-full'}
             value={kind}
             onChange={(e) => {
               setKind(e.target.value)
@@ -78,13 +78,13 @@ export function MathPractice({ kinds, title = 'Endless practice' }: { kinds?: st
         </label>
       )}
 
-      <div className="rounded-xl bg-paper-2 p-4">
-        <div className="eyebrow mb-1">{GENERATOR_BY_KIND[p.kind].label}</div>
-        <p className="text-[1.05rem] font-bold leading-snug">{p.prompt}</p>
+      <div className="grid gap-2 py-1">
+        <div className="eyebrow">{GENERATOR_BY_KIND[p.kind].label}</div>
+        <p className="max-w-[40ch] text-[clamp(1.35rem,3.2vw,1.75rem)] font-normal leading-snug tracking-[-0.01em]">{p.prompt}</p>
       </div>
 
       <form
-        className="flex flex-wrap items-end gap-2"
+        className="flex flex-wrap items-end gap-3"
         onSubmit={(e) => {
           e.preventDefault()
           if (result) next()
@@ -92,31 +92,31 @@ export function MathPractice({ kinds, title = 'Endless practice' }: { kinds?: st
         }}
       >
         <label className="grid min-w-0 flex-1 gap-1 text-sm">
-          <span className="font-bold">Your answer</span>
+          <span className="font-medium">Your answer</span>
           <span className="relative">
-            {p.unit === '$' && <span className="num pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted">$</span>}
+            {p.unit === '$' && <span className="num pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-xl text-muted">$</span>}
             <input
               ref={inputRef}
               inputMode="decimal"
               autoComplete="off"
-              className={cx(inputCls, 'num text-lg', p.unit === '$' && 'pl-7', p.unit === '%' && 'pr-8', result === 'right' && '!border-good', result === 'wrong' && '!border-bad')}
+              className={cx(inputCls, 'num !min-h-14 !rounded-2xl !px-4 text-2xl', p.unit === '$' && '!pl-9', p.unit === '%' && '!pr-10', result === 'right' && '!border-good', result === 'wrong' && '!border-bad animate-shake')}
               value={typed}
               onChange={(e) => setTyped(e.target.value)}
               readOnly={!!result}
               placeholder={unitHint[p.unit]}
               aria-describedby="math-feedback"
             />
-            {p.unit === '%' && <span className="num pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted">%</span>}
+            {p.unit === '%' && <span className="num pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xl text-muted">%</span>}
           </span>
         </label>
         {result ? (
-          <Button ref={nextRef} type="submit" icon={<ChevronRight size={18} aria-hidden />}>
+          <Button ref={nextRef} type="submit" size="lg" icon={<ChevronRight size={18} aria-hidden />}>
             Next problem
           </Button>
         ) : (
           <>
-            <Button type="submit" disabled={parseAnswer(typed) === null}>Check</Button>
-            <Button variant="ghost" onClick={() => setShowSteps((s) => !s)} icon={<Lightbulb size={16} aria-hidden />}>
+            <Button type="submit" size="lg" disabled={parseAnswer(typed) === null}>Check</Button>
+            <Button variant="ghost" onClick={() => setShowSteps((s) => !s)} icon={<Lightbulb size={16} strokeWidth={1.75} aria-hidden />}>
               {showSteps ? 'Hide steps' : 'Show steps'}
             </Button>
           </>
@@ -125,13 +125,13 @@ export function MathPractice({ kinds, title = 'Endless practice' }: { kinds?: st
 
       <div id="math-feedback" role="status" aria-live="polite">
         {result && (
-          <div className={cx('mb-3 flex items-center gap-2 rounded-xl px-3 py-2 font-bold animate-pop', result === 'right' ? 'bg-good-bg text-good' : 'bg-bad-bg text-bad')}>
-            {result === 'right' ? <Check size={18} aria-hidden /> : <X size={18} aria-hidden />}
+          <div className={cx('mb-3 flex items-center gap-2 rounded-2xl px-4 py-3 font-semibold animate-pop', result === 'right' ? 'bg-good-bg text-good' : 'bg-bad-bg text-bad')}>
+            {result === 'right' ? <Check size={18} strokeWidth={2} aria-hidden /> : <X size={18} strokeWidth={2} aria-hidden />}
             {result === 'right' ? `Correct: ${displayAnswer(p)}` : `Not quite. The answer is ${displayAnswer(p)}.`}
           </div>
         )}
         {showSteps && (
-          <ol className="grid gap-1.5 rounded-xl border border-line p-3 animate-rise">
+          <ol className="grid gap-2 rounded-2xl bg-paper-2 p-4 animate-rise">
             {p.steps.map((s, i) => (
               <li key={i} className="num grid grid-cols-[1.5rem_1fr] gap-2 text-[0.92rem]">
                 <span className="text-muted">{i + 1}.</span>
@@ -143,11 +143,11 @@ export function MathPractice({ kinds, title = 'Endless practice' }: { kinds?: st
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
-        <Link to={`/math/${p.tool}`} className="font-bold">
-          Formula & calculator →
+        <Link to={`/math/${p.tool}`} className="inline-flex items-center gap-1 font-medium text-ink">
+          Formula & calculator <ArrowRight size={14} strokeWidth={1.75} aria-hidden />
         </Link>
         {!result && (
-          <Button size="sm" variant="quiet" onClick={() => next()} icon={<RefreshCw size={14} aria-hidden />}>
+          <Button size="sm" variant="quiet" onClick={() => next()} icon={<RefreshCw size={14} strokeWidth={1.75} aria-hidden />}>
             Skip
           </Button>
         )}

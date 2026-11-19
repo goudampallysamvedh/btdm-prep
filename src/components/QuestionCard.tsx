@@ -1,8 +1,10 @@
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
+import { motion } from 'motion/react'
 import { Check, Flag, X } from 'lucide-react'
 import type { Question } from '@/types'
 import { areaName } from '@/data/areas'
 import { TOPIC_BY_ID } from '@/data/topics'
+import { prefersReducedMotion } from '@/lib/motion'
 import { cx, Tag } from './ui'
 
 const LETTERS = ['A', 'B', 'C', 'D']
@@ -31,7 +33,6 @@ export function QuestionCard({
   number?: number
   total?: number
 }) {
-  const stemRef = useRef<HTMLParagraphElement>(null)
   useEffect(() => {
     // Keyboard: 1-4 or A-D picks an answer.
     if (!onChoose || (reveal && chosen !== null)) return
@@ -51,14 +52,16 @@ export function QuestionCard({
 
   const locked = reveal && chosen !== null
   const topic = TOPIC_BY_ID[q.topic]
+  const correct = chosen === q.answer
+  const still = prefersReducedMotion()
 
   return (
-    <article className="card grid gap-4 p-4 sm:p-6 animate-rise" aria-labelledby={`stem-${q.id}`}>
-      <div className="flex flex-wrap items-center gap-2">
+    <article className="card grid gap-5 p-5 sm:p-8 animate-rise" aria-labelledby={`stem-${q.id}`}>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         {number !== undefined && (
-          <span className="num text-sm font-bold text-muted">
+          <span className="num text-sm font-medium text-ink-2">
             Q{number}
-            {total ? <span className="font-normal"> / {total}</span> : null}
+            {total ? <span className="font-normal text-muted"> / {total}</span> : null}
           </span>
         )}
         <Tag>{q.pi}</Tag>
@@ -70,18 +73,18 @@ export function QuestionCard({
             onClick={onFlag}
             aria-pressed={!!flagged}
             className={cx(
-              'ml-auto inline-flex min-h-9 items-center gap-1.5 rounded-lg px-2.5 text-sm font-bold',
-              flagged ? 'bg-warn-bg text-warn' : 'text-muted hover:bg-paper-2',
+              'ml-auto inline-flex min-h-11 items-center gap-1.5 rounded-full px-3.5 text-sm font-medium transition-colors',
+              flagged ? 'bg-warn-bg text-warn' : 'text-muted hover:bg-paper-2 hover:text-ink',
             )}
           >
-            <Flag size={16} aria-hidden /> {flagged ? 'Flagged' : 'Flag'}
+            <Flag size={16} strokeWidth={1.75} aria-hidden /> {flagged ? 'Flagged' : 'Flag'}
           </button>
         )}
       </div>
-      <p id={`stem-${q.id}`} ref={stemRef} className="text-[1.08rem] font-bold leading-snug sm:text-lg">
+      <p id={`stem-${q.id}`} className="text-[1.3rem] font-medium leading-snug sm:text-[1.5rem]">
         {q.stem}
       </p>
-      <div className="grid gap-2" role="radiogroup" aria-label="Answer choices">
+      <div className="grid gap-2.5" role="radiogroup" aria-label="Answer choices">
         {order.map((orig, i) => {
           const isChosen = chosen === orig
           const isRight = orig === q.answer
@@ -95,23 +98,38 @@ export function QuestionCard({
               disabled={locked || !onChoose}
               onClick={() => onChoose?.(orig)}
               className={cx(
-                'flex min-h-12 items-start gap-3 rounded-xl border px-3.5 py-3 text-left transition-colors',
-                state === 'idle' && 'border-line bg-card hover:border-accent',
-                state === 'chosen' && 'border-accent bg-accent-soft',
+                'flex min-h-14 w-full items-start gap-3.5 rounded-2xl border px-4 py-3.5 text-left text-[1.02rem] leading-snug transition-colors',
+                state === 'idle' && 'border-line bg-paper',
+                state === 'idle' && !locked && onChoose && 'hover:border-ink',
+                state === 'idle' && locked && 'text-muted',
+                state === 'chosen' && 'border-ink bg-paper',
                 state === 'right' && 'border-good bg-good-bg',
                 state === 'wrong' && 'border-bad bg-bad-bg animate-shake',
-                state === 'right' && isChosen && 'animate-pop',
                 locked && 'cursor-default',
               )}
             >
               <span
                 className={cx(
-                  'num grid size-7 shrink-0 place-items-center rounded-lg text-sm font-bold',
-                  state === 'right' ? 'bg-good text-card' : state === 'wrong' ? 'bg-bad text-card' : state === 'chosen' ? 'bg-accent text-accent-ink' : 'bg-paper-2 text-muted',
+                  'num grid size-7 shrink-0 place-items-center rounded-md border text-sm font-medium',
+                  state === 'right' && 'border-good bg-good text-paper',
+                  state === 'wrong' && 'border-bad bg-bad text-paper',
+                  state === 'chosen' && 'border-ink bg-ink text-paper',
+                  state === 'idle' && 'border-line-2 text-muted',
                 )}
                 aria-hidden
               >
-                {state === 'right' ? <Check size={16} /> : state === 'wrong' ? <X size={16} /> : LETTERS[i]}
+                {state === 'right' || state === 'wrong' ? (
+                  <motion.span
+                    className="grid place-items-center"
+                    initial={still ? false : { scale: 0.3, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: 'spring', stiffness: 520, damping: 18 }}
+                  >
+                    {state === 'right' ? <Check size={16} strokeWidth={2.25} /> : <X size={16} strokeWidth={2.25} />}
+                  </motion.span>
+                ) : (
+                  LETTERS[i]
+                )}
               </span>
               <span className="pt-0.5">{q.options[orig]}</span>
               <span className="sr-only">
@@ -122,13 +140,16 @@ export function QuestionCard({
         })}
       </div>
       {locked && (
-        <div
+        <motion.div
           role="status"
-          className={cx('rounded-r-xl border-l-4 px-4 py-3 animate-rise', chosen === q.answer ? 'border-good bg-good-bg' : 'border-bad bg-bad-bg')}
+          initial={still ? false : { opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.25, ease: [0.2, 0.8, 0.2, 1] }}
+          className={cx('rounded-2xl px-4 py-3.5 leading-relaxed', correct ? 'bg-good-bg' : 'bg-bad-bg')}
         >
-          <b>{chosen === q.answer ? 'Correct. ' : 'Not quite. '}</b>
+          <span className={cx('font-semibold', correct ? 'text-good' : 'text-bad')}>{correct ? 'Correct. ' : 'Not quite. '}</span>
           {q.explanation}
-        </div>
+        </motion.div>
       )}
     </article>
   )

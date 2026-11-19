@@ -18,7 +18,8 @@ const PI_COUNTS = {
   tier2: PI_LIST.filter((p) => p.tier === 2).length,
 }
 import { Bar, Button, Disclosure, Empty, LinkButton, PageHeader, Segmented, Tag, cx, inputCls } from '@/components/ui'
-import { DAILY_GOAL, useTodayCount } from '@/lib/today'
+import { DailyGoal } from '@/components/DailyGoal'
+import { DAILY_GOAL } from '@/lib/today'
 
 type Deck = 'all' | 'kit' | 'merch' | 'trends' | 'pi'
 type PIFilter = 'all' | 'exam' | 'case' | 'tier2'
@@ -37,7 +38,6 @@ function FlashcardsInner() {
   const leitner = useStore((s) => s.leitner)
   const topic = params.get('topic') ?? ''
   const daily = params.get('daily') === '1'
-  const todayCards = useTodayCount('cards')
   const [deck, setDeck] = useState<Deck>((params.get('deck') as Deck) ?? 'all')
   const [area, setArea] = useState<AreaCode | ''>((params.get('area') as AreaCode) ?? '')
   const [mode, setMode] = useState<'study' | 'browse'>('study')
@@ -78,14 +78,9 @@ function FlashcardsInner() {
   return (
     <>
       <PageHeader title="Flashcards">Swipe right if you knew it, left if not. Cards you know come back less often.</PageHeader>
-      {daily && (
-        <div className="mb-3 flex items-center gap-3 rounded-xl bg-accent-soft px-4 py-3 text-sm">
-          <span className="font-bold">Today's goal: {Math.min(todayCards, DAILY_GOAL.cards)} of {DAILY_GOAL.cards} cards</span>
-          <Bar value={todayCards / DAILY_GOAL.cards} tone={todayCards >= DAILY_GOAL.cards ? 'good' : 'accent'} label="Today's flashcard goal" />
-        </div>
-      )}
+      <DailyGoal kind="cards" />
 
-      <div className="mb-4 grid gap-3">
+      <div className="mb-6 grid gap-4">
         <div className="scroll-x -mx-1 px-1">
           <Segmented<Deck>
             label="Deck"
@@ -116,20 +111,20 @@ function FlashcardsInner() {
         )}
         {topic && (
           <div className="flex items-center gap-2 text-sm">
-            Topic: <b>{TOPIC_BY_ID[topic]?.name ?? topic}</b>
+            Topic: <span className="font-semibold">{TOPIC_BY_ID[topic]?.name ?? topic}</span>
             <Button size="sm" variant="quiet" onClick={() => { params.delete('topic'); setParams(params) }}>
               Clear
             </Button>
           </div>
         )}
         <div className="flex items-center gap-3 text-sm">
-          <Bar value={filtered.length ? mastered / filtered.length : 0} tone="good" label="Cards mastered (box 4+)" />
+          <Bar value={filtered.length ? mastered / filtered.length : 0} label="Cards mastered (box 4+)" />
           <span className="num shrink-0 text-muted">{mastered}/{filtered.length} mastered</span>
         </div>
         <Disclosure title="More options" hint={area ? `Area: ${areaName(area)}` : mode === 'browse' ? 'Browsing all cards' : 'Filter by area, browse all, see your boxes'}>
           <div className="grid gap-4">
             <label className="grid gap-1 text-sm">
-              <span className="font-bold">Area</span>
+              <span className="font-medium">Area</span>
               <select className={inputCls} value={area} onChange={(e) => setArea(e.target.value as AreaCode | '')}>
                 <option value="">All areas</option>
                 {AREAS.filter((a) => FLASHCARDS.some((c) => c.area === a.code)).map((a) => (
@@ -140,22 +135,22 @@ function FlashcardsInner() {
               </select>
             </label>
             <div className="grid gap-1 text-sm">
-              <span className="font-bold">Which cards</span>
+              <span className="font-medium">Which cards</span>
               <Segmented label="Mode" value={mode} onChange={setMode} options={[{ value: 'study', label: 'Due & new' }, { value: 'browse', label: 'Browse all' }]} />
             </div>
             <div className="grid gap-1 text-sm">
-              <span className="font-bold">Your boxes</span>
+              <span className="font-medium">Your boxes</span>
               <div className="grid grid-cols-5 gap-2" aria-label="Cards in each Leitner box">
                 {boxCounts.map((n, i) => (
-                  <div key={i} className="rounded-xl bg-paper-2 px-2 py-1.5 text-center">
-                    <div className="num text-lg font-bold">{n}</div>
+                  <div key={i} className="rounded-2xl border border-line bg-paper px-2 py-2 text-center">
+                    <div className="num text-xl">{n}</div>
                     <div className="text-[0.68rem] leading-tight text-muted">Box {i + 1}<br />{i > 0 ? `${BOX_DAYS[i + 1]}d` : 'today'}</div>
                   </div>
                 ))}
               </div>
               <span className="text-xs text-muted">Box 1 cards come back today; box 5 cards come back in 14 days.</span>
             </div>
-            {deck === 'pi' && <Link to="/learn/pis" className="text-sm font-bold">Open the PI guide to read all 450 →</Link>}
+            {deck === 'pi' && <Link to="/learn/pis" className="text-sm font-medium text-ink">Open the PI guide to read all 450 →</Link>}
           </div>
         </Disclosure>
       </div>
@@ -243,11 +238,11 @@ function Session({ queue: initial, mode, daily, onRestart, filteredCount }: { qu
   if (!card) {
     return (
       <Empty
-        title={daily && done.known + done.again ? 'Done for today!' : done.known + done.again ? 'Session complete' : filteredCount ? 'Nothing due right now' : 'No cards match'}
+        title={daily && done.known + done.again ? 'Done for today' : done.known + done.again ? 'Session complete' : filteredCount ? 'Nothing due right now' : 'No cards match'}
         action={
           <div className="flex flex-wrap justify-center gap-2">
             {daily && <LinkButton to="/">Back to today's plan</LinkButton>}
-            <Button variant={daily ? 'ghost' : 'primary'} onClick={onRestart} icon={<RotateCcw size={16} aria-hidden />}>
+            <Button variant={daily ? 'ghost' : 'primary'} onClick={onRestart} icon={<RotateCcw size={16} strokeWidth={1.75} aria-hidden />}>
               {done.known + done.again ? (daily ? 'Keep going (optional)' : 'Study 20 more') : 'Check again'}
             </Button>
           </div>
@@ -285,20 +280,20 @@ function Session({ queue: initial, mode, daily, onRestart, filteredCount }: { qu
   }
 
   return (
-    <div className="mx-auto grid max-w-xl justify-items-center gap-4">
+    <div className="mx-auto grid max-w-2xl justify-items-center gap-5">
       <div className="flex w-full items-center justify-between text-sm text-muted">
-        <span className="num">{queue.length} left · {done.known} ✓ · {done.again} ↺</span>
-        <Button size="sm" variant="quiet" onClick={undo} disabled={!history.length} icon={<Undo2 size={16} aria-hidden />}>
+        <span className="num">{queue.length} left · {done.known} known · {done.again} still learning</span>
+        <Button size="sm" variant="quiet" onClick={undo} disabled={!history.length} icon={<Undo2 size={16} strokeWidth={1.75} aria-hidden />}>
           Undo
         </Button>
       </div>
 
       {/* Clip sideways motion at the screen edge so a swipe never makes the page scroll. */}
       <div className="-mx-4 w-[calc(100%+2rem)] overflow-x-clip px-4">
-      <div className="relative w-full" style={{ perspective: 1200 }}>
+      <div className="relative w-full" style={{ perspective: 1400 }}>
         {/* Swipe hints */}
-        <div aria-hidden className={cx('pointer-events-none absolute -left-1 top-1/2 z-10 -translate-y-1/2 rounded-full bg-bad px-3 py-1 text-sm font-bold text-card transition-opacity', drag < -30 ? 'opacity-100' : 'opacity-0')}>Still learning</div>
-        <div aria-hidden className={cx('pointer-events-none absolute -right-1 top-1/2 z-10 -translate-y-1/2 rounded-full bg-good px-3 py-1 text-sm font-bold text-card transition-opacity', drag > 30 ? 'opacity-100' : 'opacity-0')}>Got it</div>
+        <div aria-hidden className={cx('pointer-events-none absolute -left-1 top-1/2 z-10 -translate-y-1/2 rounded-full bg-ink px-3 py-1 text-sm font-semibold text-paper transition-opacity', drag < -30 ? 'opacity-100' : 'opacity-0')}>Still learning</div>
+        <div aria-hidden className={cx('pointer-events-none absolute -right-1 top-1/2 z-10 -translate-y-1/2 rounded-full bg-ink px-3 py-1 text-sm font-semibold text-paper transition-opacity', drag > 30 ? 'opacity-100' : 'opacity-0')}>Got it</div>
         <button
           key={`${card.id}-${history.length}`}
           type="button"
@@ -309,7 +304,7 @@ function Session({ queue: initial, mode, daily, onRestart, filteredCount }: { qu
           onPointerCancel={() => { start.current = null; setDrag(0) }}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); setFlipped((f) => !f) } }}
           aria-label={flipped ? `Definition: ${card.back}. Press space to flip back.` : `Term: ${card.front}. Press space to flip.`}
-          className="animate-deal relative block h-[clamp(260px,62vw,360px)] w-full touch-pan-y select-none text-left"
+          className="animate-deal relative block h-[clamp(300px,70vw,420px)] w-full touch-pan-y select-none text-left"
           style={{
             transform: leaving ? `translateX(${leaving === 'right' ? 110 : -110}%) rotate(${leaving === 'right' ? 10 : -10}deg)` : `translateX(${drag}px) rotate(${drag / 25}deg)`,
             opacity: leaving ? 0 : 1,
@@ -317,19 +312,16 @@ function Session({ queue: initial, mode, daily, onRestart, filteredCount }: { qu
           }}
         >
           <div
-            className="relative h-full w-full transition-transform duration-500"
+            className="relative h-full w-full transition-transform duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)]"
             style={{ transformStyle: 'preserve-3d', transform: flipped ? 'rotateY(180deg)' : 'none' }}
           >
             <Face>
               <div className="flex w-full items-center justify-between gap-2">
                 <Tag>{card.area}</Tag>
-                <span className="text-xs text-muted">{box ? `Box ${box}` : 'New'}</span>
+                <span className="num text-xs text-muted">{box ? `Box ${box}` : 'New'}</span>
               </div>
               <div className="grid flex-1 place-items-center px-2 text-center">
-                <span
-                  className={cx('font-display font-extrabold leading-tight', card.front.length > 48 ? 'text-[clamp(1.15rem,4.6vw,1.6rem)]' : 'text-[clamp(1.6rem,6vw,2.3rem)]')}
-                  style={{ fontStretch: '108%' }}
-                >
+                <span className={cx('font-display font-normal leading-[1.08] tracking-[-0.01em]', card.front.length > 48 ? 'text-[clamp(1.5rem,5.5vw,2.1rem)]' : 'text-[clamp(2.25rem,8vw,3.5rem)]')}>
                   {card.front}
                 </span>
               </div>
@@ -337,13 +329,13 @@ function Session({ queue: initial, mode, daily, onRestart, filteredCount }: { qu
             </Face>
             <Face back>
               <div className="flex w-full items-center justify-between gap-2">
-                <span className="text-sm font-bold">{card.deck === 'pi' ? card.front.slice(0, 6) : card.front}</span>
+                <span className="num text-sm font-semibold">{card.deck === 'pi' ? card.front.slice(0, 6) : card.front}</span>
                 <span className="text-xs text-muted">{TOPIC_BY_ID[card.topic]?.name}</span>
               </div>
               <div className="grid min-h-0 flex-1 place-items-center overflow-y-auto px-2 text-center">
-                <span className="grid gap-2">
-                  <span className={cx('leading-relaxed', card.back.length > 140 || card.extra ? 'text-[1rem] sm:text-lg' : 'text-[1.1rem] sm:text-xl')}>{card.back}</span>
-                  {card.extra && <span className="text-sm italic text-ink-2">In a case: {card.extra}</span>}
+                <span className="grid gap-3">
+                  <span className={cx('leading-relaxed', card.back.length > 140 || card.extra ? 'text-[1rem] sm:text-lg' : 'text-[1.15rem] sm:text-xl')}>{card.back}</span>
+                  {card.extra && <span className="text-sm text-ink-2">In a case: {card.extra}</span>}
                 </span>
               </div>
               <span className="text-xs text-muted">Swipe or use the buttons</span>
@@ -354,10 +346,10 @@ function Session({ queue: initial, mode, daily, onRestart, filteredCount }: { qu
       </div>
 
       <div className="grid w-full grid-cols-2 gap-3">
-        <Button variant="danger" size="lg" onClick={() => decide(false)} icon={<X size={20} aria-hidden />}>
+        <Button variant="ghost" size="lg" onClick={() => decide(false)} icon={<X size={18} strokeWidth={1.75} aria-hidden />}>
           Still learning
         </Button>
-        <Button size="lg" onClick={() => decide(true)} icon={<Check size={20} aria-hidden />} className="!bg-good !border-good !text-card">
+        <Button size="lg" onClick={() => decide(true)} icon={<Check size={18} strokeWidth={1.75} aria-hidden />}>
           Got it
         </Button>
       </div>
@@ -366,10 +358,11 @@ function Session({ queue: initial, mode, daily, onRestart, filteredCount }: { qu
   )
 }
 
+/** The one white card on the tonal ground: paper with a hairline. */
 function Face({ children, back = false }: { children: React.ReactNode; back?: boolean }) {
   return (
     <div
-      className={cx('card absolute inset-0 flex flex-col items-center gap-3 p-5', back && 'bg-paper-2')}
+      className="absolute inset-0 flex flex-col items-center gap-3 rounded-[22px] border border-line bg-paper p-5 sm:p-7"
       style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', transform: back ? 'rotateY(180deg)' : undefined }}
     >
       {children}

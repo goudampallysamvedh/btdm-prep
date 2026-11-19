@@ -9,10 +9,10 @@
  * your own devices merge your progress, and everyone keeps your partner's progress combined
  * from all of their devices, so every device shows the latest for both of you.
  */
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { create } from 'zustand'
 import { compressToUint8Array, decompressFromUint8Array } from 'lz-string'
-import { emptyProgress, useHydrated, useStore, type PartnerSummary, type ProgressData } from './store'
+import { DATA_KEYS, emptyProgress, useHydrated, useStore, type PartnerSummary, type ProgressData } from './store'
 
 export const RELAY = 'https://ntfy.sh'
 const LINK_PREFIX = 'STL1.'
@@ -115,16 +115,49 @@ export const useLiveStatus = create<{ state: LiveState; lastSent: number; lastHe
 
 const isRealName = (n?: string) => !!n && !/^Partner [AB]$/.test(n.trim())
 const nameOf = (s: Pick<ProgressData, 'settings'>) => (s.settings?.me === 'B' ? s.settings?.partnerB : s.settings?.partnerA)?.trim() ?? ''
+const partnerNameOf = (s: Pick<ProgressData, 'settings'>) => (s.settings?.me === 'B' ? s.settings?.partnerA : s.settings?.partnerB)?.trim() ?? ''
+const same = (a: string, b: string) => isRealName(a) && isRealName(b) && a.toLowerCase() === b.toLowerCase()
 
 /**
- * Whose progress is this: yours or your partner's? Names decide when both are set (so a device
- * that picked the wrong slot can't make you your own partner); otherwise the slot letter does.
+ * Whose progress is this: yours or your partner's? Your name, or your partner's, decides when it
+ * matches (so a device that picked the wrong slot can't make you your own partner); otherwise the
+ * slot letter does (so renaming yourself on one device doesn't turn you into your partner on the others).
  */
 export function isMine(sender: Pick<ProgressData, 'settings'>, senderSlot: 'A' | 'B', me: Pick<ProgressData, 'settings'>): boolean {
-  const a = nameOf(sender)
-  const b = nameOf(me)
-  if (isRealName(a) && isRealName(b)) return a.toLowerCase() === b.toLowerCase()
+  const name = nameOf(sender)
+  if (same(name, nameOf(me))) return true
+  if (same(name, partnerNameOf(me))) return false
   return senderSlot === me.settings.me
+}
+
+/**
+ * Join a live link on this device as person A or B. Takes the link's names, so A and B mean the
+ * same people on every device, and drops partner data from any other link (the new link refills it).
+ */
+export function joinLink(info: LinkInfo, me: 'A' | 'B'): string {
+  const st = useStore.getState()
+  const partnerA = isRealName(info.a) ? info.a.trim() : st.settings.partnerA
+  const partnerB = isRealName(info.b) ? info.b.trim() : st.settings.partnerB
+  const renamed = partnerA !== st.settings.partnerA || partnerB !== st.settings.partnerB
+  const sameLink = st.live?.key === info.key
+  st.replaceAll({
+    live: { key: info.key, linkedAt: Date.now() },
+    settings: { ...st.settings, partnerA, partnerB, me, ...(renamed ? { updatedAt: Date.now() } : {}) },
+    ...(sameLink ? {} : { partner: null, partnerData: null }),
+  })
+  useLiveStatus.setState({ slotClash: null })
+  dropSelfAsPartner()
+  return me === 'A' ? partnerA : partnerB
+}
+
+/** Runs tasks one at a time, in order. A task that fails never blocks the ones after it. */
+export function makeQueue() {
+  let tail: Promise<unknown> = Promise.resolve()
+  return <T>(task: () => Promise<T>): Promise<T | undefined> => {
+    const next = tail.then(task).catch(() => undefined)
+    tail = next
+    return next
+  }
 }
 
 /** Clear "partner" data that is really your own (left over from a slot mix-up). */
@@ -206,7 +239,7 @@ export function acceptSummary(msg: LiveMessage) {
 /** Merge a received progress update into the right person: you (another of your devices) or your partner. */
 export async function acceptState(msg: StateMessage, self = deviceId()) {
   if (msg.device === self) return
-  const { dataChanged, mergeBackup, mergeData, ownerName, partnerSummary, pickData } = await import('./share')
+  const { dataChanged, mergeBackup, mergeData, ownerName, partnerSummary, pickData, stableJson } = await import('./share')
   const st = useStore.getState()
   if (isMine(msg.data, msg.me, st)) {
     // Your name in the other slot: one of your devices picked the wrong person. Flag it so it can be fixed.
@@ -219,10 +252,11 @@ export async function acceptState(msg: StateMessage, self = deviceId()) {
     if (dataChanged(pickData(st), progress) || progress.settings) st.replaceAll(progress)
     return
   }
-  // A different person than the partner saved here replaces them instead of being merged in.
+  // A different person than the partner saved here replaces them instead of being merged in. Same
+  // slot or same name is the same person (a partner who renamed themselves keeps their progress).
   const oldName = st.partnerData ? nameOf(st.partnerData) : ''
   const newName = nameOf(msg.data)
-  const samePerson = !(isRealName(oldName) && isRealName(newName) && oldName.toLowerCase() !== newName.toLowerCase())
+  const samePerson = st.partnerData?.settings?.me === msg.me || !(isRealName(oldName) && isRealName(newName) && oldName.toLowerCase() !== newName.toLowerCase())
   const merged = st.partnerData && samePerson ? mergeData(st.partnerData, msg.data) : pickData({ ...emptyProgress, ...msg.data })
   const summary = { ...partnerSummary({ ...emptyProgress, ...merged }, ownerName(merged)), at: Math.max(msg.sentAt, st.partner?.at ?? 0) }
   // Case plans and case scores belong to the team: take the partner's newer plans and any new scores.
@@ -230,12 +264,12 @@ export async function acceptState(msg: StateMessage, self = deviceId()) {
   for (const plan of Object.values(msg.data.casePlans ?? {})) if (!casePlans[plan.caseId] || plan.updatedAt > casePlans[plan.caseId].updatedAt) casePlans[plan.caseId] = plan
   const known = new Set(st.caseAttempts.map((a) => a.id))
   const caseAttempts = [...st.caseAttempts, ...(msg.data.caseAttempts ?? []).filter((a) => !known.has(a.id))]
-  const same =
-    JSON.stringify(merged) === JSON.stringify(st.partnerData) &&
+  const unchanged =
+    stableJson(merged) === stableJson(st.partnerData) &&
     caseAttempts.length === st.caseAttempts.length &&
-    JSON.stringify(casePlans) === JSON.stringify(st.casePlans) &&
-    JSON.stringify({ ...summary, at: 0 }) === JSON.stringify({ ...st.partner, at: 0 })
-  if (!same) st.replaceAll({ partnerData: merged, partner: summary, casePlans, caseAttempts })
+    stableJson(casePlans) === stableJson(st.casePlans) &&
+    stableJson({ ...summary, at: 0 }) === stableJson({ ...st.partner, at: 0 })
+  if (!unchanged) st.replaceAll({ partnerData: merged, partner: summary, casePlans, caseAttempts })
   useLiveStatus.setState({ lastHeard: Date.now() })
 }
 
@@ -248,21 +282,29 @@ export async function vaultId(secret: string, who: 'A' | 'B'): Promise<string> {
   return 'st-' + hex(await sha256(`vault:${secret}:${who}`)).slice(0, 40)
 }
 
-async function readVault(key: CryptoKey, id: string): Promise<StateMessage | null> {
+/** The saved copy; null when it's empty or unreadable, undefined when it couldn't be fetched (offline, server error). */
+async function readVault(key: CryptoKey, id: string): Promise<StateMessage | null | undefined> {
+  let text: string
   try {
     const r = await fetch(`${VAULT}/${id}`, { cache: 'no-store' })
-    if (!r.ok) return null
-    const text = (await r.text()).trim()
+    if (r.status === 404) return null
+    if (!r.ok) return undefined
+    text = (await r.text()).trim()
+  } catch {
+    return undefined
+  }
+  try {
     return text ? await unpackState(key, unb64url(text)) : null
   } catch {
-    return null
+    return null // not ours (garbage): safe to overwrite
   }
 }
 
 async function writeVault(key: CryptoKey, id: string, msg: StateMessage): Promise<boolean> {
   try {
     const body = b64url(await packState(key, msg))
-    const r = await fetch(`${VAULT}/${id}`, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body })
+    // keepalive lets the save finish while the app is closing (browsers allow it only for small bodies).
+    const r = await fetch(`${VAULT}/${id}`, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body, keepalive: body.length < 60_000 })
     return r.ok
   } catch {
     return false
@@ -278,24 +320,28 @@ export async function resetVault(secret: string, who: 'A' | 'B'): Promise<void> 
   }
 }
 
-/** Progress without per-device settings (theme, motion), for comparing copies. */
-const progressSig = (d: ProgressData) => JSON.stringify({ ...d, settings: { a: d.settings?.partnerA, b: d.settings?.partnerB, date: d.settings?.competitionDate, at: d.settings?.updatedAt } })
-
 /**
  * Make this device and both shared copies identical: read your copy and your partner's,
  * merge them in, then save your copy back if this device had anything it was missing.
+ * The copy is last-write-wins, so after saving it reads it back: if another of your devices
+ * saved in between, it merges that and saves again. It never saves over a copy it couldn't read.
  */
 export async function syncVault(secret: string, key: CryptoKey): Promise<void> {
   const me = useStore.getState().settings.me
   const other = me === 'A' ? 'B' : 'A'
   const [myId, theirId] = await Promise.all([vaultId(secret, me), vaultId(secret, other)])
-  const [mine, theirs] = await Promise.all([readVault(key, myId), readVault(key, theirId)])
-  if (mine) await acceptState({ ...mine, me, device: 'vault' })
+  let [mine, theirs] = await Promise.all([readVault(key, myId), readVault(key, theirId)])
   if (theirs) await acceptState({ ...theirs, me: other, device: 'vault' })
-  const { pickData } = await import('./share')
-  const data = pickData(useStore.getState())
-  if (!mine || progressSig(mine.data) !== progressSig(data)) {
-    if (await writeVault(key, myId, { v: 2, me, device: deviceId(), sentAt: Date.now(), data })) useLiveStatus.setState({ lastSent: Date.now() })
+  const { pickData, stableJson } = await import('./share')
+  // Progress without per-device settings (theme, motion), for comparing copies.
+  const sig = (d: ProgressData) => stableJson({ ...d, settings: { a: d.settings?.partnerA, b: d.settings?.partnerB, date: d.settings?.competitionDate, at: d.settings?.updatedAt } })
+  for (let round = 0; round < 3 && mine !== undefined; round++) {
+    if (mine) await acceptState({ ...mine, me, device: 'vault' })
+    const data = pickData(useStore.getState())
+    if (mine && sig(mine.data) === sig(data)) return
+    if (!(await writeVault(key, myId, { v: 2, me, device: deviceId(), sentAt: Date.now(), data }))) return
+    useLiveStatus.setState({ lastSent: Date.now() })
+    mine = await readVault(key, myId)
   }
 }
 
@@ -315,125 +361,154 @@ interface RelayMessage {
 
 /**
  * Keeps every device identical: on open it merges both shared copies, then listens for live
- * updates, re-checks every minute, and saves this device's progress whenever it changes.
+ * updates, re-checks every minute and when back online, and saves this device's progress
+ * whenever it changes (and right away when the app is put away).
  */
 export function useLiveSync() {
   const hydrated = useHydrated()
   const secret = useStore((s) => s.live?.key)
-  const chan = useRef<Channel | null>(null)
-  const lastSent = useRef('')
-  const queue = useRef<Promise<void>>(Promise.resolve())
 
-  // Listen.
   useEffect(() => {
     if (hydrated) dropSelfAsPartner()
     if (!hydrated || !secret) {
       useLiveStatus.setState({ state: 'off' })
       return
     }
-    let es: EventSource | null = null
+    // Everything below belongs to this one link. After switching links (or unlinking) it stops,
+    // so nothing from the old link is merged in and nothing is saved to it.
     let stopped = false
-    useLiveStatus.setState({ state: 'connecting' })
-    ;(async () => {
-      const ch = await channelFor(secret)
-      chan.current = ch
-      dropSelfAsPartner()
-      // Catch up from the shared copies first (they never expire), then today's live updates.
-      await (queue.current = queue.current.then(() => syncVault(secret, ch.key)))
-      await refreshPartner()
-      const handle = async (m: RelayMessage) => {
-        if (m.event !== 'message') return
-        if (m.attachment?.url) {
-          try {
-            const r = await fetch(m.attachment.url)
-            if (!r.ok) return // expired (files last about 3 hours)
-            const msg = await unpackState(ch.key, new Uint8Array(await r.arrayBuffer()))
-            if (msg) await acceptState(msg)
-          } catch {
-            /* skip */
+    let ch: Channel | null = null
+    let es: EventSource | null = null
+    let down = false
+    let lastSent = ''
+    let sendTimer = 0
+    let retryTimer = 0
+    const run = makeQueue() // one merge at a time, so merges never race
+    const live = () => !stopped && !!ch && useStore.getState().live?.key === secret
+
+    const sync = () =>
+      run(async () => {
+        if (live()) await syncVault(secret, ch!.key)
+      })
+
+    // Save this device's progress to the shared copy, then tell the other devices.
+    const send = () =>
+      run(async () => {
+        if (!live()) return
+        const { pickData } = await import('./share')
+        const sig = JSON.stringify(pickData(useStore.getState()))
+        if (sig === lastSent) return
+        await syncVault(secret, ch!.key)
+        if (!live()) return
+        const st = useStore.getState()
+        try {
+          const body = await packState(ch!.key, { v: 2, me: st.settings.me, device: deviceId(), sentAt: Date.now(), data: pickData(st) })
+          const r = await fetch(`${RELAY}/${ch!.topic}`, { method: 'PUT', body, headers: { Filename: 'p.bin' }, keepalive: body.length < 60_000 })
+          if (r.ok) {
+            lastSent = sig
+            useLiveStatus.setState({ lastSent: Date.now() })
           }
-        } else if (m.message) {
-          const msg = await unseal(ch.key, m.message)
-          if (msg) acceptSummary(msg)
+        } catch {
+          /* offline: tried again when back online, on the next change, or on the next open */
+        }
+      })
+
+    const handle = async (m: RelayMessage) => {
+      if (!live() || m.event !== 'message') return
+      const key = ch!.key
+      if (m.attachment?.url) {
+        try {
+          const r = await fetch(m.attachment.url)
+          if (!r.ok) return // expired (files last about 3 hours)
+          const msg = await unpackState(key, new Uint8Array(await r.arrayBuffer()))
+          if (msg && live()) await acceptState(msg)
+        } catch {
+          /* skip */
+        }
+      } else if (m.message) {
+        const msg = await unseal(key, m.message)
+        if (msg && live()) acceptSummary(msg)
+      }
+    }
+    const enqueue = (line: string) => {
+      try {
+        const m = JSON.parse(line) as RelayMessage
+        void run(() => handle(m))
+      } catch {
+        /* not for us */
+      }
+    }
+
+    const listen = () => {
+      if (!live()) return
+      es?.close()
+      es = new EventSource(`${RELAY}/${ch!.topic}/sse`)
+      es.onopen = () => {
+        useLiveStatus.setState({ state: 'live' })
+        if (down) void sync() // catch up on anything sent while disconnected
+        down = false
+      }
+      es.onerror = () => {
+        down = true
+        useLiveStatus.setState({ state: navigator.onLine ? 'connecting' : 'offline' })
+        // The browser reconnects by itself unless the relay refused; then try again shortly.
+        if (es?.readyState === EventSource.CLOSED) {
+          window.clearTimeout(retryTimer)
+          retryTimer = window.setTimeout(listen, 15_000)
         }
       }
-      // Handle one message at a time so merges never race.
-      const enqueue = (m: RelayMessage) => (queue.current = queue.current.then(() => handle(m)))
+      es.onmessage = (e) => enqueue(String(e.data))
+    }
+
+    useLiveStatus.setState({ state: 'connecting' })
+    ;(async () => {
+      const c = await channelFor(secret)
+      if (stopped) return
+      ch = c
+      dropSelfAsPartner()
+      // Catch up from the shared copies first (they never expire), then today's live updates.
+      await sync()
+      await refreshPartner()
       try {
-        const r = await fetch(`${RELAY}/${ch.topic}/json?poll=1&since=12h`)
-        const lines = (await r.text()).split(/\r?\n/).filter((l) => l.trim())
-        for (const line of lines) await enqueue(JSON.parse(line) as RelayMessage)
+        const r = await fetch(`${RELAY}/${c.topic}/json?poll=1&since=12h`)
+        ;(await r.text()).split(/\r?\n/).filter((l) => l.trim()).forEach(enqueue)
       } catch {
         /* offline: keep what we have */
       }
-      if (stopped) return
-      es = new EventSource(`${RELAY}/${ch.topic}/sse`)
-      es.onopen = () => useLiveStatus.setState({ state: 'live' })
-      es.onerror = () => useLiveStatus.setState({ state: navigator.onLine ? 'connecting' : 'offline' })
-      es.onmessage = (e) => {
-        try {
-          void enqueue(JSON.parse(e.data) as RelayMessage)
-        } catch {
-          /* not for us */
-        }
-      }
-      // Send this device's progress once on open, so every other device catches up.
-      lastSent.current = ''
-      void send()
+      listen()
+      void send() // once on open, so every other device catches up
     })()
-    const resync = () => {
-      const ch = chan.current
-      if (ch && document.visibilityState === 'visible') queue.current = queue.current.then(() => syncVault(secret, ch.key))
+
+    // Any change to progress: save it after a short pause.
+    const unsubscribe = useStore.subscribe((s, prev) => {
+      if (!DATA_KEYS.some((k) => s[k] !== prev[k])) return
+      window.clearTimeout(sendTimer)
+      sendTimer = window.setTimeout(() => void send(), 5000)
+    })
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') return void sync()
+      window.clearTimeout(sendTimer) // the app is being put away: save now, not in 5 seconds
+      void send()
     }
-    const timer = window.setInterval(resync, 60_000)
-    document.addEventListener('visibilitychange', resync)
+    const onOnline = () => {
+      void sync()
+      void send()
+      if (!es || es.readyState === EventSource.CLOSED) listen()
+    }
+    const timer = window.setInterval(() => {
+      if (document.visibilityState === 'visible') void sync()
+    }, 60_000)
+    document.addEventListener('visibilitychange', onVisibility)
+    window.addEventListener('online', onOnline)
     return () => {
       stopped = true
       es?.close()
-      chan.current = null
       window.clearInterval(timer)
-      document.removeEventListener('visibilitychange', resync)
+      window.clearTimeout(sendTimer)
+      window.clearTimeout(retryTimer)
+      unsubscribe()
+      document.removeEventListener('visibilitychange', onVisibility)
+      window.removeEventListener('online', onOnline)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrated, secret])
-
-  // Send this device's progress when it changes (debounced, and only if it actually changed).
-  const send = async () => {
-    const st = useStore.getState()
-    const ch = chan.current
-    if (!ch || !st.live) return
-    const { pickData } = await import('./share')
-    const data = pickData(st)
-    const sig = JSON.stringify(data)
-    if (sig === lastSent.current) return
-    const secretNow = st.live.key
-    await (queue.current = queue.current.then(() => syncVault(secretNow, ch.key)))
-    try {
-      const body = await packState(ch.key, { v: 2, me: st.settings.me, device: deviceId(), sentAt: Date.now(), data })
-      const r = await fetch(`${RELAY}/${ch.topic}`, { method: 'PUT', body, headers: { Filename: 'p.bin' } })
-      if (r.ok) {
-        lastSent.current = sig
-        useLiveStatus.setState({ lastSent: Date.now() })
-      }
-    } catch {
-      /* offline: the next change or app open will try again */
-    }
-  }
-  const tests = useStore((s) => s.tests)
-  const leitner = useStore((s) => s.leitner)
-  const planDone = useStore((s) => s.planDone)
-  const activity = useStore((s) => s.activity)
-  const daily = useStore((s) => s.daily)
-  const lessonsDone = useStore((s) => s.lessonsDone)
-  const trendsRead = useStore((s) => s.trendsRead)
-  const caseAttempts = useStore((s) => s.caseAttempts)
-  const casePlans = useStore((s) => s.casePlans)
-  const mathStats = useStore((s) => s.mathStats)
-  const settings = useStore((s) => s.settings)
-  useEffect(() => {
-    if (!hydrated || !secret) return
-    const t = window.setTimeout(() => void send(), 5000)
-    return () => window.clearTimeout(t)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hydrated, secret, tests, leitner, planDone, activity, daily, lessonsDone, trendsRead, caseAttempts, casePlans, mathStats, settings])
 }

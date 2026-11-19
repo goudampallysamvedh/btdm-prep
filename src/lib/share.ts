@@ -156,12 +156,18 @@ export function mergePartner(s: ProgressState, p: PartnerPackage): MergeResult {
   // A code from someone other than the partner shown here (or a partner that is really you) replaces
   // the partner completely, so a mix-up is undone instead of merged.
   const replace = !isSelf && (!s.partner || s.partner.name !== p.summary.name || s.partner.name === meName)
+  // An older code from the same partner (e.g. pasted after live updates arrived) must not roll their progress back.
+  const stale = !isSelf && !replace && !!s.partner && p.summary.at < s.partner.at
   return {
-    state: { casePlans: plans, caseAttempts: attempts, ...(isSelf ? {} : { partner: p.summary }), ...(replace ? { partnerData: null } : {}) },
+    state: { casePlans: plans, caseAttempts: attempts, ...(isSelf || stale ? {} : { partner: p.summary }), ...(replace ? { partnerData: null } : {}) },
     summary: [
       `${newer} case plan${newer === 1 ? '' : 's'} updated`,
       `${added} case attempt${added === 1 ? '' : 's'} added`,
-      isSelf ? 'This package came from you, so no partner exam data was saved.' : `${p.summary.name}'s exam estimate saved (${Math.round(p.summary.projected)}/100)`,
+      isSelf
+        ? 'This package came from you, so no partner exam data was saved.'
+        : stale
+          ? `This code is older than the ${p.summary.name} progress already here, so their newer progress was kept.`
+          : `${p.summary.name}'s exam estimate saved (${Math.round(p.summary.projected)}/100)`,
     ],
   }
 }
@@ -197,7 +203,11 @@ function isDefaultSettings(s: ProgressState): boolean {
  */
 export function mergeBackup(s: ProgressState, b: Backup): MergeResult {
   const d = b.data
-  const tests = unionById<TestRecord>(s.tests, d.tests ?? [])
+  // Deletions from either device win, so a deleted test, score, or card review never comes back.
+  const removed = { ...(d.removed ?? {}), ...(s.removed ?? {}) }
+  for (const [k, t] of Object.entries(d.removed ?? {})) removed[k] = Math.max(removed[k] ?? 0, t)
+  const alive = (kind: string) => (x: { id: string }) => !removed[`${kind}:${x.id}`]
+  const tests = unionById<TestRecord>(s.tests, d.tests ?? []).filter(alive('test'))
   const leitner: Record<string, LeitnerState> = { ...s.leitner }
   let cardsUpdated = 0
   for (const [id, st] of Object.entries(d.leitner ?? {})) {
@@ -206,6 +216,8 @@ export function mergeBackup(s: ProgressState, b: Backup): MergeResult {
       cardsUpdated++
     }
   }
+  // A card reset (or undone review) removes reviews made before it; later reviews stay.
+  for (const [id, st] of Object.entries(leitner)) if (removed[`card:${id}`] && removed[`card:${id}`] >= (st.last ?? 0)) delete leitner[id]
   const activity = { ...s.activity }
   for (const [k, n] of Object.entries(d.activity ?? {})) activity[k] = Math.max(activity[k] ?? 0, n)
   const daily: ProgressState['daily'] = { ...s.daily }
@@ -229,7 +241,9 @@ export function mergeBackup(s: ProgressState, b: Backup): MergeResult {
       ? { kind: st.kind, tried: Math.max(mine.tried, st.tried), correct: Math.max(mine.correct, st.correct), last: Math.max(mine.last ?? 0, st.last ?? 0) || undefined }
       : st
   }
-  const caseAttempts = unionById(s.caseAttempts, d.caseAttempts ?? [])
+  const caseAttempts = unionById(s.caseAttempts, d.caseAttempts ?? []).filter(alive('case'))
+  const judgeDrill = { ...s.judgeDrill }
+  for (const [k, n] of Object.entries(d.judgeDrill ?? {})) judgeDrill[k] = Math.max(judgeDrill[k] ?? 0, n)
   const partner = !s.partner || (d.partner && d.partner.at > s.partner.at) ? (d.partner ?? s.partner) : s.partner
   const takeSettings = isDefaultSettings(s) && !!d.settings
   // Your other device joins your live link too, as the same partner (A or B).
@@ -250,16 +264,18 @@ export function mergeBackup(s: ProgressState, b: Backup): MergeResult {
       planDone: { ...(d.planDone ?? {}), ...s.planDone },
       casePlans: plans,
       caseAttempts,
-      officialScores: unionById(s.officialScores ?? [], d.officialScores ?? []),
+      officialScores: unionById(s.officialScores ?? [], d.officialScores ?? []).filter(alive('official')),
       lessonsDone: { ...(d.lessonsDone ?? {}), ...s.lessonsDone },
       trendsRead: { ...(d.trendsRead ?? {}), ...s.trendsRead },
-      judgeDrill: { ...(d.judgeDrill ?? {}), ...s.judgeDrill },
+      judgeDrill,
+      removed,
       mathStats,
       partner,
       ...(takeSettings
         ? { settings: { ...defaultSettings, ...d.settings, theme: s.settings.theme, motion: s.settings.motion } }
         : takeLive
-          ? { settings: { ...s.settings, me: d.settings.me } }
+          ? // Take the names too, so A and B mean the same people on every device on the link.
+            { settings: { ...s.settings, ...sharedSettings(d.settings), me: d.settings.me } }
           : newerSettings
             ? { settings: { ...s.settings, ...sharedSettings(d.settings) } }
             : blanks
@@ -320,10 +336,22 @@ export function pickData(s: ProgressData): ProgressData {
 export function mergeData(a: ProgressData, b: ProgressData): ProgressData {
   const base: ProgressState = { ...emptyProgress, ...a }
   const r = mergeBackup(base, { app: APP_ID, kind: 'backup', v: FORMAT_VERSION, exportedAt: 0, data: { ...emptyProgress, ...b } })
-  return pickData({ ...base, ...r.state, settings: b.settings ?? a.settings })
+  // The most recently changed names win, whichever device's update arrives last.
+  const settings = !a.settings || (b.settings && (b.settings.updatedAt ?? 0) >= (a.settings.updatedAt ?? 0)) ? b.settings : a.settings
+  return pickData({ ...base, ...r.state, settings })
+}
+
+/** JSON that ignores key order and the order of items with ids, so two devices with the same progress compare equal. */
+export function stableJson(x: unknown): string {
+  const byId = (a: { id: string }, b: { id: string }) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)
+  return JSON.stringify(x, (_k, v: unknown) => {
+    if (Array.isArray(v)) return v.every((i) => i && typeof i === 'object' && typeof (i as { id?: unknown }).id === 'string') ? [...(v as { id: string }[])].sort(byId) : v
+    if (v && typeof v === 'object') return Object.fromEntries(Object.entries(v).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)))
+    return v
+  })
 }
 
 /** True when merging changed any progress (settings aside). */
 export function dataChanged(before: ProgressData, after: Partial<ProgressData>): boolean {
-  return DATA_KEYS.some((k) => k !== 'settings' && k in after && JSON.stringify(before[k]) !== JSON.stringify(after[k]))
+  return DATA_KEYS.some((k) => k !== 'settings' && k in after && stableJson(before[k]) !== stableJson(after[k]))
 }
