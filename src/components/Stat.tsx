@@ -7,7 +7,7 @@ export function Stat({ icon, value, unit, label, to }: { icon: ReactNode; value:
   const counted = useCountUp(typeof value === 'number' ? value : 0)
   const body = (
     <>
-      <span className="text-accent">{icon}</span>
+      <span className="grid size-8 place-items-center rounded-lg bg-accent-soft text-accent">{icon}</span>
       <span className="mt-1 flex items-baseline gap-0.5">
         <span className="num font-display text-[clamp(1.9rem,8vw,2.75rem)] font-extrabold leading-none">
           {typeof value === 'number' ? <><span aria-hidden>{counted}</span><span className="sr-only">{value}</span></> : value}

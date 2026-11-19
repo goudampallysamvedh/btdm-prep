@@ -9,6 +9,7 @@ import { AREAS, AREA_BY_CODE } from '@/data/areas'
 import { Bar, Card, Disclosure, LinkButton, Tag, cx, toneFor } from '@/components/ui'
 import { Confetti } from '@/components/Confetti'
 import { Stat } from '@/components/Stat'
+import { LevelCard } from '@/components/LevelCard'
 
 export default function Dashboard() {
   const settings = useStore((s) => s.settings)
@@ -88,12 +89,12 @@ export default function Dashboard() {
               <Link
                 to={s.to}
                 className={cx(
-                  'flex min-h-16 items-center gap-3 rounded-xl border px-3 py-2.5 text-ink no-underline transition-colors',
+                  'group lift flex min-h-16 items-center gap-3 rounded-xl border px-3 py-2.5 text-ink no-underline transition-colors active:scale-[0.99]',
                   s.done ? 'border-transparent bg-good-bg' : s === nextStep ? 'border-accent bg-accent-soft/60' : 'border-line hover:border-accent',
                 )}
               >
                 <span
-                  className={cx('num grid size-8 shrink-0 place-items-center rounded-full text-sm font-bold', s.done ? 'bg-good text-card' : s === nextStep ? 'bg-accent text-accent-ink' : 'bg-paper-2 text-muted')}
+                  className={cx('num grid size-8 shrink-0 place-items-center rounded-full text-sm font-bold', s.done ? 'bg-good text-card' : s === nextStep ? 'bg-accent text-accent-ink pulse-ring' : 'bg-paper-2 text-muted')}
                   aria-hidden
                 >
                   {s.done ? <Check size={16} className="animate-pop" /> : i + 1}
@@ -102,7 +103,7 @@ export default function Dashboard() {
                   <span className={cx('block font-bold', s.done && 'text-muted line-through')}>{s.title}</span>
                   <span className="block truncate text-sm text-muted">{s.progress && !s.done && s.progress.have > 0 ? `${s.progress.have} of ${s.progress.need} done` : s.sub}</span>
                 </span>
-                <ArrowRight size={18} className="shrink-0 text-muted" aria-hidden />
+                <ArrowRight size={18} className="shrink-0 text-muted transition-transform group-hover:translate-x-1 group-hover:text-accent" aria-hidden />
                 <span className="sr-only">{s.done ? '(done)' : ''}</span>
               </Link>
             </li>
@@ -120,6 +121,8 @@ export default function Dashboard() {
         )}
       </Card>
 
+      <LevelCard />
+
       <PartnerCard />
 
       <h2 className="mb-2 mt-6 text-lg">Your focus areas</h2>
@@ -127,13 +130,14 @@ export default function Dashboard() {
         {focus.map((r) => {
           const a = AREA_BY_CODE[r.area]
           return (
-            <Link key={r.area} to={`/exam/practice?mode=area&area=${a.code}&count=10`} className="flex min-h-14 items-center gap-3 rounded-xl px-2 py-2 text-ink no-underline hover:bg-paper-2">
+            <Link key={r.area} to={`/exam/practice?mode=area&area=${a.code}&count=10`} className="group flex min-h-14 items-center gap-3 rounded-xl px-2 py-2 text-ink no-underline transition-colors hover:bg-paper-2">
               <Tag>{a.code}</Tag>
               <span className="min-w-0 flex-1">
                 <span className="block truncate font-bold">{a.name}</span>
                 <span className="block truncate text-xs text-muted">{a.weight} exam questions · {r.answered ? `${Math.round(r.accuracy * 100)}% right` : 'not started'}</span>
+                <Bar value={r.answered ? r.accuracy : 0} tone={toneFor(r.accuracy)} className="mt-1.5 max-w-60" label={`${a.name} accuracy`} />
               </span>
-              <span className="text-sm font-bold text-accent">Practice</span>
+              <span className="inline-flex items-center gap-1 text-sm font-bold text-accent">Practice<ArrowRight size={15} className="transition-transform group-hover:translate-x-1" aria-hidden /></span>
             </Link>
           )
         })}

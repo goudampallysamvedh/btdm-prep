@@ -7,7 +7,7 @@ export function cx(...c: (string | false | null | undefined)[]): string {
 
 type Variant = 'primary' | 'ghost' | 'soft' | 'danger' | 'quiet'
 const variants: Record<Variant, string> = {
-  primary: 'bg-accent text-accent-ink border-accent hover:brightness-110 active:brightness-95',
+  primary: 'bg-accent text-accent-ink border-accent shadow-[0_8px_20px_-12px_var(--accent)] hover:brightness-110 hover:shadow-[0_10px_24px_-10px_var(--accent)] active:brightness-95',
   ghost: 'bg-transparent text-ink border-line-2 hover:border-accent hover:text-accent',
   soft: 'bg-accent-soft text-accent border-transparent hover:brightness-[0.98]',
   danger: 'bg-transparent text-bad border-bad/40 hover:bg-bad-bg',
@@ -63,7 +63,7 @@ export function LinkButton({
     <Link
       to={to}
       className={cx(
-        'inline-flex items-center justify-center gap-2 rounded-xl border font-bold no-underline transition-[filter,color,border-color,scale] duration-150 active:scale-[0.97] select-none',
+        'inline-flex items-center justify-center gap-2 rounded-xl border font-bold no-underline transition-[filter,color,border-color,scale,box-shadow] duration-150 active:scale-[0.97] select-none',
         size === 'sm' && 'min-h-9 px-3 text-sm',
         size === 'md' && 'min-h-11 px-4',
         size === 'lg' && 'min-h-13 px-6 text-lg',

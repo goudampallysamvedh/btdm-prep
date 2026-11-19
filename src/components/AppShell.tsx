@@ -6,6 +6,7 @@ import {
   Users,
 } from 'lucide-react'
 import { cx } from './ui'
+import { prefersReducedMotion } from '@/lib/motion'
 import { Logo } from './Logo'
 import { UpdatePrompt } from './UpdatePrompt'
 import { Helper, HelperButton } from './helper/Helper'
@@ -43,8 +44,8 @@ function SideLink({ to, label, icon: Icon, end }: { to: string; label: string; i
       end={end}
       className={({ isActive }) =>
         cx(
-          'flex min-h-9 items-center gap-3 rounded-xl px-3 text-[0.92rem] font-bold no-underline transition-colors',
-          isActive ? 'bg-ink text-paper' : 'text-ink-2 hover:bg-paper-2',
+          'side-link relative flex min-h-9 items-center gap-3 rounded-xl px-3 text-[0.92rem] font-bold no-underline transition-colors',
+          isActive ? 'bg-ink text-paper shadow-[0_8px_18px_-12px_var(--ink)] before:absolute before:-left-3 before:h-5 before:w-1 before:rounded-r before:bg-accent' : 'text-ink-2 hover:bg-paper-2',
         )
       }
     >
@@ -62,6 +63,10 @@ export function AppShell() {
   useEffect(() => {
     window.scrollTo({ top: 0 })
     mainRef.current?.focus({ preventScroll: true })
+    // Page enter: animate in place instead of remounting, so page state is untouched.
+    if (!prefersReducedMotion()) {
+      mainRef.current?.animate?.([{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }], { duration: 260, easing: 'cubic-bezier(.2,.8,.2,1)' })
+    }
   }, [loc.pathname])
 
   return (
