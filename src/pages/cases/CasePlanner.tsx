@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { CheckCircle2, Circle, Plus, Trash2 } from 'lucide-react'
 import type { CasePlan } from '@/types'
@@ -66,15 +66,15 @@ export function CasePlanner({ c, partnerA, partnerB }: { c: CaseStudy; partnerA:
 
   return (
     <div className="grid gap-4">
-      <Card className="grid gap-2">
+      <Card className="grid gap-3">
         <div className="flex items-center justify-between gap-2">
-          <h2 className="text-lg">Team checklist</h2>
-          <span className={cx('num text-sm font-bold', okCount === checks.length ? 'text-good' : 'text-muted')}>{okCount}/{checks.length}</span>
+          <h2 className="text-[0.95rem]">Team checklist</h2>
+          <span className={cx('num text-sm font-medium', okCount === checks.length ? 'text-good' : 'text-muted')}>{okCount} of {checks.length}</span>
         </div>
-        <ul className="grid gap-1.5">
+        <ul className="grid gap-2">
           {checks.map((x) => (
-            <li key={x.label} className={cx('flex items-start gap-2 text-sm', x.ok ? 'text-good' : 'text-ink-2')}>
-              {x.ok ? <CheckCircle2 size={18} className="mt-0.5 shrink-0" aria-label="done" /> : <Circle size={18} className="mt-0.5 shrink-0 text-muted" aria-label="not yet" />}
+            <li key={x.label} className={cx('flex items-start gap-2 text-sm', x.ok ? 'text-ink' : 'text-muted')}>
+              {x.ok ? <CheckCircle2 size={16} strokeWidth={1.75} className="mt-0.5 shrink-0 text-good" aria-label="done" /> : <Circle size={16} strokeWidth={1.75} className="mt-0.5 shrink-0 text-muted" aria-label="not yet" />}
               {x.label}
             </li>
           ))}
@@ -82,69 +82,65 @@ export function CasePlanner({ c, partnerA, partnerB }: { c: CaseStudy; partnerA:
         <p className="text-xs text-muted">Saved automatically on this device. Share it with your partner from Sync.</p>
       </Card>
 
-      <Card className="grid gap-2">
-        <label className="grid gap-1">
-          <span className="font-bold">Opener (both partners introduce themselves and the challenge)</span>
-          <textarea className={inputCls + ' min-h-20'} value={plan.opener} onChange={(e) => update({ opener: e.target.value })} placeholder={`"Good afternoon! I'm [name], the [role], and this is [name], the [role]. Thank you for meeting with us. You asked us to…"`} />
-        </label>
-      </Card>
+      <Card className="grid gap-6">
+        <Row id="plan-opener" label="Opener" hint="Both partners introduce themselves and the challenge.">
+          <textarea id="plan-opener" className={inputCls + ' min-h-20'} value={plan.opener} onChange={(e) => update({ opener: e.target.value })} placeholder={`"Good afternoon! I'm [name], the [role], and this is [name], the [role]. Thank you for meeting with us. You asked us to…"`} />
+        </Row>
 
-      <ol className="grid gap-3">
         {c.pis.map((p, i) => {
           const owner = plan.owners[i] ?? ''
           const next = c.pis[i + 1]
           const nextOwner = next ? plan.owners[i + 1] ?? '' : ''
           const switchNext = !!next && !!owner && !!nextOwner && nextOwner !== owner
           return (
-            <li key={p.code}>
-              <Card className={cx('grid gap-2 border-l-4', owner === 'A' ? 'border-l-accent' : owner === 'B' ? 'border-l-info' : 'border-l-line')}>
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="flex min-w-0 items-center gap-2">
-                    <span className="num text-sm font-bold text-muted">{i + 1}</span>
-                    <Tag>{p.code}</Tag>
-                    <span className="text-sm font-bold">{p.text}</span>
-                  </span>
-                  <Segmented<'A' | 'B' | ''> label={`Who presents ${p.code}`} value={owner} onChange={(v) => update({ owners: { ...plan.owners, [i]: v as 'A' | 'B' } })} options={[{ value: 'A', label: partnerA }, { value: 'B', label: partnerB }]} />
-                </div>
-                <textarea
-                  aria-label={`Talking points for ${p.code}`}
-                  className={inputCls + ' min-h-24'}
-                  value={plan.points[i] ?? ''}
-                  onChange={(e) => update({ points: { ...plan.points, [i]: e.target.value } })}
-                  placeholder="Define: … / Explain (why it matters here): … / Apply (specific recommendation, number, date): …"
-                />
-                {switchNext && (
-                  <label className="grid gap-1 rounded-xl bg-paper-2 p-2">
-                    <span className="text-xs font-bold">Handoff: {name(owner)} → {name(nextOwner)}</span>
-                    <input className={inputCls} value={plan.handoffs[i] ?? ''} onChange={(e) => update({ handoffs: { ...plan.handoffs, [i]: e.target.value } })} placeholder={`"…and that's how we'll position it. ${name(nextOwner)} will explain how we…"`} />
-                  </label>
-                )}
-              </Card>
-            </li>
+            <Row
+              key={p.code}
+              id={`plan-pi-${i}`}
+              border
+              label={<span className="flex items-center gap-2"><span className="num text-muted">{i + 1}</span><Tag>{p.code}</Tag></span>}
+              hint={p.text}
+            >
+              <Segmented<'A' | 'B' | ''> label={`Who presents ${p.code}`} value={owner} onChange={(v) => update({ owners: { ...plan.owners, [i]: v as 'A' | 'B' } })} options={[{ value: 'A', label: partnerA }, { value: 'B', label: partnerB }]} />
+              <textarea
+                id={`plan-pi-${i}`}
+                aria-label={`Talking points for ${p.code}`}
+                className={inputCls + ' min-h-24'}
+                value={plan.points[i] ?? ''}
+                onChange={(e) => update({ points: { ...plan.points, [i]: e.target.value } })}
+                placeholder="Define: … / Explain (why it matters here): … / Apply (specific recommendation, number, date): …"
+              />
+              {switchNext && (
+                <label className="grid gap-1 rounded-2xl border border-line bg-paper p-3">
+                  <span className="text-xs font-medium text-muted">Handoff: {name(owner)} → {name(nextOwner)}</span>
+                  <input className={inputCls} value={plan.handoffs[i] ?? ''} onChange={(e) => update({ handoffs: { ...plan.handoffs, [i]: e.target.value } })} placeholder={`"…and that's how we'll position it. ${name(nextOwner)} will explain how we…"`} />
+                </label>
+              )}
+            </Row>
           )
         })}
-      </ol>
 
-      <Card className="grid gap-3">
-        <label className="grid gap-1">
-          <span className="font-bold">The solution (unique, practical, effective)</span>
-          <textarea className={inputCls + ' min-h-24'} value={plan.solution} onChange={(e) => update({ solution: e.target.value })} placeholder="What exactly we'll do, by when, what it costs, and 2–3 success metrics." />
+        <Row
+          id="plan-solution"
+          border
+          label="The solution"
+          hint="Unique, practical, effective. Back it up: your point, a number from the case, what it means, then the action. Name one risk and your backup plan."
+        >
+          <textarea id="plan-solution" className={inputCls + ' min-h-24'} value={plan.solution} onChange={(e) => update({ solution: e.target.value })} placeholder="What exactly we'll do, by when, what it costs, and 2–3 success metrics." />
           <span className="text-xs text-muted">
-            Back it up: your point, a number from the case, what it means, then the action. Name one risk and your backup plan.{' '}
-            <Link to="/learn/lessons/data-arguments" className="font-bold">Using data</Link> · <Link to="/learn/lessons/risk" className="font-bold">Planning for risk</Link>
+            <Link to="/learn/lessons/data-arguments" className="font-medium text-ink">Using data</Link> · <Link to="/learn/lessons/risk" className="font-medium text-ink">Planning for risk</Link>
           </span>
-        </label>
-        <label className="grid gap-1">
-          <span className="font-bold">Close</span>
-          <textarea className={inputCls + ' min-h-16'} value={plan.closer} onChange={(e) => update({ closer: e.target.value })} placeholder={'"To recap… We\'re confident this will… What questions do you have for us?"'} />
-        </label>
+        </Row>
+
+        <Row id="plan-close" label="Close">
+          <textarea id="plan-close" className={inputCls + ' min-h-16'} value={plan.closer} onChange={(e) => update({ closer: e.target.value })} placeholder={'"To recap… We\'re confident this will… What questions do you have for us?"'} />
+        </Row>
       </Card>
 
       <Card className="grid gap-3">
-        <h2 className="text-lg">Judge questions: who takes which?</h2>
+        <h2 className="text-[0.95rem]">Judge questions: who takes which?</h2>
         <ul className="grid gap-2">
           {plan.judgeQs.map((jq, k) => (
-            <li key={k} className="grid gap-2 rounded-xl border border-line p-2 sm:grid-cols-[1fr_auto_auto] sm:items-center">
+            <li key={k} className="grid gap-2 rounded-2xl border border-line bg-paper p-3 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-center">
               <span className="text-sm">{jq.q}</span>
               <Segmented<'A' | 'B' | ''>
                 label="Who answers"
@@ -154,7 +150,7 @@ export function CasePlanner({ c, partnerA, partnerB }: { c: CaseStudy; partnerA:
               />
               {k >= c.judgeQuestions.length ? (
                 <Button size="sm" variant="quiet" aria-label="Remove question" onClick={() => update({ judgeQs: plan.judgeQs.filter((_, j) => j !== k) })}>
-                  <Trash2 size={16} aria-hidden />
+                  <Trash2 size={16} strokeWidth={1.75} aria-hidden />
                 </Button>
               ) : <span className="text-xs text-muted">standard</span>}
             </li>
@@ -170,16 +166,28 @@ export function CasePlanner({ c, partnerA, partnerB }: { c: CaseStudy; partnerA:
           }}
         >
           <input className={inputCls} value={newQ} onChange={(e) => setNewQ(e.target.value)} placeholder="Predict another judge question…" aria-label="New predicted judge question" />
-          <Button type="submit" variant="ghost" icon={<Plus size={16} aria-hidden />}>Add</Button>
+          <Button type="submit" variant="ghost" icon={<Plus size={16} strokeWidth={1.75} aria-hidden />}>Add</Button>
         </form>
       </Card>
 
       <Card>
-        <label className="grid gap-1">
-          <span className="font-bold">Scratch notes</span>
-          <textarea className={inputCls + ' min-h-24'} value={plan.notes} onChange={(e) => update({ notes: e.target.value })} placeholder="Numbers, calculations, reminders…" />
-        </label>
+        <Row id="plan-notes" label="Scratch notes">
+          <textarea id="plan-notes" className={inputCls + ' min-h-24'} value={plan.notes} onChange={(e) => update({ notes: e.target.value })} placeholder="Numbers, calculations, reminders…" />
+        </Row>
       </Card>
+    </div>
+  )
+}
+
+/** One form row: label and hint on the left, fields on the right (stacked on a phone). */
+function Row({ id, label, hint, border, children }: { id: string; label: ReactNode; hint?: string; border?: boolean; children: ReactNode }) {
+  return (
+    <div className={cx('grid gap-3 md:grid-cols-[13rem_minmax(0,1fr)] md:gap-8', border && 'border-t border-line pt-6')}>
+      <div className="grid content-start gap-1">
+        <label htmlFor={id} className="text-sm font-medium">{label}</label>
+        {hint && <p className="text-xs text-muted">{hint}</p>}
+      </div>
+      <div className="grid min-w-0 gap-3">{children}</div>
     </div>
   )
 }

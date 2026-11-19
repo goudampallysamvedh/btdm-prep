@@ -17,7 +17,7 @@ import { StatusChip, TopicLinks } from '@/components/TopicLinks'
 import { Bar, Html, cx, inputCls, toneFor } from '@/components/ui'
 
 const CARD_BY_ID = Object.fromEntries(FLASHCARDS.map((c) => [c.id, c]))
-const linkCls = 'inline-flex min-h-9 items-center rounded-lg border border-line bg-card px-2.5 text-sm font-bold text-ink-2 no-underline hover:border-accent hover:text-accent'
+const linkCls = 'inline-flex min-h-9 items-center rounded-full border border-line bg-paper px-3 text-sm font-medium text-ink-2 no-underline hover:border-line-2 hover:text-ink'
 
 /** The study helper drawer: answers come from the app's own content (no AI). */
 export default function HelperPanel({ onNavigate }: { onNavigate: () => void }) {
@@ -63,11 +63,11 @@ export default function HelperPanel({ onNavigate }: { onNavigate: () => void }) 
           <p className="text-xs text-muted">DECA &amp; BTDM only · answers come from this app</p>
         </div>
         {messages.length > 1 && (
-          <button type="button" onClick={() => { clear(); push({ role: 'bot', blocks: answer('hello', { tests: [], leitner: {} }) }) }} className="grid size-10 place-items-center rounded-xl text-muted hover:bg-paper-2" aria-label="Start over">
+          <button type="button" onClick={() => { clear(); push({ role: 'bot', blocks: answer('hello', { tests: [], leitner: {} }) }) }} className="grid size-10 place-items-center rounded-2xl text-muted hover:bg-paper-2" aria-label="Start over">
             <RotateCcw size={18} />
           </button>
         )}
-        <button type="button" onClick={() => setOpen(false)} className="grid size-10 place-items-center rounded-xl text-ink-2 hover:bg-paper-2" aria-label="Close study helper">
+        <button type="button" onClick={() => setOpen(false)} className="grid size-10 place-items-center rounded-2xl text-ink-2 hover:bg-paper-2" aria-label="Close study helper">
           <X size={20} />
         </button>
       </header>
@@ -104,7 +104,7 @@ export default function HelperPanel({ onNavigate }: { onNavigate: () => void }) 
           enterKeyHint="send"
           maxLength={300}
         />
-        <button type="submit" disabled={!text.trim()} className="grid size-11 shrink-0 place-items-center rounded-xl bg-accent text-accent-ink transition-[scale] active:scale-95 disabled:opacity-40" aria-label="Send">
+        <button type="submit" disabled={!text.trim()} className="grid size-11 shrink-0 place-items-center rounded-full bg-ink text-paper transition-[scale] active:scale-95 disabled:opacity-40" aria-label="Send">
           <ArrowUp size={20} />
         </button>
       </form>
@@ -117,7 +117,7 @@ function BlockView({ b, ask }: { b: Block; ask: (q: string) => void }) {
     case 'text':
       return (
         <div className="prose-app text-[0.95rem]">
-          {b.title && <p className="!mb-1 font-bold">{b.title}</p>}
+          {b.title && <p className="!mb-1 font-semibold">{b.title}</p>}
           <Html html={b.html} />
         </div>
       )
@@ -133,8 +133,8 @@ function BlockView({ b, ask }: { b: Block; ask: (q: string) => void }) {
       const d = DIAGRAMS.find((x) => x.id === b.id)
       if (!d) return null
       return (
-        <figure className="grid min-w-0 gap-2 rounded-xl border border-line p-3">
-          <figcaption className="text-sm font-bold">{d.title} <span className="font-normal text-muted">· tap to explore</span></figcaption>
+        <figure className="grid min-w-0 gap-2 rounded-2xl border border-line p-3">
+          <figcaption className="text-sm font-semibold">{d.title} <span className="font-normal text-muted">· tap to explore</span></figcaption>
           <div className="min-w-0 text-sm">{d.render()}</div>
         </figure>
       )
@@ -151,10 +151,10 @@ function BlockView({ b, ask }: { b: Block; ask: (q: string) => void }) {
       return (
         <ul className="grid grid-cols-1 gap-2">
           {b.items.map((t) => (
-            <li key={t.id} className="grid min-w-0 gap-1.5 rounded-xl border border-line p-2.5">
+            <li key={t.id} className="grid min-w-0 gap-1.5 rounded-2xl border border-line p-2.5">
               <span className="flex items-center gap-2">
                 <StatusChip status={t.status}>{STATUS_LABEL[t.status]}</StatusChip>
-                <span className="min-w-0 truncate text-sm font-bold">{TOPIC_BY_ID[t.id]?.name}</span>
+                <span className="min-w-0 truncate text-sm font-semibold">{TOPIC_BY_ID[t.id]?.name}</span>
               </span>
               <TopicLinks topicId={t.id} compact />
             </li>
@@ -164,7 +164,7 @@ function BlockView({ b, ask }: { b: Block; ask: (q: string) => void }) {
     case 'links':
       return (
         <div className="grid gap-1.5">
-          <span className="eyebrow">Go deeper</span>
+          <span className="text-sm font-medium text-muted">Go deeper</span>
           {b.topicId && <TopicLinks topicId={b.topicId} compact />}
           {b.links.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
@@ -177,7 +177,7 @@ function BlockView({ b, ask }: { b: Block; ask: (q: string) => void }) {
       return b.items.length ? (
         <div className="flex flex-wrap gap-1.5">
           {b.items.map((c) => (
-            <button key={c} type="button" onClick={() => ask(c)} className="rounded-full border border-accent/40 bg-accent-soft/50 px-3 py-1.5 text-sm font-bold text-accent transition-[scale] hover:bg-accent-soft active:scale-95">
+            <button key={c} type="button" onClick={() => ask(c)} className="rounded-full border border-line-2 bg-paper px-3 py-1.5 text-sm font-medium text-ink transition-[scale,border-color] hover:border-ink active:scale-95">
               {c}
             </button>
           ))}
@@ -193,9 +193,9 @@ function FlipCard({ front, back, small }: { front: string; back: string; small?:
       type="button"
       onClick={() => setFlipped(!flipped)}
       aria-label={flipped ? `${front}: ${back}. Tap to flip back.` : `${front}. Tap to see the answer.`}
-      className={cx('grid w-full gap-1 rounded-xl border p-3 text-left transition-colors', flipped ? 'border-accent bg-accent-soft/40' : 'border-line bg-paper-2 hover:border-accent', small ? 'min-h-14' : 'min-h-20')}
+      className={cx('grid w-full gap-1 rounded-2xl border p-3 text-left transition-colors', flipped ? 'border-ink/70 bg-paper' : 'border-line bg-paper-2 hover:border-line-2', small ? 'min-h-14' : 'min-h-20')}
     >
-      <span className={cx('font-bold', !small && 'font-display text-lg')}>{front}</span>
+      <span className={cx(!small ? 'font-display text-xl' : 'font-semibold')}>{front}</span>
       {flipped ? <span key="b" className="text-sm animate-rise">{back}</span> : <span className="text-xs text-muted">Tap to flip</span>}
     </button>
   )
@@ -214,11 +214,11 @@ function MiniCalc({ toolId }: { toolId: string }) {
   }
   const shown = outputs.filter((o) => o.primary).length ? outputs.filter((o) => o.primary) : outputs.slice(0, 2)
   return (
-    <div className="grid grid-cols-1 gap-2 rounded-xl border border-line p-3">
-      <span className="text-sm font-bold">Try it: {mode.label}</span>
+    <div className="grid grid-cols-1 gap-2 rounded-2xl border border-line p-3">
+      <span className="text-sm font-semibold">Try it: {mode.label}</span>
       <div className="grid grid-cols-2 gap-2">
         {mode.fields.map((f) => (
-          <label key={f.key} className="grid gap-0.5 text-xs font-bold text-muted">
+          <label key={f.key} className="grid gap-0.5 text-xs font-semibold text-muted">
             {f.label} {f.unit !== '#' && `(${f.unit})`}
             <input
               type="number"
@@ -240,7 +240,7 @@ function MiniCalc({ toolId }: { toolId: string }) {
         {!shown.length && <span className="text-muted">Enter numbers to see the result.</span>}
       </div>
       {shown[0]?.steps?.length ? <p className="num text-xs text-muted">{shown[0].steps[0]}</p> : null}
-      <Link to={`/math/${tool.id}`} className="text-sm font-bold">Full calculator and practice →</Link>
+      <Link to={`/math/${tool.id}`} className="text-sm font-semibold">Full calculator and practice →</Link>
     </div>
   )
 }
@@ -257,8 +257,8 @@ function MiniQuiz({ qids }: { qids: string[] }) {
       {qs.map((q, qi) => {
         const p = picked[qi]
         return (
-          <div key={q.id} className="grid gap-1.5 rounded-xl border border-line p-3">
-            <p className="text-sm font-bold">{qi + 1}. {q.stem}</p>
+          <div key={q.id} className="grid gap-1.5 rounded-2xl border border-line p-3">
+            <p className="text-sm font-semibold">{qi + 1}. {q.stem}</p>
             {orders[qi].map((oi) => {
               const state = p === null ? 'idle' : oi === q.answer ? 'right' : oi === p ? 'wrong' : 'idle'
               return (
@@ -269,7 +269,7 @@ function MiniQuiz({ qids }: { qids: string[] }) {
                   onClick={() => setPicked(picked.map((x, j) => (j === qi ? oi : x)))}
                   className={cx(
                     'flex items-start gap-2 rounded-lg border px-2.5 py-2 text-left text-sm',
-                    state === 'idle' && 'border-line hover:border-accent',
+                    state === 'idle' && 'border-line hover:border-line-2',
                     state === 'right' && 'border-good bg-good-bg',
                     state === 'right' && oi === p && 'animate-pop',
                     state === 'wrong' && 'border-bad bg-bad-bg animate-shake',
@@ -285,7 +285,7 @@ function MiniQuiz({ qids }: { qids: string[] }) {
         )
       })}
       {done === qs.length && (
-        <p className={cx('rounded-lg px-3 py-2 text-sm font-bold animate-pop', right === qs.length ? 'bg-good-bg text-good' : 'bg-paper-2')}>
+        <p className={cx('rounded-lg px-3 py-2 text-sm font-semibold animate-pop', right === qs.length ? 'bg-good-bg text-good' : 'bg-paper-2')}>
           {right} of {qs.length} right.{right === qs.length ? ' Nice!' : ' Read the explanations, then try the full lesson.'}
         </p>
       )}
@@ -297,8 +297,8 @@ function AreaBars({ areas }: { areas: string[] }) {
   const tests = useStore((s) => s.tests)
   const ready = useMemo(() => areaReadiness(tests), [tests])
   return (
-    <div className="grid grid-cols-1 gap-2 rounded-xl border border-line p-3">
-      <span className="text-sm font-bold">Your progress</span>
+    <div className="grid grid-cols-1 gap-2 rounded-2xl border border-line p-3">
+      <span className="text-sm font-semibold">Your progress</span>
       {areas.map((code) => {
         const r = ready.find((x) => x.area === code)
         const a = AREA_BY_CODE[code as keyof typeof AREA_BY_CODE]
@@ -320,11 +320,11 @@ function AreaBars({ areas }: { areas: string[] }) {
 function Blueprint() {
   const max = Math.max(...AREAS.map((a) => a.weight))
   return (
-    <div className="grid gap-1 rounded-xl border border-line p-3" role="img" aria-label="Questions per exam area">
-      <span className="mb-1 text-sm font-bold">Questions per area (out of 100)</span>
+    <div className="grid gap-1 rounded-2xl border border-line p-3" role="img" aria-label="Questions per exam area">
+      <span className="mb-1 text-sm font-semibold">Questions per area (out of 100)</span>
       {[...AREAS].sort((a, b) => b.weight - a.weight).map((a) => (
         <div key={a.code} className="grid grid-cols-[2.2rem_1fr_1.5rem] items-center gap-2 text-xs">
-          <span className="num font-bold text-muted">{a.code}</span>
+          <span className="num font-semibold text-muted">{a.code}</span>
           <span className="h-2.5 overflow-hidden rounded-full bg-paper-2"><span className="animate-grow block h-full rounded-full bg-accent" style={{ width: `${(a.weight / max) * 100}%` }} /></span>
           <span className="num text-right">{a.weight}</span>
         </div>

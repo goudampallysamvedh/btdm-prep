@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { Card, PageHeader, cx } from '@/components/ui'
+import { ArrowRight } from 'lucide-react'
+import { Button, Card, PageHeader, cx } from '@/components/ui'
 
 interface DiagramDef {
   id: string
@@ -14,10 +15,15 @@ function useSelect<T extends string>(initial: T) {
   return useState<T>(initial)
 }
 
+/** A quiet inner note inside a diagram panel (a panel inside a panel would be the same tone). */
+function Note({ children }: { children: ReactNode }) {
+  return <div className="rounded-2xl border border-line bg-paper p-4 text-sm">{children}</div>
+}
+
 function Detail({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="rounded-xl border border-line bg-paper-2 p-4 animate-rise" role="status" aria-live="polite">
-      <div className="mb-1 font-display text-lg font-extrabold" style={{ fontStretch: '108%' }}>{title}</div>
+    <div className="rounded-2xl bg-paper-2 p-4 animate-rise sm:p-5" role="status" aria-live="polite">
+      <div className="mb-1 font-display text-xl font-normal">{title}</div>
       <div className="prose-app text-[0.95rem]">{children}</div>
     </div>
   )
@@ -32,7 +38,7 @@ function Chips<T extends string>({ items, value, onChange, label }: { items: { i
           role="tab"
           aria-selected={value === it.id}
           onClick={() => onChange(it.id)}
-          className={cx('min-h-10 rounded-xl border px-3 text-sm font-bold transition-colors', value === it.id ? 'border-accent bg-accent text-accent-ink' : 'border-line bg-card text-ink-2 hover:border-accent')}
+          className={cx('min-h-10 rounded-full border px-4 text-sm font-semibold transition-colors', value === it.id ? 'border-ink bg-ink text-paper' : 'border-transparent bg-paper-2 text-ink-2 hover:text-ink')}
         >
           {it.label}
         </button>
@@ -54,17 +60,17 @@ function PlcDiagram() {
   return (
     <div className="grid gap-3">
       <svg viewBox="0 0 640 260" className="block h-auto w-full" role="img" aria-label="Product life cycle sales curve">
-        <line x1="40" y1="230" x2="625" y2="230" stroke="var(--muted)" strokeWidth="1.5" />
-        <line x1="40" y1="230" x2="40" y2="20" stroke="var(--muted)" strokeWidth="1.5" />
-        <text x="46" y="50" fontSize="12" fill="var(--muted)" className="num">SALES</text>
-        <text x="585" y="250" fontSize="12" fill="var(--muted)" className="num">TIME</text>
-        {[160, 310, 480].map((x) => <line key={x} x1={x} y1="40" x2={x} y2="230" stroke="var(--line)" strokeDasharray="4 4" strokeWidth="1.5" />)}
-        <rect x={s === 'intro' ? 40 : s === 'growth' ? 160 : s === 'maturity' ? 310 : 480} y="36" width={s === 'intro' ? 120 : s === 'growth' ? 150 : s === 'maturity' ? 170 : 145} height="194" fill="var(--accent)" opacity="0.08" style={{ transition: 'all .4s' }} />
-        <path d="M40 228 C 110 225, 140 210, 190 160 S 280 62, 370 56 S 470 70, 520 120 S 590 200, 620 208" fill="none" stroke="var(--accent)" strokeWidth="3.5" />
+        <line x1="40" y1="230" x2="625" y2="230" stroke="var(--line-2)" strokeWidth="1.5" />
+        <line x1="40" y1="230" x2="40" y2="20" stroke="var(--line-2)" strokeWidth="1.5" />
+        <text x="46" y="50" fontSize="12" fill="var(--muted)" className="num">Sales</text>
+        <text x="585" y="250" fontSize="12" fill="var(--muted)" className="num">Time</text>
+        {[160, 310, 480].map((x) => <line key={x} x1={x} y1="40" x2={x} y2="230" stroke="var(--line-2)" strokeDasharray="4 4" strokeWidth="1" />)}
+        <rect x={s === 'intro' ? 40 : s === 'growth' ? 160 : s === 'maturity' ? 310 : 480} y="36" width={s === 'intro' ? 120 : s === 'growth' ? 150 : s === 'maturity' ? 170 : 145} height="194" fill="var(--accent)" opacity="0.07" style={{ transition: 'all .4s' }} />
+        <path d="M40 228 C 110 225, 140 210, 190 160 S 280 62, 370 56 S 470 70, 520 120 S 590 200, 620 208" fill="none" stroke="var(--accent)" strokeWidth="3" />
         <path d="M40 229 C 120 229, 150 222, 200 200 S 300 120, 380 110 S 470 140, 520 175 S 590 215, 620 222" fill="none" stroke="var(--muted)" strokeWidth="2" strokeDasharray="6 5" />
         <text x="430" y="150" fontSize="12" fill="var(--muted)">profit</text>
         {(Object.keys(PLC) as (keyof typeof PLC)[]).map((k) => (
-          <text key={k} x={PLC[k].x} y="22" textAnchor="middle" fontSize="15" fontWeight="800" fill={k === s ? 'var(--accent)' : 'var(--ink)'} style={{ cursor: 'pointer', fontFamily: 'var(--font-display)' }} onClick={() => setS(k)}>
+          <text key={k} x={PLC[k].x} y="22" textAnchor="middle" fontSize="14" fontWeight="600" fill={k === s ? 'var(--accent)' : 'var(--muted)'} style={{ cursor: 'pointer' }} onClick={() => setS(k)}>
             {PLC[k].label}
           </text>
         ))}
@@ -92,14 +98,14 @@ function BusinessCycle() {
   return (
     <div className="grid gap-3">
       <svg viewBox="0 0 640 230" className="block h-auto w-full" role="img" aria-label="Business cycle wave">
-        <line x1="30" y1="200" x2="625" y2="200" stroke="var(--muted)" strokeWidth="1.5" />
-        <text x="36" y="22" fontSize="12" fill="var(--muted)" className="num">ECONOMIC ACTIVITY</text>
-        <path d="M30 160 C 90 150, 120 60, 180 58 S 270 175, 330 178 S 440 50, 500 46 S 590 120, 620 140" fill="none" stroke="var(--accent)" strokeWidth="3.5" />
-        <circle cx={pos[0]} cy={pos[1]} r="9" fill="var(--marker)" stroke="var(--ink)" strokeWidth="2" style={{ transition: 'all .45s ease' }} />
-        <text x="155" y="40" fontSize="15" fontWeight="800" fill="var(--ink)">Peak</text>
-        <text x="300" y="216" fontSize="15" fontWeight="800" fill="var(--ink)">Trough</text>
-        <text x="62" y="110" fontSize="13" fill="var(--ink-2)">Expansion ↗</text>
-        <text x="228" y="100" fontSize="13" fill="var(--ink-2)">↘ Contraction</text>
+        <line x1="30" y1="200" x2="625" y2="200" stroke="var(--line-2)" strokeWidth="1.5" />
+        <text x="36" y="22" fontSize="12" fill="var(--muted)" className="num">Economic activity</text>
+        <path d="M30 160 C 90 150, 120 60, 180 58 S 270 175, 330 178 S 440 50, 500 46 S 590 120, 620 140" fill="none" stroke="var(--ink-2)" strokeWidth="2.5" />
+        <circle cx={pos[0]} cy={pos[1]} r="9" fill="var(--accent)" stroke="var(--paper)" strokeWidth="3" style={{ transition: 'all .45s ease' }} />
+        <text x="155" y="40" fontSize="14" fontWeight="600" fill="var(--ink)">Peak</text>
+        <text x="300" y="216" fontSize="14" fontWeight="600" fill="var(--ink)">Trough</text>
+        <text x="62" y="110" fontSize="13" fill="var(--muted)">Expansion ↗</text>
+        <text x="228" y="100" fontSize="13" fill="var(--muted)">↘ Contraction</text>
       </svg>
       <Chips label="Phase" value={s} onChange={setS} items={(Object.keys(BC) as (keyof typeof BC)[]).map((k) => ({ id: k, label: BC[k].label }))} />
       <Detail title={BC[s].label}><p dangerouslySetInnerHTML={{ __html: BC[s].html }} /></Detail>
@@ -130,18 +136,18 @@ function Channels() {
   return (
     <div className="grid gap-3">
       <Chips label="Channel" value={c} onChange={(v) => { setC(v); setRole(CHANNELS.find((x) => x.id === v)!.steps[1]) }} items={CHANNELS.map((x) => ({ id: x.id, label: x.label }))} />
-      <div className="flex flex-wrap items-center gap-2 rounded-xl bg-paper-2 p-3">
+      <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-paper-2 p-3">
         {ch.steps.map((s, i) => (
           <span key={s} className="flex items-center gap-2">
             {i > 0 && <span aria-hidden className="text-muted">→</span>}
-            <button onClick={() => setRole(s)} className={cx('min-h-10 rounded-lg border px-3 text-sm font-bold', role === s ? 'border-accent bg-accent text-accent-ink' : 'border-line bg-card')}>{s}</button>
+            <button onClick={() => setRole(s)} className={cx('min-h-10 rounded-full border px-4 text-sm font-semibold transition-colors', role === s ? 'border-ink bg-ink text-paper' : 'border-line bg-paper hover:border-ink')}>{s}</button>
           </span>
         ))}
       </div>
       <Detail title={role}><p>{ROLE[role]}</p><p className="text-muted">{ch.note}</p></Detail>
       <div className="grid gap-2 sm:grid-cols-2">
-        <Card className="text-sm"><b>Vertical conflict:</b> between different levels (a retailer's store brand competing with a manufacturer's national brand).</Card>
-        <Card className="text-sm"><b>Horizontal conflict:</b> between members at the same level (two retailers). Root cause of most conflict: <mark>different goals</mark>.</Card>
+        <Note><b className="font-semibold">Vertical conflict:</b> between different levels (a retailer's store brand competing with a manufacturer's national brand).</Note>
+        <Note><b className="font-semibold">Horizontal conflict:</b> between members at the same level (two retailers). Root cause of most conflict: <mark>different goals</mark>.</Note>
       </div>
     </div>
   )
@@ -158,7 +164,7 @@ const PROMO = {
 function PromoMix() {
   const [s, setS] = useSelect<keyof typeof PROMO>('publicity')
   const cell = (k: keyof typeof PROMO) => (
-    <button key={k} onClick={() => setS(k)} className={cx('min-h-16 rounded-xl border p-2 text-sm font-bold', s === k ? 'border-accent bg-accent text-accent-ink' : 'border-line bg-card hover:border-accent')}>
+    <button key={k} onClick={() => setS(k)} className={cx('min-h-16 rounded-2xl border p-2 text-sm font-semibold transition-colors', s === k ? 'border-ink bg-ink text-paper' : 'border-line bg-paper hover:border-ink')}>
       {PROMO[k].label}
     </button>
   )
@@ -206,26 +212,26 @@ function Segmentation() {
   return (
     <div className="grid gap-3">
       <div className="grid gap-2 sm:grid-cols-2">
-        {SEG_TYPES.map((t) => <Card key={t} className="text-sm"><b>{t}:</b> {SEG_DEF[t]}</Card>)}
+        {SEG_TYPES.map((t) => <Note key={t}><b className="font-semibold">{t}:</b> {SEG_DEF[t]}</Note>)}
       </div>
-      <Card className="grid gap-3">
+      <div className="grid gap-3 rounded-2xl border border-line bg-paper p-4 sm:p-5">
         <div className="flex items-center justify-between"><span className="eyebrow">Sort it</span><span className="num text-sm text-muted">{score} right</span></div>
-        <p className="text-lg font-bold">"{item.t}"</p>
+        <p className="font-display text-2xl leading-snug">&ldquo;{item.t}&rdquo;</p>
         <div className="grid grid-cols-2 gap-2">
           {SEG_TYPES.map((t) => (
             <button key={t} disabled={ans !== null} onClick={() => { setAns(t); if (t === item.a) setScore(score + 1) }}
-              className={cx('min-h-11 rounded-xl border px-3 text-sm font-bold', ans === null ? 'border-line hover:border-accent' : t === item.a ? 'border-good bg-good-bg' : t === ans ? 'border-bad bg-bad-bg' : 'border-line opacity-60')}>
+              className={cx('min-h-11 rounded-full border px-3 text-sm font-semibold', ans === null ? 'border-line-2 hover:border-ink' : t === item.a ? 'border-good bg-good-bg' : t === ans ? 'border-bad bg-bad-bg' : 'border-line opacity-60')}>
               {t}
             </button>
           ))}
         </div>
         {ans && (
           <div className="flex items-center justify-between gap-2" role="status">
-            <span className={ans === item.a ? 'font-bold text-good' : 'font-bold text-bad'}>{ans === item.a ? 'Correct.' : `It's ${item.a}.`}</span>
-            <button className="min-h-10 rounded-xl bg-accent px-4 font-bold text-accent-ink" onClick={() => { setI(i + 1); setAns(null) }}>Next</button>
+            <span className={ans === item.a ? 'font-semibold text-good' : 'font-semibold text-bad'}>{ans === item.a ? 'Correct.' : `It's ${item.a}.`}</span>
+            <Button size="sm" onClick={() => { setI(i + 1); setAns(null) }}>Next</Button>
           </div>
         )}
-      </Card>
+      </div>
     </div>
   )
 }
@@ -266,9 +272,9 @@ function Research() {
       <ol className="grid gap-1.5">
         {RESEARCH_STEPS.map((s, k) => (
           <li key={s.h}>
-            <button onClick={() => setI(k)} aria-expanded={i === k} className={cx('flex w-full items-center gap-3 rounded-xl border px-3 py-2 text-left', i === k ? 'border-accent bg-accent-soft' : 'border-line bg-card hover:border-accent')}>
-              <span className="num grid size-7 shrink-0 place-items-center rounded-lg bg-ink text-sm font-bold text-paper">{k + 1}</span>
-              <span className="font-bold">{s.h}</span>
+            <button onClick={() => setI(k)} aria-expanded={i === k} className={cx('flex min-h-12 w-full items-center gap-3 rounded-2xl border px-3 py-2 text-left transition-colors', i === k ? 'border-ink bg-paper' : 'border-transparent bg-paper-2 hover:border-line-2')}>
+              <span className="num grid size-7 shrink-0 place-items-center rounded-full bg-paper text-sm font-semibold text-ink">{k + 1}</span>
+              <span className="font-medium">{s.h}</span>
             </button>
             {i === k && <p className="prose-app px-3 py-2 text-[0.95rem] animate-rise" dangerouslySetInnerHTML={{ __html: s.p }} />}
           </li>
@@ -292,7 +298,7 @@ function Management() {
       <div className="grid justify-items-center gap-1.5">
         {MGMT.map((m, i) => (
           <button key={m.id} onClick={() => setS(m.id)} style={{ width: m.w }} aria-pressed={s === m.id}
-            className={cx('min-h-12 rounded-xl px-3 text-sm font-bold transition-colors', s === m.id ? 'bg-accent text-accent-ink' : i === 0 ? 'bg-ink text-paper' : i === 1 ? 'bg-ink-2 text-paper' : 'bg-line-2 text-ink')}>
+            className={cx('min-h-12 rounded-full px-3 text-sm font-semibold transition-colors', s === m.id ? 'bg-accent text-accent-ink' : i === 0 ? 'bg-ink text-paper' : i === 1 ? 'bg-ink-2 text-paper' : 'bg-line-2 text-ink')}>
             {m.label}
           </button>
         ))}
@@ -318,8 +324,8 @@ function MarkdownTiming() {
   return (
     <div className="grid gap-3">
       <div className="flex flex-wrap gap-1.5">
-        <button onClick={() => setPlan('early')} aria-pressed={plan === 'early'} className={cx('min-h-10 rounded-xl border px-3 text-sm font-bold', plan === 'early' ? 'border-good bg-good text-card' : 'border-line')}>Early & gradual</button>
-        <button onClick={() => setPlan('late')} aria-pressed={plan === 'late'} className={cx('min-h-10 rounded-xl border px-3 text-sm font-bold', plan === 'late' ? 'border-bad bg-bad text-card' : 'border-line')}>Late & deep</button>
+        <button onClick={() => setPlan('early')} aria-pressed={plan === 'early'} className={cx('min-h-10 rounded-full border px-4 text-sm font-semibold', plan === 'early' ? 'border-good bg-good text-paper' : 'border-line-2')}>Early & gradual</button>
+        <button onClick={() => setPlan('late')} aria-pressed={plan === 'late'} className={cx('min-h-10 rounded-full border px-4 text-sm font-semibold', plan === 'late' ? 'border-bad bg-bad text-paper' : 'border-line-2')}>Late & deep</button>
       </div>
       <svg viewBox={`0 0 ${W} ${H}`} className="block h-auto w-full" role="img" aria-label={`${plan === 'early' ? 'Early' : 'Late'} markdown price path over a 12-week season`}>
         {[10, 20, 30, 40].map((p) => (
@@ -329,7 +335,7 @@ function MarkdownTiming() {
           </g>
         ))}
         <path d={path(plan === 'early' ? late : early)} fill="none" stroke="var(--line-2)" strokeWidth="2" strokeDasharray="5 5" />
-        <path d={path(prices)} fill="none" stroke={plan === 'early' ? 'var(--good)' : 'var(--bad)'} strokeWidth="3.5" style={{ transition: 'd .5s' }} />
+        <path d={path(prices)} fill="none" stroke={plan === 'early' ? 'var(--good)' : 'var(--bad)'} strokeWidth="3" style={{ transition: 'd .5s' }} />
         {[0, 3, 7, 11].map((i) => <text key={i} x={sx(i)} y={H - 8} textAnchor="middle" fontSize="11" fill="var(--muted)">wk {i + 1}</text>)}
       </svg>
       <Detail title={plan === 'early' ? 'Early & gradual' : 'Late & deep'}>
@@ -357,27 +363,27 @@ function InventoryFlow() {
   const d = FLOW.find((f) => f.id === s)!
   return (
     <div className="grid gap-3">
-      <div className="flex flex-wrap items-center gap-2 rounded-xl bg-paper-2 p-3">
+      <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-paper-2 p-3">
         {FLOW.map((f, i) => (
           <span key={f.id} className="flex items-center gap-2">
             {i > 0 && <span aria-hidden className="text-muted">→</span>}
-            <button onClick={() => setS(f.id)} aria-pressed={s === f.id} className={cx('min-h-10 rounded-lg border px-3 text-sm font-bold', s === f.id ? 'border-accent bg-accent text-accent-ink' : 'border-line bg-card')}>{f.label}</button>
+            <button onClick={() => setS(f.id)} aria-pressed={s === f.id} className={cx('min-h-10 rounded-full border px-4 text-sm font-semibold transition-colors', s === f.id ? 'border-ink bg-ink text-paper' : 'border-line bg-paper hover:border-ink')}>{f.label}</button>
           </span>
         ))}
       </div>
       <Detail title={d.label}><p>{d.html}</p></Detail>
-      <Card className="grid gap-2">
+      <div className="grid gap-2 rounded-2xl border border-line bg-paper p-4 sm:p-5">
         <div className="eyebrow">The inventory equation (at retail)</div>
-        <div className="num flex flex-wrap items-center gap-1.5 text-sm font-bold">
-          <span className="rounded-lg bg-info-bg px-2 py-1 text-info">BOM</span>+
-          <span className="rounded-lg bg-good-bg px-2 py-1 text-good">Receipts</span>−
-          <span className="rounded-lg bg-accent-soft px-2 py-1 text-accent">Sales</span>−
-          <span className="rounded-lg bg-bad-bg px-2 py-1 text-bad">Reductions</span>=
-          <span className="rounded-lg bg-info-bg px-2 py-1 text-info">EOM</span>
+        <div className="num flex flex-wrap items-center gap-2 text-sm font-semibold">
+          <span className="tag">BOM</span>+
+          <span className="tag">Receipts</span>&minus;
+          <span className="tag">Sales</span>&minus;
+          <span className="tag">Reductions</span>=
+          <span className="tag">EOM</span>
         </div>
-        <p className="text-sm text-muted">Rearrange it and you get planned purchases: receipts needed = sales + reductions + EOM − BOM.</p>
-        <Link to="/math/otb" className="text-sm font-bold">Open-to-buy calculator →</Link>
-      </Card>
+        <p className="text-sm text-muted">Rearrange it and you get planned purchases: receipts needed = sales + reductions + EOM &minus; BOM.</p>
+        <Link to="/math/otb" className="inline-flex items-center gap-1 text-sm font-medium text-ink">Open-to-buy calculator <ArrowRight size={14} strokeWidth={1.75} aria-hidden /></Link>
+      </div>
     </div>
   )
 }
@@ -401,18 +407,18 @@ export default function Visual() {
   const d = DIAGRAMS.find((x) => x.id === id) ?? DIAGRAMS[0]
   return (
     <>
-      <PageHeader eyebrow="Visual guide" title={d.title}>{d.blurb}</PageHeader>
+      <PageHeader title={d.title}>{d.blurb}</PageHeader>
       <label className="mb-3 block md:hidden">
         <span className="sr-only">Choose a diagram</span>
-        <select className="min-h-11 w-full rounded-xl border border-line-2 bg-card px-3" value={d.id} onChange={(e) => nav(`/learn/visual/${e.target.value}`, { replace: true })}>
+        <select className="min-h-11 w-full rounded-full border border-line-2 bg-paper px-4" value={d.id} onChange={(e) => nav(`/learn/visual/${e.target.value}`, { replace: true })}>
           {DIAGRAMS.map((x) => <option key={x.id} value={x.id}>{x.title}</option>)}
         </select>
       </label>
-      <div className="grid gap-4 md:grid-cols-[220px_1fr]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-4 md:grid-cols-[220px_minmax(0,1fr)]">
         <nav className="hidden content-start gap-1 md:grid" aria-label="Diagrams">
           {DIAGRAMS.map((x) => (
             <Link key={x.id} to={`/learn/visual/${x.id}`} replace aria-current={x.id === d.id ? 'page' : undefined}
-              className={cx('rounded-xl px-3 py-2 text-sm font-bold no-underline', x.id === d.id ? 'bg-ink text-paper' : 'text-ink-2 hover:bg-paper-2')}>
+              className={cx('min-h-10 rounded-full px-3.5 py-2 text-sm no-underline transition-colors', x.id === d.id ? 'bg-paper-2 font-semibold text-ink' : 'font-medium text-muted hover:text-ink')}>
               {x.title}
             </Link>
           ))}

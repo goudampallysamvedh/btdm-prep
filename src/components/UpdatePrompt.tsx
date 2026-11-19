@@ -13,7 +13,7 @@ export function UpdatePrompt() {
   return (
     <div
       role="status"
-      className="card fixed inset-x-3 bottom-24 z-40 mx-auto flex max-w-md flex-wrap items-center gap-3 p-3 animate-rise md:bottom-6"
+      className="fixed inset-x-3 bottom-24 z-40 mx-auto flex max-w-md flex-wrap items-center gap-3 rounded-2xl border border-line bg-paper p-3 pl-4 shadow-[var(--shadow)] animate-rise md:bottom-6"
     >
       <span className="flex-1 text-sm">
         {needRefresh ? 'A new version of Sell-Through is ready.' : 'Ready to work offline.'}

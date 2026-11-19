@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Pause, Play, RotateCcw, Volume2, VolumeX } from 'lucide-react'
 import { PREP_PHASES } from '@/data/playbook'
 import { fmtClock } from '@/lib/dates'
-import { Button, Card, cx } from '@/components/ui'
+import { Button, Card, Ring, cx } from '@/components/ui'
 
 export const PREP_SEC = 30 * 60
 export const PRESENT_SEC = 15 * 60
@@ -113,67 +113,72 @@ export function CaseTimer({ t, setT }: { t: TimerState; setT: (t: TimerState) =>
 
   const warn = t.phase === 'present' && left <= WARN_SEC && left > 0
   const label = { idle: 'Ready', prep: 'Prep time', between: 'Prep over: walk in to the judge', present: 'Presentation', done: 'Time' }[t.phase]
+  const progress = t.phase === 'prep' || t.phase === 'present' ? el / limit : t.phase === 'done' ? 1 : 0
 
   return (
-    <Card className={cx('grid gap-4', warn && 'border-bad')}>
+    <Card className="grid gap-5">
       <div className="flex items-center justify-between gap-2">
-        <span className="eyebrow">{label}</span>
-        <Button size="sm" variant="quiet" onClick={() => setSound(!sound)} aria-pressed={sound} icon={sound ? <Volume2 size={16} aria-hidden /> : <VolumeX size={16} aria-hidden />}>
+        <span className="text-sm font-medium">{label}</span>
+        <Button size="sm" variant="quiet" onClick={() => setSound(!sound)} aria-pressed={sound} icon={sound ? <Volume2 size={16} strokeWidth={1.75} aria-hidden /> : <VolumeX size={16} strokeWidth={1.75} aria-hidden />}>
           {sound ? 'Sound on' : 'Muted'}
         </Button>
       </div>
 
-      <div
-        className={cx('num text-center text-[clamp(3.5rem,16vw,6rem)] font-bold leading-none', warn && 'text-bad', t.phase === 'done' && 'text-muted')}
-        role="timer"
-        aria-live="off"
-      >
-        {t.phase === 'idle' ? '30:00' : t.phase === 'between' ? '15:00' : fmtClock(left)}
+      <div className="grid justify-items-center">
+        <Ring value={progress} size={248} stroke={5} label={`${label}: ${fmtClock(left)} left`}>
+          <div
+            className={cx('num text-[clamp(3rem,13vw,4.5rem)] font-normal leading-none', warn && 'text-bad', t.phase === 'done' && 'text-muted')}
+            role="timer"
+            aria-live="off"
+          >
+            {t.phase === 'idle' ? '30:00' : t.phase === 'between' ? '15:00' : fmtClock(left)}
+          </div>
+        </Ring>
       </div>
-      {warn && <p className="rounded-xl bg-bad-bg px-3 py-2 text-center font-bold text-bad animate-pop" role="alert">2-minute warning: wrap up and invite questions.</p>}
+      {warn && <p className="animate-pop rounded-2xl bg-bad-bg px-4 py-3 text-center font-medium text-bad" role="alert">2-minute warning: wrap up and invite questions.</p>}
 
       {(t.phase === 'prep' || t.phase === 'idle') && (
-        <ol className="grid grid-cols-4 gap-1.5" aria-label="Prep phases">
+        <ol className="grid grid-cols-4 gap-3" aria-label="Prep phases">
           {PREP_PHASES.map((p, i) => {
             const active = t.phase === 'prep' && i === phaseIdx
             const past = t.phase === 'prep' && i < phaseIdx
             return (
-              <li key={p.id} className={cx('rounded-xl border px-2 py-2 text-center text-xs', active ? 'border-accent bg-accent text-accent-ink' : past ? 'border-line bg-paper-2 text-muted line-through' : 'border-line')}>
-                <div className="num font-bold">{p.minutes}m</div>
-                <div className="font-bold leading-tight">{p.label}</div>
+              <li key={p.id} className={cx('border-t-2 pt-2 text-xs', active ? 'border-accent text-ink' : past ? 'border-accent/40 text-muted' : 'border-line-2 text-muted')}>
+                <div className="num">{p.minutes} min</div>
+                <div className={cx('leading-tight', active ? 'font-semibold' : 'font-medium', past && 'line-through')}>{p.label}</div>
               </li>
             )
           })}
         </ol>
       )}
       {t.phase === 'prep' && (
-        <div className="rounded-xl bg-paper-2 p-3 text-sm" aria-live="polite">
-          <b>Now: {PREP_PHASES[phaseIdx].label}.</b>
+        <div className="rounded-2xl border border-line bg-paper p-4 text-sm" aria-live="polite">
+          <b className="font-semibold">Now: {PREP_PHASES[phaseIdx].label}.</b>
           <ul className="prose-app mt-1">{PREP_PHASES[phaseIdx].tips.map((x) => <li key={x}>{x}</li>)}</ul>
         </div>
       )}
       {t.phase === 'present' && (
-        <div className="grid grid-cols-3 gap-1.5 text-center text-xs">
+        <div className="grid grid-cols-3 gap-3 text-xs">
           {[['0–1', 'Greet & preview'], ['1–10', 'PIs + solution'], ['10–15', 'Close & questions']].map(([m, l]) => (
-            <div key={m} className="rounded-xl border border-line px-2 py-2"><div className="num font-bold">{m} min</div><div>{l}</div></div>
+            <div key={m} className="border-t-2 border-line-2 pt-2 text-muted"><div className="num">{m} min</div><div className="font-medium text-ink">{l}</div></div>
           ))}
         </div>
       )}
 
       <div className="flex flex-wrap justify-center gap-2">
-        {t.phase === 'idle' && <Button size="lg" onClick={() => start('prep')} icon={<Play size={18} aria-hidden />}>Start 30-min prep</Button>}
-        {t.phase === 'between' && <Button size="lg" onClick={() => start('present')} icon={<Play size={18} aria-hidden />}>Start 15-min presentation</Button>}
+        {t.phase === 'idle' && <Button size="lg" onClick={() => start('prep')} icon={<Play size={18} strokeWidth={1.75} aria-hidden />}>Start 30-min prep</Button>}
+        {t.phase === 'between' && <Button size="lg" onClick={() => start('present')} icon={<Play size={18} strokeWidth={1.75} aria-hidden />}>Start 15-min presentation</Button>}
         {(t.phase === 'prep' || t.phase === 'present') && (
           <>
-            {t.runningSince ? <Button variant="ghost" onClick={pause} icon={<Pause size={18} aria-hidden />}>Pause</Button> : <Button onClick={resume} icon={<Play size={18} aria-hidden />}>Resume</Button>}
+            {t.runningSince ? <Button variant="ghost" onClick={pause} icon={<Pause size={18} strokeWidth={1.75} aria-hidden />}>Pause</Button> : <Button onClick={resume} icon={<Play size={18} strokeWidth={1.75} aria-hidden />}>Resume</Button>}
             <Button variant="ghost" onClick={finishEarly}>{t.phase === 'prep' ? 'Done prepping' : 'Done presenting'}</Button>
           </>
         )}
-        {t.phase !== 'idle' && <Button variant="quiet" onClick={reset} icon={<RotateCcw size={16} aria-hidden />}>Reset</Button>}
+        {t.phase !== 'idle' && <Button variant="quiet" onClick={reset} icon={<RotateCcw size={16} strokeWidth={1.75} aria-hidden />}>Reset</Button>}
       </div>
       {t.phase === 'done' && (
         <p className="text-center text-sm text-muted">
-          Prep used {fmtClock(t.prepUsed)} · presented {fmtClock(t.presentUsed)}. Now score yourselves in the Score tab.
+          Prep used <span className="num">{fmtClock(t.prepUsed)}</span> · presented <span className="num">{fmtClock(t.presentUsed)}</span>. Now score yourselves in the Score tab.
         </p>
       )}
       <p className="text-center text-xs text-muted">Practice standing up, out loud, with a four-function calculator and blank paper only.</p>

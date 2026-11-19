@@ -8,27 +8,28 @@ const HelperPanel = lazy(() => import('./HelperPanel'))
 
 const isPhone = () => window.matchMedia('(max-width: 767px)').matches
 
-/** Opens the study helper. Phones use the header icon; larger screens get a floating button. */
-export function HelperButton({ variant }: { variant: 'header' | 'float' }) {
+/** Opens the study helper. Phones use the header icon; larger screens a row in the sidebar. */
+export function HelperButton({ variant }: { variant: 'header' | 'side' }) {
   const loc = useLocation()
   const open = useHelperUi((s) => s.open)
   const setOpen = useHelperUi((s) => s.setOpen)
   if (helperBlocked(loc.pathname)) return null
   if (variant === 'header') {
     return (
-      <button type="button" onClick={() => setOpen(true)} aria-label="Open the study helper" className="grid size-11 place-items-center rounded-xl text-ink-2 hover:bg-paper-2">
-        <MessageCircleQuestion size={20} />
+      <button type="button" onClick={() => setOpen(true)} aria-label="Open the study helper" className="grid size-11 place-items-center rounded-full text-ink-2 hover:bg-paper-2">
+        <MessageCircleQuestion size={20} strokeWidth={1.75} />
       </button>
     )
   }
-  if (open) return null
+  // Sidebar row: sits with the navigation instead of floating over the content.
   return (
     <button
       type="button"
       onClick={() => setOpen(true)}
-      className="fixed bottom-6 right-6 z-30 hidden items-center gap-2 rounded-full bg-ink px-4 py-3 font-bold text-paper shadow-lg transition-[scale] hover:scale-105 active:scale-95 md:inline-flex animate-rise"
+      aria-pressed={open}
+      className={cx('flex min-h-9 w-full items-center gap-3 rounded-lg px-3 text-[0.9rem] font-medium text-ink-2 transition-colors hover:bg-paper-2', open && 'bg-paper-2 text-ink')}
     >
-      <MessageCircleQuestion size={20} aria-hidden /> Ask for help
+      <MessageCircleQuestion size={17} strokeWidth={1.75} aria-hidden /> Ask for help
     </button>
   )
 }
@@ -53,7 +54,7 @@ export function Helper() {
         role="dialog"
         aria-label="Study helper"
         className={cx(
-          'safe-bottom fixed inset-x-0 bottom-0 top-[7dvh] z-50 overflow-hidden rounded-t-2xl border-t border-line bg-card shadow-2xl animate-deal',
+          'safe-bottom fixed inset-x-0 bottom-0 top-[7dvh] z-50 overflow-hidden rounded-t-2xl border-t border-line bg-paper shadow-2xl animate-deal',
           'md:inset-x-auto md:right-0 md:top-0 md:w-[400px] md:rounded-none md:border-l md:border-t-0',
         )}
       >

@@ -7,25 +7,22 @@ export function CaseView({ c }: { c: CaseStudy }) {
   return (
     <div className="grid gap-4">
       <Card className="grid gap-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="eyebrow">Career cluster: Marketing</span>
-          <span className="eyebrow">· Instructional area: {c.area}</span>
-        </div>
-        <div className="grid gap-3 md:grid-cols-3">
+        <div className="text-sm text-muted">Career cluster: Marketing · Instructional area: {c.area}</div>
+        <div className="grid gap-6 md:grid-cols-3">
           <div>
-            <div className="mb-1 font-bold">Solution</div>
+            <h2 className="mb-2 text-[0.95rem]">Solution</h2>
             <ul className="grid gap-1 text-sm">
-              {SOLUTION_CRITERIA.map((s) => <li key={s.key}><b>{s.label}</b>: {s.text}</li>)}
+              {SOLUTION_CRITERIA.map((s) => <li key={s.key}><b className="font-medium">{s.label}</b>: {s.text}</li>)}
             </ul>
           </div>
           <div>
-            <div className="mb-1 font-bold">Career competencies</div>
+            <h2 className="mb-2 text-[0.95rem]">Career competencies</h2>
             <ul className="grid gap-1 text-sm">
-              {c.competencies.map((k) => { const cc = COMPETENCIES.find((x) => x.key === k)!; return <li key={k}><b>{cc.label}</b>: {cc.text}</li> })}
+              {c.competencies.map((k) => { const cc = COMPETENCIES.find((x) => x.key === k)!; return <li key={k}><b className="font-medium">{cc.label}</b>: {cc.text}</li> })}
             </ul>
           </div>
           <div>
-            <div className="mb-1 font-bold">Performance indicators</div>
+            <h2 className="mb-2 text-[0.95rem]">Performance indicators</h2>
             <ol className="grid gap-1 text-sm">
               {c.pis.map((p) => <li key={p.code} className="flex gap-2"><Tag className="shrink-0">{p.code}</Tag><span>{p.text}</span></li>)}
             </ol>
@@ -34,13 +31,13 @@ export function CaseView({ c }: { c: CaseStudy }) {
       </Card>
 
       <Card className="grid gap-3">
-        <h2 className="text-xl">Case study situation</h2>
+        <h2 className="text-lg">Case study situation</h2>
         <p>
-          Your team plays the <b>{c.roles[0]}</b> and the <b>{c.roles[1]}</b> for <b>{c.company}</b>. Decide together who takes which role. The {c.judge} (judge) wants your team's recommendations.
+          Your team plays the <b className="font-semibold">{c.roles[0]}</b> and the <b className="font-semibold">{c.roles[1]}</b> for <b className="font-semibold">{c.company}</b>. Decide together who takes which role. The {c.judge} (judge) wants your team's recommendations.
         </p>
         {c.situation.map((p, i) => <p key={i}>{p}</p>)}
         <div>
-          <p className="font-bold">The {c.judge} (judge) wants your team to:</p>
+          <p className="font-medium">The {c.judge} (judge) wants your team to:</p>
           <ul className="prose-app mt-1">{c.tasks.map((t) => <li key={t}>{t}</li>)}</ul>
         </div>
         <p className="text-sm text-muted">
@@ -50,18 +47,18 @@ export function CaseView({ c }: { c: CaseStudy }) {
 
       {c.data.map((t) => (
         <Card key={t.title} className="grid gap-2">
-          <h3 className="text-lg">{t.title}</h3>
+          <h3 className="text-[0.95rem]">{t.title}</h3>
           <div className="scroll-x">
             <table className={`num w-full text-sm ${t.columns.length > 3 ? 'min-w-[480px]' : ''}`}>
               <thead>
                 <tr className="text-left">
-                  {t.columns.map((col, i) => <th key={i} className="border-b border-line-2 px-2 py-1.5 text-xs uppercase tracking-wide text-muted">{col}</th>)}
+                  {t.columns.map((col, i) => <th key={i} className="border-b border-line-2 px-2 py-1.5 text-xs font-medium text-muted">{col}</th>)}
                 </tr>
               </thead>
               <tbody>
                 {t.rows.map((r, i) => (
                   <tr key={i} className="border-b border-line">
-                    {r.map((cell, j) => <td key={j} className={j === 0 ? 'px-2 py-1.5 font-body font-bold' : 'px-2 py-1.5'}>{cell}</td>)}
+                    {r.map((cell, j) => <td key={j} className={j === 0 ? 'px-2 py-1.5 font-medium' : 'px-2 py-1.5'}>{cell}</td>)}
                   </tr>
                 ))}
               </tbody>

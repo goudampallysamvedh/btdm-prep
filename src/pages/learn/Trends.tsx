@@ -1,9 +1,9 @@
 import { useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { ExternalLink, MessageSquareQuote, TriangleAlert } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, ExternalLink, TriangleAlert } from 'lucide-react'
 import { TRENDS, TREND_BY_ID, TRENDS_CHECKED, type Trend } from '@/data/trends'
 import { useStore } from '@/lib/store'
-import { Card, LinkButton, PageHeader, Pill, Tag, cx } from '@/components/ui'
+import { LinkButton, PageHeader, Tag } from '@/components/ui'
 
 export default function Trends() {
   const { id } = useParams()
@@ -17,23 +17,27 @@ export default function Trends() {
       <PageHeader title="Industry trends">
         One current trend makes your case solution stand out. Each has a line you can say to the judge.
       </PageHeader>
-      <p className="text-sm text-muted">Updated weekly · last checked {new Date(TRENDS_CHECKED + 'T12:00:00').toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}. Say numbers as "about" and name the source.</p>
-      <div className="mt-3 flex flex-wrap gap-2">
+      <p className="-mt-4 mb-4 text-sm text-muted">Updated weekly · last checked {new Date(TRENDS_CHECKED + 'T12:00:00').toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}. Say numbers as "about" and name the source.</p>
+      <div className="mb-6 flex flex-wrap gap-2">
         <LinkButton size="sm" variant="ghost" to="/cards?deck=trends">Trend flashcards</LinkButton>
         <LinkButton size="sm" variant="ghost" to="/exam/practice?mode=topic&topic=T.trends&count=8">Trend quiz</LinkButton>
       </div>
-      <ul className="mt-4 grid gap-3 md:grid-cols-2">
+      <ul className="divide-y divide-line border-t border-line">
         {TRENDS.map((tr) => (
           <li key={tr.id}>
-            <Link to={`/learn/trends/${tr.id}`} className="card flex h-full flex-col gap-2 p-4 text-ink no-underline lift hover:border-accent">
-              <span className="flex items-center justify-between gap-2">
-                <span className="eyebrow">{tr.kicker}</span>
-                {read[tr.id] && <Pill tone="good">Read</Pill>}
+            <Link to={`/learn/trends/${tr.id}`} className="group grid gap-1.5 py-5 text-ink no-underline md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] md:gap-10">
+              <span className="grid content-start gap-1">
+                <span className="font-display text-[1.45rem] font-normal leading-tight group-hover:underline group-hover:decoration-line-2 group-hover:underline-offset-4">{tr.title}</span>
+                <span className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
+                  {tr.kicker}
+                  {read[tr.id] && <span className="inline-flex items-center gap-1 text-good"><Check size={14} strokeWidth={2} aria-hidden /> Read</span>}
+                </span>
               </span>
-              <span className="font-display text-xl font-extrabold leading-tight" style={{ fontStretch: '108%' }}>{tr.title}</span>
-              <span className="line-clamp-2 text-sm text-muted">{tr.data[0].stat}</span>
-              <span className="mt-auto flex flex-wrap gap-1 pt-1">
-                {tr.pis.slice(0, 3).map((p) => <Tag key={p}>{p}</Tag>)}
+              <span className="grid content-start gap-2">
+                <span className="line-clamp-2 text-[0.95rem] text-ink-2">{tr.data[0].stat}</span>
+                <span className="flex flex-wrap gap-1">
+                  {tr.pis.slice(0, 3).map((p) => <Tag key={p}>{p}</Tag>)}
+                </span>
               </span>
             </Link>
           </li>
@@ -50,62 +54,59 @@ function TrendPage({ t }: { t: Trend }) {
   const idx = TRENDS.findIndex((x) => x.id === t.id)
   const next = TRENDS[(idx + 1) % TRENDS.length]
   return (
-    <div className="mx-auto max-w-3xl">
-      <Link to="/learn/trends" className="mb-3 inline-flex items-center gap-1 text-sm font-bold no-underline">← All trends</Link>
-      <PageHeader eyebrow={t.kicker} title={t.title}>{t.what}</PageHeader>
+    <div className="mx-auto max-w-[44rem]">
+      <Link to="/learn/trends" className="mb-4 inline-flex min-h-9 items-center gap-1.5 text-sm font-medium text-muted no-underline hover:text-ink"><ArrowLeft size={16} strokeWidth={1.75} aria-hidden /> All trends</Link>
+      <PageHeader title={t.title}>{t.kicker} · {t.what}</PageHeader>
 
-      <Card className="receipt grid gap-3">
-        <div className="flex items-center justify-between gap-2">
-          <h2 className="text-lg">By the numbers</h2>
-          <span className="eyebrow">{t.asOf}</span>
+      <section>
+        <div className="flex items-baseline justify-between gap-2 border-b border-line pb-2">
+          <h2 className="text-[0.95rem]">By the numbers</h2>
+          <span className="text-sm text-muted">{t.asOf}</span>
         </div>
-        <ul className="grid gap-3">
+        <ol className="divide-y divide-line">
           {t.data.map((d, i) => (
-            <li key={i} className="grid grid-cols-[auto_1fr] gap-3">
-              <span className="num mt-0.5 grid size-6 place-items-center rounded-md bg-accent-soft text-xs font-bold text-accent">{i + 1}</span>
-              <span>
+            <li key={i} className="grid grid-cols-[1.5rem_1fr] gap-3 py-3">
+              <span className="num pt-0.5 text-sm text-muted">{i + 1}</span>
+              <span className="leading-relaxed">
                 {d.stat}{' '}
-                <a href={t.sources[d.source].url} target="_blank" rel="noopener noreferrer" className="text-sm whitespace-nowrap">
+                <a href={t.sources[d.source].url} target="_blank" rel="noopener noreferrer" className="whitespace-nowrap text-sm text-ink underline decoration-line-2 underline-offset-2">
                   [source {d.source + 1}]
                 </a>
               </span>
             </li>
           ))}
-        </ul>
-      </Card>
+        </ol>
+      </section>
 
-      <div className="mt-4 grid gap-3">
-        <div className="flex gap-3 rounded-2xl border-2 border-dashed border-accent/50 bg-accent-soft/40 p-4">
-          <MessageSquareQuote size={22} className="mt-0.5 shrink-0 text-accent" aria-hidden />
-          <div>
-            <div className="mb-1 font-bold">Say it in a case</div>
-            <p className="italic">{t.sayIt}</p>
-          </div>
+      <div className="mt-8 grid gap-3">
+        <div className="card p-5 sm:p-6">
+          <div className="mb-1 text-sm font-semibold">Say it in a case</div>
+          <p className="font-display text-xl leading-snug">&ldquo;{t.sayIt.replace(/^["“]|["”]$/g, '')}&rdquo;</p>
         </div>
-        <Card className="grid gap-2">
-          <div><b>Best fit:</b> {t.fits}</div>
-          <div className="flex flex-wrap items-center gap-1.5"><b>Connects to:</b> {t.pis.map((p) => <Tag key={p}>{p}</Tag>)}</div>
-        </Card>
-        <div className={cx('flex gap-3 rounded-r-xl border-l-4 border-warn bg-warn-bg px-4 py-3')}>
-          <TriangleAlert size={20} className="mt-0.5 shrink-0 text-warn" aria-hidden />
-          <span><b>Judge pushback to expect:</b> {t.watchOut}</span>
+        <div className="grid gap-2 px-1 text-[0.95rem]">
+          <div><b className="font-semibold">Best fit:</b> {t.fits}</div>
+          <div className="flex flex-wrap items-center gap-1.5"><b className="font-semibold">Connects to:</b> {t.pis.map((p) => <Tag key={p}>{p}</Tag>)}</div>
+        </div>
+        <div className="flex gap-3 rounded-2xl bg-warn-bg px-4 py-3">
+          <TriangleAlert size={18} strokeWidth={1.75} className="mt-0.5 shrink-0 text-warn" aria-hidden />
+          <span><b className="font-semibold">Judge pushback to expect:</b> {t.watchOut}</span>
         </div>
       </div>
 
-      <h2 className="mb-2 mt-6 text-lg">Sources</h2>
+      <h2 className="mb-2 mt-8 text-[0.95rem]">Sources</h2>
       <ol className="grid gap-1.5 text-sm">
         {t.sources.map((s, i) => (
           <li key={s.url} className="flex gap-2">
             <span className="num text-muted">{i + 1}.</span>
-            <a href={s.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-start gap-1">
-              {s.label} <ExternalLink size={13} className="mt-1 shrink-0" aria-hidden />
+            <a href={s.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-start gap-1 text-ink underline decoration-line-2 underline-offset-2">
+              {s.label} <ExternalLink size={13} strokeWidth={1.75} className="mt-1 shrink-0 text-muted" aria-hidden />
             </a>
           </li>
         ))}
       </ol>
 
-      <div className="mt-6 flex justify-end">
-        <LinkButton variant="ghost" to={`/learn/trends/${next.id}`}>Next: {next.title} →</LinkButton>
+      <div className="mt-8 flex justify-end">
+        <LinkButton variant="ghost" to={`/learn/trends/${next.id}`} icon={<ArrowRight size={16} aria-hidden />} className="flex-row-reverse">Next: {next.title}</LinkButton>
       </div>
     </div>
   )

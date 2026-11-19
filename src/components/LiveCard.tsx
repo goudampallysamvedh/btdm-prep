@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { ClipboardCopy, Radio, Send } from 'lucide-react'
+import { ClipboardCopy, Send } from 'lucide-react'
 import { useStore } from '@/lib/store'
 import { dropSelfAsPartner, joinLink, linkName, makeLinkCode, newSecret, parseLinkCode, resetVault, useLiveStatus, type LinkInfo } from '@/lib/live'
 import { relTime } from '@/lib/dates'
@@ -94,8 +94,8 @@ export function LiveCard() {
 
   const myName = settings.me === 'A' ? settings.partnerA : settings.partnerB
   const pasteBox = (
-    <div className="grid gap-2 rounded-xl bg-paper-2 p-3">
-      <span className="text-sm font-bold">{live ? 'Paste the link the other devices use' : "Every other device (your partner's and your own): paste it here"}</span>
+    <div className="grid gap-2 rounded-2xl bg-paper p-4">
+      <span className="text-sm font-semibold">{live ? 'Paste the link the other devices use' : "Every other device (your partner's and your own): paste it here"}</span>
       <div className="flex gap-2">
         <input className={inputCls + ' num flex-1 text-xs'} value={paste} onChange={(e) => { setPaste(e.target.value); setMsg(null) }} placeholder="Paste a live link (STL1.…)" aria-label="Paste your partner's live link" />
         <Button onClick={join} disabled={!paste.trim()}>Link</Button>
@@ -110,26 +110,25 @@ export function LiveCard() {
   return (
     <Card className="grid gap-3">
       <div className="flex items-center gap-2">
-        <Radio size={20} className="text-accent" aria-hidden />
         <h2 className="flex-1 text-lg">Live updates</h2>
         {live && (
-          <span className="inline-flex items-center gap-1.5 text-sm font-bold" role="status">
-            <span className={cx('size-2.5 rounded-full', dot, status.state === 'live' && 'animate-pulse')} aria-hidden />
+          <span className="inline-flex items-center gap-1.5 text-sm font-semibold" role="status">
+            <span className={cx('size-2.5 rounded-full', dot)} aria-hidden />
             {label}
           </span>
         )}
       </div>
 
       {live && status.slotClash && (
-        <p role="alert" className="rounded-xl border-l-4 border-warn bg-warn-bg px-3 py-2 text-sm">
+        <p role="alert" className="rounded-2xl bg-warn-bg px-3 py-2 text-sm">
           <b>Two of your devices picked different people.</b> That can make your own progress show up as your partner's. On each of your devices, check <b>This device</b> below: it should show your name. Tap <b>Wrong person? Change</b> on any that doesn't.</p>
       )}
 
       {!live ? (
         <>
           <p className="text-sm">Link every device once (yours and your partner's). After that, every device shows the latest progress for both of you, whichever device you studied on. Everything is encrypted on your device before it's sent through free services (ntfy.sh for instant updates, textdb.dev for a saved copy that never expires), so only your linked devices can read it.</p>
-          <div className="grid gap-2 rounded-xl bg-paper-2 p-3">
-            <span className="text-sm font-bold">Only ONE device creates the link</span>
+          <div className="grid gap-2 rounded-2xl bg-paper p-4">
+            <span className="text-sm font-semibold">Only one device creates the link</span>
             <span className="text-xs text-muted">If any device (yours or your partner's) is already linked, don't create a new one: paste that link below instead.</span>
             <div><Button onClick={create} icon={<ClipboardCopy size={16} aria-hidden />}>Create a live link</Button></div>
           </div>
@@ -141,13 +140,13 @@ export function LiveCard() {
             {partner ? <>Last update from <b>{partner.name}</b>: {relTime(partner.at)}.</> : 'Waiting for your partner\'s first update. Make sure they pasted your link.'}
             {status.lastSent ? <> Your progress was sent {relTime(status.lastSent)}.</> : null}
           </p>
-          <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 rounded-xl bg-paper-2 p-3 text-sm">
+          <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 rounded-2xl bg-paper p-4 text-sm">
             <dt className="text-muted">Link name</dt>
-            <dd className="num font-bold">{name || '…'}</dd>
+            <dd className="num font-semibold">{name || '…'}</dd>
             <dt className="text-muted">This device</dt>
-            <dd className="flex flex-wrap items-center gap-x-2 font-bold">
+            <dd className="flex flex-wrap items-center gap-x-2 font-semibold">
               {myName}
-              <button type="button" className="text-xs font-bold text-accent underline" onClick={() => setChangingSlot(!changingSlot)} aria-expanded={changingSlot}>
+              <button type="button" className="text-xs font-medium text-ink underline decoration-line-2 underline-offset-2" onClick={() => setChangingSlot(!changingSlot)} aria-expanded={changingSlot}>
                 Wrong person? Change
               </button>
             </dd>
@@ -163,8 +162,8 @@ export function LiveCard() {
             <Button size="sm" variant="quiet" onClick={unlink}>Turn off</Button>
           </div>
           {changingSlot && (
-            <div className="grid gap-2 rounded-xl border border-accent bg-accent-soft/40 p-3 animate-rise">
-              <span className="font-bold">Whose device is this?</span>
+            <div className="grid gap-2 rounded-2xl border border-ink/70 bg-paper p-3 animate-rise">
+              <span className="font-semibold">Whose device is this?</span>
               <div className="grid grid-cols-2 gap-2">
                 {(['A', 'B'] as const).map((who) => (
                   <Button key={who} variant={who === settings.me ? 'ghost' : 'primary'} onClick={() => void changeSlot(who)}>
@@ -180,8 +179,8 @@ export function LiveCard() {
       )}
 
       {pending && (
-        <div ref={pickRef} className="grid scroll-mt-20 gap-2 rounded-xl border border-accent bg-accent-soft/40 p-3 animate-rise">
-          <span className="font-bold">Whose device is this?</span>
+        <div ref={pickRef} className="grid scroll-mt-20 gap-2 rounded-2xl border border-ink/70 bg-paper p-3 animate-rise">
+          <span className="font-semibold">Whose device is this?</span>
           <div className="grid grid-cols-2 gap-2">
             {(['A', 'B'] as const).map((who) => (
               <Button key={who} variant={who === suggested ? 'primary' : 'ghost'} onClick={() => finish(who)}>{nameOf(who)}</Button>
@@ -200,7 +199,7 @@ export function LiveCard() {
           </div>
         </div>
       )}
-      {msg && <p role="status" className={cx('rounded-xl px-3 py-2 text-sm', msg.ok ? 'bg-good-bg text-good' : 'bg-bad-bg text-bad')}>{msg.text}</p>}
+      {msg && <p role="status" className={cx('rounded-2xl px-3 py-2 text-sm', msg.ok ? 'bg-good-bg text-good' : 'bg-bad-bg text-bad')}>{msg.text}</p>}
     </Card>
   )
 }

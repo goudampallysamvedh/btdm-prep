@@ -40,25 +40,25 @@ function Sim({ c }: { c: CaseStudy }) {
 
   return (
     <>
-      <Link to="/cases" className="mb-3 inline-flex items-center gap-1 text-sm font-bold no-underline">
-        <ArrowLeft size={16} aria-hidden /> All cases
+      <Link to="/cases" className="mb-4 inline-flex min-h-9 items-center gap-1 text-sm font-medium text-muted no-underline hover:text-ink">
+        <ArrowLeft size={16} strokeWidth={1.75} aria-hidden /> All cases
       </Link>
-      <PageHeader eyebrow={`${c.company} · ${c.area}`} title={c.title}>
-        Your roles: <b>{c.roles[0]}</b> and <b>{c.roles[1]}</b>. Judge: {c.judge}.
+      <PageHeader title={c.title}>
+        {c.company} · {c.area}. Your roles: <b className="font-medium text-ink">{c.roles[0]}</b> and <b className="font-medium text-ink">{c.roles[1]}</b>. Judge: {c.judge}.
       </PageHeader>
 
-      <div className="sticky top-[57px] z-10 -mx-4 mb-4 bg-paper/95 px-4 py-2 backdrop-blur md:top-0 md:mx-0 md:px-0">
-        <div className="scroll-x flex gap-1.5" role="tablist" aria-label="Case sections">
+      <div className="sticky top-[57px] z-10 -mx-4 mb-6 bg-paper px-4 md:top-0 md:mx-0 md:px-0">
+        <div className="scroll-x flex gap-6 border-b border-line" role="tablist" aria-label="Case sections">
           {TABS.map((t) => (
             <button
               key={t.id}
               role="tab"
               aria-selected={tab === t.id}
               onClick={() => setTab(t.id)}
-              className={cx('min-h-10 shrink-0 rounded-xl px-3.5 text-sm font-bold', tab === t.id ? 'bg-ink text-paper' : 'bg-card text-ink-2 border border-line hover:border-accent')}
+              className={cx('-mb-px min-h-11 shrink-0 border-b-2 text-sm font-medium transition-colors', tab === t.id ? 'border-ink text-ink' : 'border-transparent text-muted hover:text-ink')}
             >
               {t.label}
-              {t.id === 'timer' && running && <span className="ml-1.5 inline-block size-2 rounded-full bg-accent align-middle" aria-label="running" />}
+              {t.id === 'timer' && running && <span className="ml-1.5 inline-block size-1.5 rounded-full bg-accent align-middle" aria-label="running" />}
             </button>
           ))}
         </div>
@@ -68,21 +68,21 @@ function Sim({ c }: { c: CaseStudy }) {
         {tab === 'case' && (
           <>
             <CaseView c={c} />
-            <div className="mt-4 flex flex-wrap gap-2">
+            <div className="mt-6 flex flex-wrap gap-2">
               <Button onClick={() => setTab('timer')}>Start the 30-minute prep</Button>
               <Button variant="ghost" onClick={() => setTab('plan')}>Open the partner planner</Button>
             </div>
           </>
         )}
         {tab === 'timer' && (
-          <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
             <CaseTimer t={timer} setT={setTimer} />
             <Card className="grid content-start gap-2 text-sm">
-              <div className="font-bold">The PIs you must cover</div>
+              <h2 className="text-[0.95rem]">The PIs you must cover</h2>
               <ol className="grid gap-1.5">
                 {c.pis.map((p) => <li key={p.code} className="flex gap-2"><Tag className="shrink-0">{p.code}</Tag>{p.text}</li>)}
               </ol>
-              <div className="mt-2 font-bold">What the judge wants</div>
+              <h2 className="mt-3 text-[0.95rem]">What the judge wants</h2>
               <ul className="prose-app">{c.tasks.map((t) => <li key={t}>{t}</li>)}</ul>
             </Card>
           </div>
@@ -108,28 +108,28 @@ function CaseQuestions({ c }: { c: CaseStudy }) {
   return (
     <div className="grid gap-4">
       <Card className="grid gap-3">
-        <h2 className="text-lg">The judge's standard questions</h2>
+        <h2 className="text-[0.95rem]">The judge's standard questions</h2>
         <p className="text-sm text-muted">The judge asks every team these. DECA expects each partner to answer at least one judge question.</p>
         <ol className="grid gap-2">
-          {c.judgeQuestions.map((q) => <li key={q} className="rounded-xl border-l-4 border-accent bg-accent-soft/50 px-3 py-2 italic">"{q}"</li>)}
+          {c.judgeQuestions.map((q) => <li key={q} className="rounded-2xl border border-line bg-paper px-4 py-3 font-display text-xl leading-snug">{q}</li>)}
         </ol>
       </Card>
       <Card className="grid gap-3">
         <div className="flex items-center justify-between gap-2">
-          <h2 className="text-lg">Practice follow-ups</h2>
+          <h2 className="text-[0.95rem]">Practice follow-ups</h2>
           <Button size="sm" variant="ghost" onClick={() => setSeed(seed + 1)}>New set</Button>
         </div>
         <p className="text-sm text-muted">Answer out loud in 30–45 seconds: pause, restate, answer in 2–3 sentences, and tie it back to your plan.</p>
         <ol className="grid gap-2">
           {extra.map((q) => (
-            <li key={q.id} className="rounded-xl border border-line p-3">
+            <li key={q.id} className="rounded-2xl border border-line bg-paper p-4">
               <div className="flex items-start justify-between gap-3">
-                <span><span className="text-xs font-bold text-muted">{q.cat}</span><br />{q.q}</span>
+                <span><span className="text-xs text-muted">{q.cat}</span><br />{q.q}</span>
                 <Button size="sm" variant="quiet" onClick={() => { setShown({ ...shown, [q.id]: !shown[q.id] }); useStore.getState().markJudgeQ(q.id) }} aria-expanded={!!shown[q.id]}>
                   {shown[q.id] ? 'Hide' : 'Tip'}
                 </Button>
               </div>
-              {shown[q.id] && <p className="mt-2 text-sm text-ink-2"><Lightbulb size={14} className="mr-1 inline text-accent" aria-hidden />{q.tip}</p>}
+              {shown[q.id] && <p className="mt-2 text-sm text-ink-2"><Lightbulb size={14} strokeWidth={1.75} className="mr-1 inline text-muted" aria-hidden />{q.tip}</p>}
             </li>
           ))}
         </ol>
@@ -145,7 +145,7 @@ function KeyPoints({ c }: { c: CaseStudy }) {
     <div className="grid gap-4">
       <Card className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm">These are what a strong answer covers, like a judge's guide. Try the case first, then compare.</p>
-        <Button variant={reveal ? 'ghost' : 'primary'} onClick={() => setReveal(!reveal)} icon={reveal ? <EyeOff size={16} aria-hidden /> : <Eye size={16} aria-hidden />}>
+        <Button variant={reveal ? 'ghost' : 'primary'} onClick={() => setReveal(!reveal)} icon={reveal ? <EyeOff size={16} strokeWidth={1.75} aria-hidden /> : <Eye size={16} strokeWidth={1.75} aria-hidden />}>
           {reveal ? 'Hide key points' : 'Reveal key points'}
         </Button>
       </Card>
@@ -153,16 +153,16 @@ function KeyPoints({ c }: { c: CaseStudy }) {
         <>
           {c.pis.map((p) => (
             <Card key={p.code} className="grid gap-2 animate-rise">
-              <div className="flex items-center gap-2"><Tag>{p.code}</Tag><span className="font-bold">{p.text}</span></div>
+              <div className="flex items-center gap-2"><Tag>{p.code}</Tag><span className="font-medium">{p.text}</span></div>
               <ul className="prose-app">{p.key.map((k) => <li key={k}>{k}</li>)}</ul>
             </Card>
           ))}
-          <Card className="grid gap-2 border-accent animate-rise">
-            <div className="font-bold">A strong solution</div>
+          <Card className="grid gap-2 animate-rise">
+            <h2 className="text-[0.95rem]">A strong solution</h2>
             <ul className="prose-app">{c.solutionKeys.map((k) => <li key={k}>{k}</li>)}</ul>
           </Card>
           <Card className="grid gap-2 animate-rise">
-            <div className="font-bold">Trends that could make it unique</div>
+            <h2 className="text-[0.95rem]">Trends that could make it unique</h2>
             <div className="flex flex-wrap gap-2">
               {c.trends.map((t) => TREND_BY_ID[t] && (
                 <LinkButton key={t} size="sm" variant="ghost" to={`/learn/trends/${t}`}>{TREND_BY_ID[t].title}</LinkButton>

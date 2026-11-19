@@ -15,18 +15,18 @@ export default function MathLab() {
       <DailyGoal kind="math" />
       <MathPractice />
 
-      <p className="mt-3 text-sm text-muted">Tip: BTDM cases need little math. One number (a margin or a sell-through goal) is enough to back up your idea.</p>
+      <p className="mt-4 text-sm text-muted">Tip: BTDM cases need little math. One number (a margin or a sell-through goal) is enough to back up your idea.</p>
 
       {groups.map((g) => (
         <section key={g}>
           <SectionTitle>{g}</SectionTitle>
-          <ul className="grid gap-3 sm:grid-cols-2">
+          <ul className="grid gap-x-10 divide-y divide-line border-t border-line md:grid-cols-2 md:divide-y-0">
             {TOOLS.filter((t) => t.group === g).map((t) => (
-              <li key={t.id}>
-                <Link to={`/math/${t.id}`} className="card grid h-full gap-2 p-4 text-ink no-underline lift hover:border-accent">
-                  <span className="font-display text-lg font-extrabold" style={{ fontStretch: '108%' }}>{t.title}</span>
+              <li key={t.id} className="border-b border-line">
+                <Link to={`/math/${t.id}`} className="group grid min-h-16 gap-0.5 py-3.5 text-ink no-underline">
+                  <span className="font-medium group-hover:underline group-hover:decoration-line-2 group-hover:underline-offset-4">{t.title}</span>
                   <span className="text-sm text-muted">{t.blurb}</span>
-                  <span className="num mt-1 text-xs text-ink-2">{t.formulas[0].name} = {t.formulas[0].f}</span>
+                  <span className="num text-xs text-muted">{t.formulas[0].name} = {t.formulas[0].f}</span>
                 </Link>
               </li>
             ))}

@@ -7,7 +7,7 @@ import { rng, shuffle } from '@/lib/random'
 import { fmtClock } from '@/lib/dates'
 import { QUESTION_BY_ID } from '@/data/questions'
 import { QuestionCard } from '@/components/QuestionCard'
-import { Button, Callout, Card, PageHeader, Segmented, cx } from '@/components/ui'
+import { Bar, Button, Callout, Card, PageHeader, Segmented, cx } from '@/components/ui'
 
 function seedOf(s: string): number {
   let h = 2166136261
@@ -39,34 +39,39 @@ function MockSetup() {
   }
   return (
     <>
-      <PageHeader eyebrow="Exam trainer" title="Timed mock exam">
+      <PageHeader title="Timed mock exam">
         100 questions drawn to match the Marketing Cluster blueprint exactly (PM 11, IM 11, EI 9, PR 9 …). No feedback until you submit.
       </PageHeader>
-      <Card className="grid max-w-xl gap-4">
-        <div className="grid gap-2">
-          <span className="font-bold">Time limit</span>
-          <Segmented
-            label="Time limit"
-            value={mins}
-            onChange={setMins}
-            options={[
-              { value: '60', label: '60 min' },
-              { value: '90', label: '90 min' },
-              { value: '100', label: '100 min' },
-              { value: '0', label: 'Untimed' },
-            ]}
-          />
-          <p className="text-sm text-muted">Testing time can vary by association and conference, so check your district's or state's rules. Practice under a slightly tighter limit than you'll get.</p>
-        </div>
-        <ul className="grid gap-1 text-sm">
-          <li>• Your place is saved. You can close the app and resume, but the clock keeps running.</li>
-          <li>• Flag questions to revisit. The review screen shows anything unanswered.</li>
-          <li>• Use only a four-function calculator, like the real exam.</li>
-        </ul>
-        <Button size="lg" onClick={start} icon={<Clock size={18} aria-hidden />}>
-          Start the mock exam
-        </Button>
-      </Card>
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-4 md:grid-cols-12">
+        <Card className="grid content-start gap-5 md:col-span-7">
+          <div className="grid gap-3">
+            <h2 className="text-[0.95rem]">Time limit</h2>
+            <Segmented
+              label="Time limit"
+              value={mins}
+              onChange={setMins}
+              options={[
+                { value: '60', label: '60 min' },
+                { value: '90', label: '90 min' },
+                { value: '100', label: '100 min' },
+                { value: '0', label: 'Untimed' },
+              ]}
+            />
+            <p className="text-sm text-muted">Testing time can vary by association and conference, so check your district's or state's rules. Practice under a slightly tighter limit than you'll get.</p>
+          </div>
+          <Button size="lg" onClick={start} icon={<Clock size={18} strokeWidth={1.75} aria-hidden />} className="justify-self-start">
+            Start the mock exam
+          </Button>
+        </Card>
+        <section className="md:col-span-5" aria-labelledby="mock-rules">
+          <h2 id="mock-rules" className="mb-1 text-[0.95rem]">Ground rules</h2>
+          <ul className="divide-y divide-line text-[0.95rem] text-ink-2">
+            <li className="py-3">Your place is saved. You can close the app and resume, but the clock keeps running.</li>
+            <li className="py-3">Flag questions to revisit. The review screen shows anything unanswered.</li>
+            <li className="py-3">Use only a four-function calculator, like the real exam.</li>
+          </ul>
+        </section>
+      </div>
     </>
   )
 }
@@ -127,12 +132,12 @@ function MockRun({ mock }: { mock: ActiveMock }) {
 
   const timer = (
     <div
-      className={cx('num inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-sm font-bold', left < 300 ? 'bg-bad-bg text-bad' : 'bg-paper-2 text-ink-2')}
+      className={cx('num inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium', left < 300 ? 'bg-bad-bg text-bad' : 'text-muted')}
       role="timer"
       aria-live={left < 300 ? 'polite' : 'off'}
       aria-label={Number.isFinite(left) ? `${Math.ceil(left / 60)} minutes left` : 'Untimed'}
     >
-      <Clock size={15} aria-hidden /> {Number.isFinite(left) ? fmtClock(left) : 'Untimed'}
+      <Clock size={15} strokeWidth={1.75} aria-hidden /> {Number.isFinite(left) ? fmtClock(left) : 'Untimed'}
     </div>
   )
 
@@ -142,30 +147,30 @@ function MockRun({ mock }: { mock: ActiveMock }) {
     return (
       <div className="grid gap-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="text-2xl">Review before submitting</h1>
+          <h1 className="text-[clamp(1.75rem,4vw,2.25rem)]">Review before submitting</h1>
           {timer}
         </div>
         <div className="flex flex-wrap gap-2 text-sm">
-          <span className="rounded-lg bg-paper-2 px-2.5 py-1 font-bold">{answered} answered</span>
-          <span className="rounded-lg bg-bad-bg px-2.5 py-1 font-bold text-bad">{unanswered.length} blank</span>
-          <span className="rounded-lg bg-warn-bg px-2.5 py-1 font-bold text-warn">{flagged.length} flagged</span>
+          <span className="rounded-full bg-paper-2 px-3 py-1 font-medium">{answered} answered</span>
+          <span className="rounded-full bg-bad-bg px-3 py-1 font-medium text-bad">{unanswered.length} blank</span>
+          <span className="rounded-full bg-warn-bg px-3 py-1 font-medium text-warn">{flagged.length} flagged</span>
         </div>
         {unanswered.length > 0 && <Callout tone="warn">There's no penalty for guessing, so answer every blank before you submit.</Callout>}
         <Card>
-          <ol className="grid grid-cols-[repeat(auto-fill,minmax(2.75rem,1fr))] gap-1.5" aria-label="Question navigator">
+          <ol className="grid grid-cols-[repeat(auto-fill,minmax(2.75rem,1fr))] gap-2" aria-label="Question navigator">
             {qs.map((_, k) => (
               <li key={k}>
                 <button
                   type="button"
                   onClick={() => go(k)}
                   className={cx(
-                    'num relative grid h-11 w-full place-items-center rounded-lg border text-sm font-bold',
-                    mock.answers[k] === null ? 'border-bad/50 bg-bad-bg text-bad' : 'border-line bg-paper-2 text-ink-2',
+                    'num relative grid h-11 w-full place-items-center rounded-2xl border text-sm font-medium transition-colors hover:border-ink',
+                    mock.answers[k] === null ? 'border-bad/40 bg-bad-bg text-bad' : 'border-line bg-paper text-ink-2',
                   )}
                   aria-label={`Question ${k + 1}${mock.answers[k] === null ? ', unanswered' : ''}${mock.flags[k] ? ', flagged' : ''}`}
                 >
                   {k + 1}
-                  {mock.flags[k] && <Flag size={11} className="absolute right-1 top-1 text-warn" aria-hidden />}
+                  {mock.flags[k] && <Flag size={11} strokeWidth={1.75} className="absolute right-1 top-1 text-warn" aria-hidden />}
                 </button>
               </li>
             ))}
@@ -174,7 +179,7 @@ function MockRun({ mock }: { mock: ActiveMock }) {
         <div className="flex flex-wrap justify-between gap-2">
           <div className="flex flex-wrap gap-2">
             <Button variant="ghost" onClick={() => setReview(false)}>
-              <ArrowLeft size={18} aria-hidden /> Back to questions
+              <ArrowLeft size={18} strokeWidth={1.75} aria-hidden /> Back to questions
             </Button>
             <Button
               variant="danger"
@@ -202,17 +207,24 @@ function MockRun({ mock }: { mock: ActiveMock }) {
 
   const q = qs[i]
   return (
-    <div className="mx-auto grid max-w-2xl gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-lg">Mock exam</h1>
-        <div className="flex items-center gap-2">
-          {timer}
-          <Button size="sm" variant="ghost" onClick={() => setReview(true)} icon={<ListChecks size={16} aria-hidden />}>
-            Review <span className="num">({answered}/100)</span>
-          </Button>
+    <div className="mx-auto grid max-w-[44rem] gap-5">
+      <div className="grid gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h1 className="font-body text-lg font-semibold tracking-normal">Mock exam</h1>
+          <div className="flex items-center gap-2">
+            {timer}
+            <Button size="sm" variant="ghost" onClick={() => setReview(true)} icon={<ListChecks size={16} strokeWidth={1.75} aria-hidden />}>
+              Review <span className="num">({answered}/100)</span>
+            </Button>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <Bar value={(i + 1) / qs.length} tone="ink" label="Position in the exam" className="!h-1" />
+          <span className="num shrink-0 text-sm text-muted">{i + 1} of {qs.length}</span>
         </div>
       </div>
       <QuestionCard
+        key={q.id}
         q={q}
         order={orders[i]}
         chosen={mock.answers[i]}
@@ -233,13 +245,13 @@ function MockRun({ mock }: { mock: ActiveMock }) {
       />
       <div className="flex justify-between gap-2">
         <Button variant="ghost" onClick={() => go(i - 1)} disabled={i === 0}>
-          <ArrowLeft size={18} aria-hidden /> Back
+          <ArrowLeft size={18} strokeWidth={1.75} aria-hidden /> Back
         </Button>
         {i === qs.length - 1 ? (
           <Button onClick={() => setReview(true)}>Review & submit</Button>
         ) : (
           <Button onClick={() => go(i + 1)}>
-            Next <ArrowRight size={18} aria-hidden />
+            Next <ArrowRight size={18} strokeWidth={1.75} aria-hidden />
           </Button>
         )}
       </div>

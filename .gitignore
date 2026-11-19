@@ -7,3 +7,4 @@ playwright-report
 screenshots
 *.local
 .DS_Store
+.taste-skill/
