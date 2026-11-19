@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { ClipboardCopy, Radio, Send } from 'lucide-react'
 import { useStore } from '@/lib/store'
-import { dropSelfAsPartner, linkName, makeLinkCode, newSecret, parseLinkCode, resetVault, useLiveStatus, type LinkInfo } from '@/lib/live'
+import { dropSelfAsPartner, joinLink, linkName, makeLinkCode, newSecret, parseLinkCode, resetVault, useLiveStatus, type LinkInfo } from '@/lib/live'
 import { relTime } from '@/lib/dates'
 import { Button, Card, cx, inputCls } from './ui'
 
@@ -60,15 +60,7 @@ export function LiveCard() {
   // The same link works on every device; each device just says whose it is.
   const finish = (me: 'A' | 'B') => {
     if (!pending) return
-    const names = isDefault(settings.partnerA) && isDefault(settings.partnerB) && pending.a && pending.b ? { partnerA: pending.a, partnerB: pending.b } : {}
-    const myName = me === 'A' ? names.partnerA ?? settings.partnerA : names.partnerB ?? settings.partnerB
-    // A summary received earlier that is actually this person's own isn't "partner" data.
-    const partner = useStore.getState().partner
-    useStore.getState().replaceAll({
-      live: { key: pending.key, linkedAt: Date.now() },
-      settings: { ...settings, ...names, me },
-      ...(partner && partner.name === myName ? { partner: null } : {}),
-    })
+    const myName = joinLink(pending, me)
     setPending(null)
     setPaste('')
     setSwitching(false)
@@ -76,6 +68,9 @@ export function LiveCard() {
     setMsg({ ok: true, text: `Linked! This device belongs to ${myName}. Its progress is combined with every other device on this link.` })
   }
   const nameOf = (who: 'A' | 'B') => (who === 'A' ? pending?.a || settings.partnerA : pending?.b || settings.partnerB)
+  // Suggest the person this device already belongs to; otherwise the one who didn't make the link.
+  const myCurrent = settings.me === 'A' ? settings.partnerA : settings.partnerB
+  const suggested = (['A', 'B'] as const).find((w) => !isDefault(myCurrent) && nameOf(w).trim().toLowerCase() === myCurrent.trim().toLowerCase()) ?? (pending?.me === 'A' ? 'B' : 'A')
 
   // Fix a device that picked the wrong person: move it to the other slot and empty the slot it was writing to.
   const changeSlot = async (who: 'A' | 'B') => {
@@ -189,7 +184,7 @@ export function LiveCard() {
           <span className="font-bold">Whose device is this?</span>
           <div className="grid grid-cols-2 gap-2">
             {(['A', 'B'] as const).map((who) => (
-              <Button key={who} variant={who !== pending.me ? 'primary' : 'ghost'} onClick={() => finish(who)}>{nameOf(who)}</Button>
+              <Button key={who} variant={who === suggested ? 'primary' : 'ghost'} onClick={() => finish(who)}>{nameOf(who)}</Button>
             ))}
           </div>
           <span className="text-xs text-muted">{nameOf(pending.me)} made this link. If this is {nameOf(pending.me)}'s other phone or laptop, pick {nameOf(pending.me)}.</span>

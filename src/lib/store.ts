@@ -79,10 +79,10 @@ export interface OfficialScore {
 /** The study progress one person carries between devices. */
 export type ProgressData = Pick<
   ProgressState,
-  'settings' | 'officialScores' | 'activity' | 'daily' | 'planDone' | 'tests' | 'leitner' | 'caseAttempts' | 'casePlans' | 'mathStats' | 'lessonsDone' | 'trendsRead' | 'judgeDrill'
+  'settings' | 'officialScores' | 'activity' | 'daily' | 'planDone' | 'tests' | 'leitner' | 'caseAttempts' | 'casePlans' | 'mathStats' | 'lessonsDone' | 'trendsRead' | 'judgeDrill' | 'removed'
 >
 
-export const DATA_KEYS = ['settings', 'officialScores', 'activity', 'daily', 'planDone', 'tests', 'leitner', 'caseAttempts', 'casePlans', 'mathStats', 'lessonsDone', 'trendsRead', 'judgeDrill'] as const
+export const DATA_KEYS = ['settings', 'officialScores', 'activity', 'daily', 'planDone', 'tests', 'leitner', 'caseAttempts', 'casePlans', 'mathStats', 'lessonsDone', 'trendsRead', 'judgeDrill', 'removed'] as const
 
 export interface ProgressState {
   settings: Settings
@@ -108,6 +108,8 @@ export interface ProgressState {
   lessonsDone: Record<string, number>
   trendsRead: Record<string, number>
   judgeDrill: Record<string, number>
+  /** What was deleted, so syncing never brings it back: "test:id", "case:id", "official:id", "card:id" -> when. */
+  removed: Record<string, number>
   activeMock: ActiveMock | null
 }
 
@@ -161,8 +163,11 @@ export const emptyProgress: ProgressState = {
   lessonsDone: {},
   trendsRead: {},
   judgeDrill: {},
+  removed: {},
   activeMock: null,
 }
+
+const tomb = (st: ProgressState, kind: string, ids: string[]) => ({ removed: { ...st.removed, ...Object.fromEntries(ids.map((id) => [`${kind}:${id}`, Date.now()])) } })
 
 const idbStorage: StateStorage = {
   getItem: async (name) => (await get<string>(name)) ?? null,
@@ -194,17 +199,17 @@ export const useStore = create<ProgressState & Actions>()(
         }),
       markPlanDone: (day) => setState((st) => (st.planDone[day] ? {} : { planDone: { ...st.planDone, [day]: Date.now() } })),
       addTest: (t) => setState((st) => ({ tests: [...st.tests, t] })),
-      deleteTest: (id) => setState((st) => ({ tests: st.tests.filter((t) => t.id !== id) })),
+      deleteTest: (id) => setState((st) => ({ tests: st.tests.filter((t) => t.id !== id), ...tomb(st, 'test', [id]) })),
       setLeitner: (id, s) => setState((st) => ({ leitner: { ...st.leitner, [id]: s } })),
       resetLeitner: (ids) =>
         setState((st) => {
-          if (!ids) return { leitner: {} }
+          if (!ids) return { leitner: {}, ...tomb(st, 'card', Object.keys(st.leitner)) }
           const next = { ...st.leitner }
           ids.forEach((i) => delete next[i])
-          return { leitner: next }
+          return { leitner: next, ...tomb(st, 'card', ids) }
         }),
       addCaseAttempt: (a) => setState((st) => ({ caseAttempts: [...st.caseAttempts, a] })),
-      deleteCaseAttempt: (id) => setState((st) => ({ caseAttempts: st.caseAttempts.filter((a) => a.id !== id) })),
+      deleteCaseAttempt: (id) => setState((st) => ({ caseAttempts: st.caseAttempts.filter((a) => a.id !== id), ...tomb(st, 'case', [id]) })),
       saveCasePlan: (p) => setState((st) => ({ casePlans: { ...st.casePlans, [p.caseId]: p } })),
       recordMath: (kind, correct) =>
         setState((st) => {
@@ -221,7 +226,7 @@ export const useStore = create<ProgressState & Actions>()(
       markJudgeQ: (id) => setState((st) => ({ judgeDrill: { ...st.judgeDrill, [id]: (st.judgeDrill[id] ?? 0) + 1 } })),
       setActiveMock: (m) => setState({ activeMock: m }),
       addOfficial: (o) => setState((st) => ({ officialScores: [...st.officialScores, o] })),
-      deleteOfficial: (id) => setState((st) => ({ officialScores: st.officialScores.filter((o) => o.id !== id) })),
+      deleteOfficial: (id) => setState((st) => ({ officialScores: st.officialScores.filter((o) => o.id !== id), ...tomb(st, 'official', [id]) })),
       replaceAll: (s) => setState((st) => ({ ...st, ...s })),
     }),
     {

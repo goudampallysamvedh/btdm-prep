@@ -18,7 +18,7 @@ function snapshot(): ProgressState {
   return {
     settings: s.settings, officialScores: s.officialScores, partner: s.partner, live: s.live, partnerData: s.partnerData, activity: s.activity, daily: s.daily, planDone: s.planDone, tests: s.tests, leitner: s.leitner,
     caseAttempts: s.caseAttempts, casePlans: s.casePlans, mathStats: s.mathStats, lessonsDone: s.lessonsDone,
-    trendsRead: s.trendsRead, judgeDrill: s.judgeDrill, activeMock: s.activeMock,
+    trendsRead: s.trendsRead, judgeDrill: s.judgeDrill, removed: s.removed, activeMock: s.activeMock,
   }
 }
 
